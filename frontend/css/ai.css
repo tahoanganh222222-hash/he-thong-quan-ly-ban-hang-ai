@@ -1,0 +1,364 @@
+/* =========================================
+   AI - TƯ VẤN SẢN PHẨM
+========================================= */
+
+.ai-page {
+    display: none;
+}
+
+.ai-page.active {
+    display: block;
+}
+
+/* =========================================
+   PAGE HEADER
+========================================= */
+
+.ai-page-header {
+    margin-bottom: 20px;
+}
+
+.ai-page-header h2 {
+    margin: 0 0 6px;
+    font-size: 24px;
+    color: #172033;
+}
+
+.ai-page-header p {
+    margin: 0;
+    color: #64748b;
+    font-size: 14px;
+}
+
+
+/* =========================================
+   AI LAYOUT
+========================================= */
+
+.ai-advice-layout {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 20px;
+    align-items: start;
+}
+
+
+/* =========================================
+   INPUT CARD
+========================================= */
+
+.ai-input-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.ai-input-card h3 {
+    margin: 0 0 6px;
+    font-size: 17px;
+    color: #172033;
+}
+
+.ai-input-description {
+    margin: 0 0 18px;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.ai-input-label {
+    display: block;
+    margin-bottom: 7px;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.ai-need-input {
+    width: 100%;
+    min-height: 145px;
+    box-sizing: border-box;
+    padding: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    resize: vertical;
+    outline: none;
+    font-family: inherit;
+    font-size: 14px;
+    color: #172033;
+}
+
+.ai-need-input:focus {
+    border-color: #2563eb;
+}
+
+.ai-input-example {
+    margin-top: 8px;
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.ai-advice-button {
+    width: 100%;
+    margin-top: 16px;
+    padding: 11px 16px;
+    border: none;
+    border-radius: 7px;
+    background: #2563eb;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.ai-advice-button:hover {
+    background: #1d4ed8;
+}
+
+.ai-advice-button:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+}
+
+
+/* =========================================
+   RESULT CARD
+========================================= */
+
+.ai-result-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 20px;
+    min-height: 400px;
+}
+
+.ai-result-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 18px;
+}
+
+.ai-result-header h3 {
+    margin: 0;
+    font-size: 17px;
+    color: #172033;
+}
+
+.ai-result-count {
+    padding: 5px 9px;
+    border-radius: 6px;
+    background: #eff6ff;
+    color: #2563eb;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+
+/* =========================================
+   EMPTY RESULT
+========================================= */
+
+.ai-empty-result {
+    min-height: 320px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #64748b;
+}
+
+.ai-empty-result-icon {
+    font-size: 38px;
+    margin-bottom: 12px;
+}
+
+.ai-empty-result h4 {
+    margin: 0 0 7px;
+    color: #334155;
+    font-size: 16px;
+}
+
+.ai-empty-result p {
+    margin: 0;
+    font-size: 13px;
+}
+
+
+/* =========================================
+   LOADING
+========================================= */
+
+.ai-loading {
+    min-height: 320px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #64748b;
+}
+
+.ai-loading-spinner {
+    width: 30px;
+    height: 30px;
+    margin: 0 auto 12px;
+    border: 3px solid #e2e8f0;
+    border-top-color: #2563eb;
+    border-radius: 50%;
+    animation: aiSpin 0.8s linear infinite;
+}
+
+@keyframes aiSpin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* =========================================
+   RESULT LIST
+========================================= */
+
+.ai-results-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.ai-product-result {
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+    padding: 16px;
+}
+
+.ai-product-result-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.ai-product-result-name {
+    margin: 0 0 5px;
+    color: #172033;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.ai-product-code {
+    color: #64748b;
+    font-size: 12px;
+}
+
+.ai-product-price {
+    color: #2563eb;
+    font-size: 16px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.ai-product-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.ai-product-tag {
+    padding: 5px 8px;
+    border-radius: 5px;
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 12px;
+}
+
+.ai-product-stock {
+    color: #15803d;
+    background: #dcfce7;
+}
+
+.ai-product-reason {
+    margin-top: 12px;
+    padding: 11px 12px;
+    border-radius: 7px;
+    background: #f8fafc;
+    color: #475569;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.ai-product-reason strong {
+    color: #334155;
+}
+
+
+/* =========================================
+   NO PRODUCT
+========================================= */
+
+.ai-no-product {
+    padding: 30px 20px;
+    text-align: center;
+    color: #64748b;
+}
+
+.ai-no-product h4 {
+    margin: 0 0 7px;
+    color: #334155;
+}
+
+.ai-no-product p {
+    margin: 0;
+    font-size: 13px;
+}
+
+
+/* =========================================
+   AI NOTICE
+========================================= */
+
+.ai-notice {
+    margin-top: 20px;
+    padding: 13px 15px;
+    border-left: 4px solid #2563eb;
+    background: #eff6ff;
+    color: #475569;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 950px) {
+
+    .ai-advice-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+
+    .ai-result-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .ai-product-result-header {
+        flex-direction: column;
+    }
+
+    .ai-product-price {
+        white-space: normal;
+    }
+}

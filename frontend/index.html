@@ -1,0 +1,5620 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Hệ thống quản lý bán hàng</title>
+
+    <link
+    rel="stylesheet"
+    href="./css/api.css"
+>
+<link
+    rel="stylesheet"
+    href="./css/products.css"
+>
+<link
+    rel="stylesheet"
+    href="./css/categories.css"
+>
+<link 
+    rel="stylesheet" 
+    href="./css/customers.css"
+>
+<link 
+    rel="stylesheet" 
+    href="./css/invoices.css"
+>
+<link 
+    rel="stylesheet" 
+    href="./css/purchases.css"
+>
+<link 
+    rel="stylesheet" 
+    href="./css/inventory.css"
+>
+<link 
+    rel="stylesheet" 
+    href="./css/history.css"
+>
+<link
+    rel="stylesheet"
+    href="./css/statistics.css"
+>
+<link
+    rel="stylesheet"
+    href="./css/reports.css"
+>
+<link
+    rel="stylesheet"
+    href="./css/users.css"
+>
+<link
+    rel="stylesheet"
+    href="css/permissions.css"
+>
+<link 
+    rel="stylesheet" 
+    href="css/auth.css"
+>
+<link
+    rel="stylesheet"
+    href="css/ai.css"
+>
+
+
+</head>
+  <body>
+        <!-- =================================================
+         LOGIN
+         ================================================= -->
+
+    <section id="login-page">
+        <form id="login-form">
+            <input
+                id="login-username"
+                type="text"
+                placeholder="Tên tài khoản"
+            >
+            <input
+                id="login-password"
+                type="password"
+                placeholder="Mật khẩu"
+            >
+            <div id="login-message"></div>
+            <button type="submit">
+                Đăng nhập
+            </button>
+        </form>
+    </section>
+
+
+
+
+    <div class="app">
+        <!-- =========================
+             SIDEBAR
+             ========================= -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-icon">
+                    SM
+                </div>
+
+                <div>
+                    <h2>Sales Manager</h2>
+                    <span>Quản lý bán hàng</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-menu">
+                <div class="menu-section">
+                    TỔNG QUAN
+                </div>
+
+                <button
+                class="menu-item active"
+                data-page="dashboard"
+                >
+                    <span class="menu-icon">⌂</span>
+                    <span>Dashboard</span>
+                </button>
+
+
+                <div class="menu-section">
+                    QUẢN LÝ
+                </div>
+
+
+                <button class="menu-item"
+                data-page="products">
+                    <span class="menu-icon">▣</span>
+                    <span>Sản phẩm</span>
+                </button>
+
+                <button class="menu-item"
+                data-page="categories">
+                    <span class="menu-icon">▤</span>
+                    <span>Danh mục</span>
+                </button>
+
+                <button class="menu-item" 
+                data-page="customers"
+                >
+                    <span class="menu-icon">♙</span>
+                    <span>Khách hàng</span>
+                </button>
+
+                <button class="menu-item"
+                data-page="invoices">
+                    <span class="menu-icon">▧</span>
+                    <span>Hóa đơn</span>
+                </button>
+
+                <button class="menu-item"
+                data-page="purchases">
+                    <span class="menu-icon">⇩</span>
+                    <span>Nhập hàng</span>
+                </button>
+
+                <button class="menu-item"
+                data-page="inventory">
+                    <span class="menu-icon">◫</span>
+                    <span>Tồn kho</span>
+                </button>
+
+                <button class="menu-item"
+                data-page="history">
+                    <span class="menu-icon">◷</span>
+                    <span>Lịch sử</span>
+                </button>
+
+
+                <div class="menu-section">
+                    THỐNG KÊ
+                </div>
+
+                <button class="menu-item"
+                data-page="statistics">
+                    <span class="menu-icon">▥</span>
+                    <span>Thống kê doanh thu</span>
+                </button>
+
+                <button class="menu-item"
+                data-page="reports">
+                    <span class="menu-icon">▤</span>
+                    <span>Báo cáo</span>
+                </button>
+
+
+                <div class="menu-section">
+                    HỆ THỐNG
+                </div>
+
+                <button class="menu-item"
+                data-page="users">
+                    <span class="menu-icon">♙</span>
+                    <span>Người dùng</span>
+                </button>
+
+                <!--
+                    Phân quyền vẫn hiển thị cho mọi vai trò.
+                    Chức năng kiểm tra quyền sẽ được triển khai
+                    ở Part 12.
+                -->
+                <button
+                    class="menu-item"
+                    id="role-management-menu"
+                    data-page="permissions"
+                >
+                    <span class="menu-icon">⚿</span>
+                    <span>Phân quyền</span>
+                </button>
+
+
+                <div class="menu-section">
+                    AI
+                </div>
+
+                <button class="menu-item"
+                data-page="ai-product">
+                    <span class="menu-icon">✦</span>
+                    <span>AI tư vấn sản phẩm</span>
+                </button>
+
+                <button class="menu-item">
+                    <span class="menu-icon">✦</span>
+                    <span>AI báo cáo doanh thu</span>
+                </button>
+
+                <button class="menu-item">
+                    <span class="menu-icon">✦</span>
+                    <span>AI hỏi đáp dữ liệu</span>
+                </button>
+
+            </nav>
+
+
+            <div class="sidebar-footer">
+
+                <div class="system-status">
+                    <span
+                        class="status-dot"
+                        id="system-status-dot"
+                    ></span>
+
+                    <span id="system-status-text">
+                        Đang kiểm tra hệ thống...
+                    </span>
+                </div>
+
+                <button
+                    class="logout-button"
+                    id="logout-button"
+                    data-auth-action="logout"
+                >
+                    Đăng xuất
+                </button>
+
+            </div>
+
+        </aside>
+
+
+        <!-- =========================
+             MAIN CONTENT
+             ========================= -->
+        <main class="main-content">
+
+            <!-- HEADER -->
+            <header class="topbar">
+
+                <div>
+                    <h1>Dashboard</h1>
+
+                    <p>
+                        Tổng quan hoạt động kinh doanh
+                    </p>
+                </div>
+
+
+                <div class="user-info">
+
+                    <div class="user-avatar">
+                        A
+                    </div>
+
+                    <div class="user-detail">
+                        <strong id="current-user-name">
+                            Quản trị viên
+                        </strong>
+
+                        <span id="current-user-role">
+                            Admin
+                        </span>
+                    </div>
+
+                </div>
+
+            </header>
+
+
+            <!-- =========================
+                 DASHBOARD
+                 ========================= -->
+            <section class="dashboard-content">
+
+
+                <!-- KPI CARDS -->
+                <div class="stats-grid">
+
+                    <div class="stat-card">
+
+                        <div class="stat-card-header">
+                            <span>
+                                Doanh thu hôm nay
+                            </span>
+
+                            <span class="stat-icon">
+                                ₫
+                            </span>
+                        </div>
+
+                        <h2 id="today-revenue">
+                            0 ₫
+                        </h2>
+
+                        <p class="stat-description">
+                            So với ngày hôm qua:
+                            <strong id="revenue-change">
+                                +0%
+                            </strong>
+                        </p>
+
+                    </div>
+
+
+                    <div class="stat-card">
+
+                        <div class="stat-card-header">
+                            <span>
+                                Hóa đơn hôm nay
+                            </span>
+
+                            <span class="stat-icon">
+                                ▧
+                            </span>
+                        </div>
+
+                        <h2 id="today-invoices">
+                            0
+                        </h2>
+
+                        <p class="stat-description">
+                            Hóa đơn đã thanh toán
+                        </p>
+
+                    </div>
+
+
+                    <div class="stat-card">
+
+                        <div class="stat-card-header">
+                            <span>
+                                Sản phẩm
+                            </span>
+
+                            <span class="stat-icon">
+                                ▣
+                            </span>
+                        </div>
+
+                        <h2 id="total-products">
+                            0
+                        </h2>
+
+                        <p class="stat-description">
+                            Sản phẩm đang kinh doanh
+                        </p>
+
+                    </div>
+
+
+                    <div class="stat-card">
+
+                        <div class="stat-card-header">
+                            <span>
+                                Khách hàng
+                            </span>
+
+                            <span class="stat-icon">
+                                ♙
+                            </span>
+                        </div>
+
+                        <h2 id="total-customers">
+                            0
+                        </h2>
+
+                        <p class="stat-description">
+                            Khách hàng đang hoạt động
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =========================
+                     MIDDLE SECTION
+                     ========================= -->
+                <div class="dashboard-grid">
+
+
+                    <!-- DOANH THU -->
+                    <div class="dashboard-card revenue-card">
+
+                        <div class="card-header">
+
+                            <div>
+                                <h3>
+                                    Doanh thu
+                                </h3>
+
+                                <p>
+                                    Tổng quan doanh thu trong tuần
+                                </p>
+                            </div>
+
+                            <select id="revenue-period">
+                                <option value="7">
+                                    7 ngày
+                                </option>
+
+                                <option value="30">
+                                    30 ngày
+                                </option>
+                            </select>
+
+                        </div>
+
+
+                        <div class="revenue-summary">
+
+                            <strong id="week-revenue">
+                                0 ₫
+                            </strong>
+
+                            <span>
+                                Tổng doanh thu
+                            </span>
+
+                        </div>
+
+
+                        <div
+                            class="revenue-chart"
+                            id="revenue-chart"
+                        >
+
+                            <!-- Chart được tạo bằng JavaScript -->
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- SẢN PHẨM BÁN CHẠY -->
+                    <div class="dashboard-card">
+
+                        <div class="card-header">
+
+                            <div>
+                                <h3>
+                                    Sản phẩm bán chạy
+                                </h3>
+
+                                <p>
+                                    Theo số lượng bán
+                                </p>
+                            </div>
+
+                        </div>
+
+
+                        <div
+                            class="product-list"
+                            id="top-products"
+                        >
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =========================
+                     BOTTOM SECTION
+                     ========================= -->
+                <div class="dashboard-grid">
+
+
+                    <!-- HÓA ĐƠN GẦN ĐÂY -->
+                    <div class="dashboard-card">
+
+                        <div class="card-header">
+
+                            <div>
+                                <h3>
+                                    Hóa đơn gần đây
+                                </h3>
+
+                                <p>
+                                    Các giao dịch mới nhất
+                                </p>
+                            </div>
+
+                            <button class="view-all-button">
+                                Xem tất cả
+                            </button>
+
+                        </div>
+
+
+                        <div class="table-wrapper">
+
+                            <table>
+
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            Mã hóa đơn
+                                        </th>
+
+                                        <th>
+                                            Khách hàng
+                                        </th>
+
+                                        <th>
+                                            Tổng tiền
+                                        </th>
+
+                                        <th>
+                                            Trạng thái
+                                        </th>
+                                    </tr>
+                                </thead>
+
+                                <tbody
+                                    id="recent-invoices"
+                                >
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- CẢNH BÁO TỒN KHO -->
+                    <div class="dashboard-card">
+
+                        <div class="card-header">
+
+                            <div>
+                                <h3>
+                                    Cảnh báo tồn kho
+                                </h3>
+
+                                <p>
+                                    Sản phẩm cần nhập thêm
+                                </p>
+                            </div>
+
+                        </div>
+
+
+                        <div
+                            class="inventory-warning-list"
+                            id="inventory-warning-list"
+                        >
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =========================
+                     AI QUICK ACCESS
+                     ========================= -->
+                <div class="dashboard-card ai-dashboard-card">
+
+                    <div class="card-header">
+
+                        <div>
+
+                            <h3>
+                                Trợ lý AI
+                            </h3>
+
+                            <p>
+                                Các chức năng AI của hệ thống
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="ai-actions">
+
+                        <button class="ai-action">
+
+                            <span class="ai-action-icon">
+                                ✦
+                            </span>
+
+                            <span>
+                                <strong>
+                                    Tư vấn sản phẩm
+                                </strong>
+
+                                <small>
+                                    Gợi ý sản phẩm phù hợp
+                                </small>
+                            </span>
+
+                        </button>
+
+
+                        <button class="ai-action">
+
+                            <span class="ai-action-icon">
+                                ✦
+                            </span>
+                            <span>
+                                <strong>
+                                    Báo cáo doanh thu
+                                </strong>
+                                <small>
+                                    Phân tích tình hình kinh doanh
+                                </small>
+                            </span>
+                        </button>
+
+
+                        <button class="ai-action">
+                            <span class="ai-action-icon">                               ✦
+                            </span>
+                            <span>
+                                <strong>
+                                    Hỏi đáp dữ liệu
+                                </strong>
+                                <small>
+                                    Đặt câu hỏi về dữ liệu bán hàng
+                                </small>
+                            </span>
+                       </button>
+                    </div>
+                </div>
+            </section>
+<!-- =========================================================
+     PRODUCT MANAGEMENT - PART 5
+    ========================================================= -->
+
+<section
+    class="products-page"
+    id="products-page"
+>
+
+    <div class="products-page-header">
+
+        <div>
+            <h2>
+                Quản lý sản phẩm
+            </h2>
+
+            <p>
+                Quản lý thông tin và trạng thái sản phẩm
+            </p>
+        </div>
+
+        <button
+            class="product-add-button"
+            id="add-product-button"
+        >
+            + Thêm sản phẩm
+        </button>
+
+    </div>
+
+
+    <!-- TOOLBAR -->
+
+    <div class="product-toolbar">
+
+        <div class="product-search">
+
+            <span class="product-search-icon">
+                ⌕
+            </span>
+
+            <input
+                type="text"
+                id="product-search-input"
+                placeholder="Tìm kiếm theo mã hoặc tên sản phẩm..."
+            >
+
+        </div>
+
+
+        <select
+            class="product-filter"
+            id="product-category-filter"
+        >
+
+            <option value="all">
+                Tất cả danh mục
+            </option>
+
+        </select>
+
+
+        <select
+            class="product-filter"
+            id="product-status-filter"
+        >
+
+            <option value="all">
+                Tất cả trạng thái
+            </option>
+
+            <option value="active">
+                Đang kinh doanh
+            </option>
+
+            <option value="inactive">
+                Ngừng kinh doanh
+            </option>
+
+        </select>
+
+    </div>
+
+
+    <!-- PRODUCT TABLE -->
+
+    <div class="product-table-card">
+
+        <div class="product-table-header">
+
+            <strong>
+                Danh sách sản phẩm
+            </strong>
+
+            <span
+                class="product-count"
+                id="product-count"
+            >
+                0 sản phẩm
+            </span>
+
+        </div>
+
+
+        <div class="product-table-wrapper">
+
+            <table class="product-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            MÃ SP
+                        </th>
+
+                        <th>
+                            TÊN SẢN PHẨM
+                        </th>
+
+                        <th>
+                            DANH MỤC
+                        </th>
+
+                        <th>
+                            GIÁ NHẬP
+                        </th>
+
+                        <th>
+                            GIÁ BÁN
+                        </th>
+
+                        <th>
+                            ĐƠN VỊ
+                        </th>
+
+                        <th>
+                            TRẠNG THÁI
+                        </th>
+
+                        <th>
+                            THAO TÁC
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody
+                    id="product-table-body"
+                >
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <!-- PAGINATION -->
+
+        <div class="product-pagination">
+
+            <span
+                class="product-pagination-info"
+                id="pagination-info"
+            >
+                Không có sản phẩm
+            </span>
+
+
+            <div
+                class="pagination-buttons"
+                id="pagination-buttons"
+            >
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     PRODUCT MODAL
+     ========================================================= -->
+
+<div
+    class="product-modal"
+    id="product-modal"
+>
+
+    <div class="product-modal-content">
+
+        <div class="product-modal-header">
+
+            <h3
+                id="product-modal-title"
+            >
+                Thêm sản phẩm
+            </h3>
+
+
+            <button
+                class="product-modal-close"
+                id="product-modal-close"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <form
+            class="product-form"
+            id="product-form"
+        >
+
+            <div class="product-form-grid">
+
+
+                <!-- CODE -->
+
+                <div class="product-form-group">
+
+                    <label for="product-code">
+                        Mã sản phẩm *
+                    </label>
+
+                    <input
+                        type="text"
+                        id="product-code"
+                        placeholder="VD: SP016"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- NAME -->
+
+                <div class="product-form-group">
+
+                    <label for="product-name">
+                        Tên sản phẩm *
+                    </label>
+
+                    <input
+                        type="text"
+                        id="product-name"
+                        placeholder="Nhập tên sản phẩm"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- CATEGORY -->
+
+                <div class="product-form-group">
+
+                    <label for="product-category">
+                        Danh mục *
+                    </label>
+
+                    <select
+                        id="product-category"
+                        required
+                    >
+
+                        <option value="">
+                            -- Chọn danh mục --
+                        </option>
+
+                        <option value="Đồ uống">
+                            Đồ uống
+                        </option>
+
+                        <option value="Thực phẩm">
+                            Thực phẩm
+                        </option>
+
+                        <option value="Hàng gia dụng">
+                            Hàng gia dụng
+                        </option>
+
+                        <option value="Vật tư">
+                            Vật tư
+                        </option>
+
+                        <option value="Thiết bị điện">
+                            Thiết bị điện
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- UNIT -->
+
+                <div class="product-form-group">
+
+                    <label for="product-unit">
+                        Đơn vị tính *
+                    </label>
+
+                    <input
+                        type="text"
+                        id="product-unit"
+                        placeholder="VD: Cái, Chai, Kg..."
+                        required
+                    >
+
+                </div>
+
+
+                <!-- PURCHASE PRICE -->
+
+                <div class="product-form-group">
+
+                    <label for="product-purchase-price">
+                        Giá nhập *
+                    </label>
+
+                    <input
+                        type="number"
+                        id="product-purchase-price"
+                        min="0"
+                        step="1000"
+                        placeholder="0"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- SELLING PRICE -->
+
+                <div class="product-form-group">
+
+                    <label for="product-selling-price">
+                        Giá bán *
+                    </label>
+
+                    <input
+                        type="number"
+                        id="product-selling-price"
+                        min="0"
+                        step="1000"
+                        placeholder="0"
+                        required
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="product-form-footer">
+
+                <button
+                    type="button"
+                    class="product-cancel-button"
+                    id="product-cancel-button"
+                >
+                    Hủy
+                </button>
+
+
+                <button
+                    type="submit"
+                    class="product-save-button"
+                >
+                    Lưu sản phẩm
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- =========================================================
+     CATEGORY MANAGEMENT - PART 6
+     ========================================================= -->
+<section
+    class="categories-page"
+    id="categories-page"
+>
+    <div class="categories-page-header">
+        <div>
+            <h2>
+                Quản lý danh mục
+           </h2>
+            <p>
+                Quản lý các nhóm sản phẩm trong cửa hàng
+            </p>
+        </div>
+        <button
+            class="category-add-button"
+            id="add-category-button"
+        >
+            + Thêm danh mục
+        </button>
+    </div>
+    <!-- TOOLBAR -->
+    <div class="category-toolbar">
+        <div class="category-search">
+            <span class="category-search-icon">
+                ⌕
+            </span>
+            <input
+                type="text"
+                id="category-search-input"
+                placeholder="Tìm kiếm theo tên hoặc mô tả..."
+            >
+        </div>
+        <select
+            class="category-filter"
+            id="category-status-filter"
+        >
+            <option value="all">
+                Tất cả trạng thái
+            </option>
+            <option value="active">
+                Đang hoạt động
+            </option>
+            <option value="inactive">
+                Ngừng hoạt động
+            </option>
+        </select>
+    </div>
+    <!-- CATEGORY TABLE -->
+    <div class="category-table-card">
+        <div class="category-table-header">
+            <strong>
+                Danh sách danh mục
+            </strong>
+            <span
+                class="category-count"
+                id="category-count"
+            >
+                0 danh mục
+            </span>
+        </div>
+        <div class="category-table-wrapper">
+            <table class="category-table">
+                <thead>
+                    <tr>
+                        <th>
+                            STT
+                        </th>
+                        <th>
+                            TÊN DANH MỤC
+                        </th>
+                        <th>
+                            MÔ TẢ
+                        </th>
+                        <th>
+                            TRẠNG THÁI
+                        </th>
+                        <th>
+                            THAO TÁC
+                        </th>
+                    </tr>
+                </thead>
+                <tbody
+                    id="category-table-body"
+                >
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PAGINATION -->
+        <div class="category-pagination">
+            <span
+                class="category-pagination-info"
+                id="category-pagination-info"
+            >
+                Không có danh mục
+            </span>
+            <div
+                class="category-pagination-buttons"
+                id="category-pagination-buttons"
+            >
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- =========================================================
+     CATEGORY MODAL PART 6
+     ========================================================= -->
+<div
+    class="category-modal"
+    id="category-modal"
+>
+    <div class="category-modal-content">
+        <div class="category-modal-header">
+            <h3
+                id="category-modal-title"
+            >
+                Thêm danh mục
+            </h3>
+            <button
+                type="button"
+                class="category-modal-close"
+                id="category-modal-close"
+            >
+                ×
+            </button>
+        </div>
+        <form
+            class="category-form"
+            id="category-form"
+        >
+            <div class="category-form-group">
+                <label for="category-name">
+                    Tên danh mục *
+                </label>
+                <input
+                    type="text"
+                    id="category-name"
+                    placeholder="VD: Đồ uống"
+                    required
+                >
+            </div>
+            <div class="category-form-group">
+                <label for="category-description">
+                    Mô tả
+                </label>
+                <textarea
+                    id="category-description"
+                    placeholder="Nhập mô tả danh mục..."
+                ></textarea>
+            </div>
+            <div class="category-form-footer">
+                <button
+                    type="button"
+                    class="category-cancel-button"
+                    id="category-cancel-button"
+                >
+                    Hủy
+                </button>
+                <button
+                    type="submit"
+                    class="category-save-button"
+                >
+                    Lưu danh mục
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- =========================================================
+     CUSTOMER MANAGEMENT - PART 7
+     ========================================================= -->
+<section class="customers-page" id="customers-page">
+    <div class="customers-page-header">
+        <div>
+            <h2>Quản lý khách hàng</h2>
+            <p>Quản lý thông tin và nhóm khách hàng</p>
+        </div>
+        <button
+            class="customer-add-button"
+            id="add-customer-button"
+        >
+            + Thêm khách hàng
+        </button>
+    </div>
+    <div class="customer-toolbar">
+        <div class="customer-search">
+            <span class="customer-search-icon">⌕</span>
+            <input
+                type="text"
+                id="customer-search-input"
+                placeholder="Tìm kiếm theo mã, tên hoặc số điện thoại..."
+            >
+        </div>
+        <select
+            class="customer-filter"
+            id="customer-status-filter"
+        >
+            <option value="all">
+                Tất cả trạng thái
+            </option>
+            <option value="active">
+                Đang hoạt động
+            </option>
+            <option value="inactive">
+                Ngừng hoạt động
+            </option>
+        </select>
+    </div>
+    <div class="customer-table-card">
+        <div class="customer-table-header">
+            <strong>
+                Danh sách khách hàng
+            </strong>
+            <span
+                class="customer-count"
+                id="customer-count"
+            >
+                0 khách hàng
+            </span>
+        </div>
+        <div class="customer-table-wrapper">
+            <table class="customer-table">
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>MÃ KHÁCH HÀNG</th>
+                        <th>TÊN KHÁCH HÀNG</th>
+                        <th>SỐ ĐIỆN THOẠI</th>
+                        <th>EMAIL</th>
+                        <th>ĐỊA CHỈ</th>
+                        <th>NHÓM KHÁCH HÀNG</th>
+                        <th>TRẠNG THÁI</th>
+                        <th>THAO TÁC</th>
+                    </tr>
+                </thead>
+                <tbody id="customer-table-body">
+                </tbody>
+            </table>
+        </div>
+        <div class="customer-pagination">
+            <span
+                class="customer-pagination-info"
+                id="customer-pagination-info"
+            >
+                Không có khách hàng
+            </span>
+            <div
+                class="customer-pagination-buttons"
+                id="customer-pagination-buttons"
+            ></div>
+        </div>
+    </div>
+</section>
+
+<!-- ========================================================= 
+     CUSTOMER MODAL PART 7 
+     ========================================================= -->
+<div
+    class="customer-modal"
+    id="customer-modal"
+>
+    <div class="customer-modal-content">
+
+        <div class="customer-modal-header">
+
+            <h3 id="customer-modal-title">
+                Thêm khách hàng
+            </h3>
+
+            <button
+                type="button"
+                class="customer-modal-close"
+                id="customer-modal-close"
+            >
+                ×
+            </button>
+
+        </div>
+
+        <form
+            class="customer-form"
+            id="customer-form"
+        >
+
+            <div class="customer-form-row">
+
+                <div class="customer-form-group">
+                    <label for="customer-code">
+                        Mã khách hàng *
+                    </label>
+
+                    <input
+                        type="text"
+                        id="customer-code"
+                        placeholder="VD: KH011"
+                        required
+                    >
+                </div>
+
+                <div class="customer-form-group">
+                    <label for="customer-name">
+                        Tên khách hàng *
+                    </label>
+
+                    <input
+                        type="text"
+                        id="customer-name"
+                        placeholder="Nhập tên khách hàng"
+                        required
+                    >
+                </div>
+
+            </div>
+
+            <div class="customer-form-row">
+
+                <div class="customer-form-group">
+                    <label for="customer-phone">
+                        Số điện thoại *
+                    </label>
+
+                    <input
+                        type="text"
+                        id="customer-phone"
+                        placeholder="VD: 0912345678"
+                        required
+                    >
+                </div>
+
+                <div class="customer-form-group">
+                    <label for="customer-email">
+                        Email
+                    </label>
+
+                    <input
+                        type="email"
+                        id="customer-email"
+                        placeholder="example@gmail.com"
+                    >
+                </div>
+
+            </div>
+
+            <div class="customer-form-group">
+
+                <label for="customer-address">
+                    Địa chỉ
+                </label>
+
+                <textarea
+                    id="customer-address"
+                    placeholder="Nhập địa chỉ khách hàng..."
+                ></textarea>
+
+            </div>
+
+            <div class="customer-form-group">
+
+                <label for="customer-group">
+                    Nhóm khách hàng
+                </label>
+
+                <select id="customer-group">
+
+                    <option value="Khách thường">
+                        Khách thường
+                    </option>
+
+                    <option value="Khách thân thiết">
+                        Khách thân thiết
+                    </option>
+
+                    <option value="Khách VIP">
+                        Khách VIP
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div class="customer-form-footer">
+
+                <button
+                    type="button"
+                    class="customer-cancel-button"
+                    id="customer-cancel-button"
+                >
+                    Hủy
+                </button>
+
+                <button
+                    type="submit"
+                    class="customer-save-button"
+                >
+                    Lưu khách hàng
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+<!-- =========================================================
+     INVOICE MANAGEMENT - PART 8
+     ========================================================= -->
+<section
+    class="sales-invoice-page"
+    id="sales-invoice-page"
+>
+    <div class="sales-invoice-page-header">
+        <h2>Lập hóa đơn bán hàng</h2>
+        <p>
+            Tạo hóa đơn và ghi nhận thanh toán cho khách hàng
+        </p>
+    </div>
+    <div class="sales-invoice-layout">
+        <!-- LEFT -->
+        <div>
+            <!-- CUSTOMER -->
+            <div class="sales-invoice-card">
+                <div class="sales-invoice-card-header">
+                    <h3>Thông tin hóa đơn</h3>
+                </div>
+                <div class="sales-invoice-card-body">
+                    <div class="invoice-code-box">
+                        <span>
+                            Mã hóa đơn
+                        </span>
+                        <strong id="invoice-code">
+                            Đang tạo...
+                        </strong>
+                    </div>
+                    <div class="invoice-customer-info">
+                        <div class="invoice-form-group">
+                            <label for="invoice-customer">
+                                Khách hàng
+                            </label>
+                            <select
+                                id="invoice-customer"
+                            >
+                                <option value="">
+                                    Khách lẻ
+                                </option>
+                            </select>
+                        </div>
+                        <div class="invoice-form-group">
+                            <label>
+                                Nhân viên bán hàng
+                            </label>
+                            <input
+                                type="text"
+                                value="Nhân viên hiện tại"
+                                disabled
+                            >
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ADD PRODUCT -->
+            <div
+                class="sales-invoice-card"
+                style="margin-top: 20px;"
+            >
+                <div class="sales-invoice-card-header">
+                    <h3>Thêm sản phẩm</h3>
+                </div>
+                <div class="sales-invoice-card-body">
+                   <div class="invoice-add-product">
+                        <div class="invoice-form-group">
+                            <label for="invoice-product">
+                                Sản phẩm
+                            </label>
+                            <select
+                                id="invoice-product"
+                            >
+                                <option value="">
+                                    Chọn sản phẩm
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="invoice-form-group">
+                            <label for="invoice-quantity">
+                                Số lượng
+                            </label>
+
+                            <input
+                                type="number"
+                                id="invoice-quantity"
+                                min="1"
+                                value="1"
+                            >
+                        </div>
+
+                        <button
+                            type="button"
+                            class="invoice-add-button"
+                            id="invoice-add-product-button"
+                        >
+                            + Thêm
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- PRODUCTS -->
+            <div
+                class="sales-invoice-card"
+                style="margin-top: 20px;"
+            >
+                <div class="sales-invoice-card-header">
+                    <h3>Chi tiết sản phẩm</h3>
+                </div>
+                <div class="invoice-product-table-wrapper">
+                    <table class="invoice-product-table">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>SẢN PHẨM</th>
+                                <th>ĐƠN GIÁ</th>
+                                <th>SỐ LƯỢNG</th>
+                                <th>THÀNH TIỀN</th>
+                                <th>THAO TÁC</th>
+                            </tr>
+                        </thead>
+                        <tbody
+                            id="invoice-product-table-body"
+                        >
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- RIGHT -->
+        <div>
+            <div class="sales-invoice-card invoice-summary-card">
+                <div class="sales-invoice-card-header">
+                    <h3>Tổng thanh toán</h3>
+                </div>
+                <div class="sales-invoice-card-body">
+                    <div class="invoice-summary-row">
+                        <span>
+                            Tạm tính
+                        </span>
+                        <strong id="invoice-total-amount">
+                            0 ₫
+                        </strong>
+                    </div>
+                    <div class="invoice-summary-row">
+                        <span>
+                            Giảm giá
+                        </span>
+                        <input
+                            type="number"
+                            id="invoice-discount"
+                            class="invoice-discount-input"
+                            min="0"
+                            value="0"
+                        >
+                    </div>
+                    <div
+                        class="invoice-summary-row invoice-summary-total"
+                    >
+                        <span>
+                            Thành tiền
+                        </span>
+                        <strong id="invoice-final-amount">
+                            0 ₫
+                        </strong>
+                    </div>
+                    <div class="invoice-payment-title">
+                        Phương thức thanh toán
+                    </div>
+                    <div class="invoice-payment-options">
+
+                        <label class="invoice-payment-option">
+
+                            <input
+                                type="radio"
+                                name="invoice-payment"
+                                value="cash"
+                                checked
+                            >
+
+                            <span>
+                                Tiền mặt
+                            </span>
+
+                        </label>
+
+                        <label class="invoice-payment-option">
+
+                            <input
+                                type="radio"
+                                name="invoice-payment"
+                                value="transfer"
+                            >
+
+                            <span>
+                                Chuyển khoản
+                            </span>
+
+                        </label>
+
+                        <label class="invoice-payment-option">
+
+                            <input
+                                type="radio"
+                                name="invoice-payment"
+                                value="other"
+                            >
+
+                            <span>
+                                Khác
+                            </span>
+
+                        </label>
+
+                    </div>
+
+                    <div class="invoice-actions">
+
+                        <button
+                            type="button"
+                            class="invoice-cancel-button"
+                            id="invoice-cancel-button"
+                        >
+                            Hủy
+                        </button>
+
+                        <button
+                            type="button"
+                            class="invoice-create-button"
+                            id="invoice-create-button"
+                        >
+                            Lập hóa đơn
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- =========================================================
+     PURCHASE MANAGEMENT - PART 9
+     ========================================================= -->
+<section
+    class="purchase-page"
+    id="purchase-page"
+>
+    <div class="purchase-page-header">
+        <div>
+            <h2>Nhập hàng</h2>
+            <p>
+                Lập phiếu nhập hàng và cập nhật tồn kho
+            </p>
+        </div>
+    </div>
+    <div class="purchase-layout">
+        <!-- CỘT TRÁI -->
+        <div>
+            <div class="purchase-card">
+                <h3>Thông tin phiếu nhập</h3>
+                <div class="purchase-form-grid">
+                    <div class="purchase-form-group">
+                        <label>
+                            Nhà cung cấp
+                        </label>
+                        <input
+                            type="text"
+                            id="purchase-supplier"
+                            placeholder="Nhập tên nhà cung cấp"
+                        >
+                    </div>
+                    <div class="purchase-form-group">
+                        <label>
+                            Ngày nhập
+                        </label>
+                        <input
+                            type="date"
+                            id="purchase-date"
+                        >
+                    </div>
+                </div>
+                <h3>
+                    Thêm sản phẩm
+                </h3>
+                <div class="purchase-product-row">
+                    <div class="purchase-form-group">
+                        <label>
+                            Sản phẩm
+                        </label>
+                        <select
+                            id="purchase-product-select"
+                        >
+                            <option value="">
+                                -- Chọn sản phẩm --
+                            </option>
+                        </select>
+                    </div>
+                    <div class="purchase-form-group">
+                        <label>
+                            Số lượng
+                        </label>
+                        <input
+                            type="number"
+                            id="purchase-product-quantity"
+                            min="1"
+                            value="1"
+                        >
+                    </div>
+
+                    <div class="purchase-form-group">
+                        <label>
+                            Giá nhập
+                        </label>
+                        <input
+                            type="number"
+                            id="purchase-product-price"
+                            min="0"
+                            placeholder="0"
+                        >
+                    </div>
+
+                    <button
+                        type="button"
+                        class="purchase-add-button"
+                        id="purchase-add-product-button"
+                    >
+                        + Thêm
+                    </button>
+
+                </div>
+
+                <div class="purchase-table-wrapper">
+                    <table class="purchase-table">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Mã SP</th>
+                                <th>Sản phẩm</th>
+                                <th>Số lượng</th>
+                                <th>Giá nhập</th>
+                                <th>Thành tiền</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+
+                        <tbody
+                            id="purchase-items-body"
+                        >
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- CỘT PHẢI -->
+        <div>
+            <div class="purchase-card">
+                <h3>Tổng hợp phiếu nhập</h3>
+                <div class="purchase-summary">
+                    <div class="purchase-summary-row">
+                        <span>
+                            Tổng số lượng
+                        </span>
+                        <strong
+                            id="purchase-item-count"
+                        >
+                            0
+                        </strong>
+                    </div>
+                    <div
+                        class="purchase-summary-row total"
+                    >
+                        <span>
+                            Tổng tiền
+                        </span>
+
+                        <strong
+                            id="purchase-total"
+                        >
+                        0 ₫
+                        </strong>
+                    </div>
+
+                </div>
+                <div class="purchase-actions">
+                    <button
+                        type="button"
+                        class="purchase-cancel-button"
+                        id="purchase-cancel-button"
+                    >
+                        Làm mới
+                    </button>
+                    <button
+                        type="button"
+                        class="purchase-create-button"
+                        id="purchase-create-button"
+                    >
+                        Tạo phiếu nhập
+                    </button>
+                </div>
+            </div>
+
+
+            <div
+                class="purchase-card"
+                style="margin-top: 20px;"
+            >
+                <h3>
+                    Tồn kho sau nhập
+                </h3>
+
+                <div class="purchase-table-wrapper">
+
+                    <table
+                        class="purchase-inventory-table"
+                    >
+                        <thead>
+                            <tr>
+                                <th>Mã SP</th>
+                                <th>Sản phẩm</th>
+                                <th>Tồn kho</th>
+                            </tr>
+                        </thead>
+
+                        <tbody
+                            id="purchase-inventory-body"
+                        >
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- =========================================================
+     INVENTORY MANAGEMENT - PART 10
+     ========================================================= -->
+
+<section
+    class="inventory-page"
+    id="inventory-page"
+>
+
+    <!-- HEADER -->
+    <div class="inventory-page-header">
+
+        <div>
+            <h2>
+                Quản lý tồn kho
+            </h2>
+
+            <p>
+                Theo dõi số lượng tồn kho và tình trạng sản phẩm
+            </p>
+        </div>
+
+        <button
+            class="inventory-refresh-button"
+            id="inventory-refresh-button"
+        >
+            ↻ Làm mới
+        </button>
+
+    </div>
+
+
+    <!-- SUMMARY -->
+    <div class="inventory-stats-grid">
+
+        <div class="inventory-stat-card">
+
+            <div class="inventory-stat-icon">
+                ▣
+            </div>
+
+            <div>
+                <span>
+                    Tổng sản phẩm
+                </span>
+
+                <strong id="inventory-total-products">
+                    0
+                </strong>
+            </div>
+
+        </div>
+
+
+        <div class="inventory-stat-card">
+
+            <div class="inventory-stat-icon">
+                ✓
+            </div>
+
+            <div>
+                <span>
+                    Đủ hàng
+                </span>
+
+                <strong id="inventory-normal-products">
+                    0
+                </strong>
+            </div>
+
+        </div>
+
+
+        <div class="inventory-stat-card">
+
+            <div class="inventory-stat-icon">
+                !
+            </div>
+
+            <div>
+                <span>
+                    Sắp hết hàng
+                </span>
+
+                <strong id="inventory-low-products">
+                    0
+                </strong>
+            </div>
+
+        </div>
+
+
+        <div class="inventory-stat-card">
+
+            <div class="inventory-stat-icon">
+                ⚠
+            </div>
+
+            <div>
+                <span>
+                    Hết hàng
+                </span>
+
+                <strong id="inventory-out-products">
+                    0
+                </strong>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- TOOLBAR -->
+    <div class="inventory-toolbar">
+
+        <div class="inventory-search">
+
+            <span class="inventory-search-icon">
+                ⌕
+            </span>
+
+            <input
+                type="text"
+                id="inventory-search-input"
+                placeholder="Tìm kiếm theo mã hoặc tên sản phẩm..."
+            >
+
+        </div>
+
+
+        <select
+            class="inventory-filter"
+            id="inventory-status-filter"
+        >
+
+            <option value="all">
+                Tất cả trạng thái
+            </option>
+
+            <option value="normal">
+                Đủ hàng
+            </option>
+
+            <option value="low">
+                Sắp hết hàng
+            </option>
+
+            <option value="out">
+                Hết hàng
+            </option>
+
+        </select>
+
+
+        <select
+            class="inventory-filter"
+            id="inventory-category-filter"
+        >
+
+            <option value="all">
+                Tất cả danh mục
+            </option>
+
+        </select>
+
+    </div>
+
+
+    <!-- TABLE -->
+    <div class="inventory-table-card">
+
+        <div class="inventory-table-header">
+
+            <strong>
+                Danh sách tồn kho
+            </strong>
+
+            <span
+                class="inventory-count"
+                id="inventory-count"
+            >
+                0 sản phẩm
+            </span>
+
+        </div>
+
+
+        <div class="inventory-table-wrapper">
+
+            <table class="inventory-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            STT
+                        </th>
+
+                        <th>
+                            MÃ SP
+                        </th>
+
+                        <th>
+                            TÊN SẢN PHẨM
+                        </th>
+
+                        <th>
+                            DANH MỤC
+                        </th>
+
+                        <th>
+                            ĐƠN VỊ
+                        </th>
+
+                        <th>
+                            TỒN KHO
+                        </th>
+
+                        <th>
+                            TỒN TỐI THIỂU
+                        </th>
+
+                        <th>
+                            TRẠNG THÁI
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody
+                    id="inventory-table-body"
+                >
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <!-- PAGINATION -->
+        <div class="inventory-pagination">
+
+            <span
+                class="inventory-pagination-info"
+                id="inventory-pagination-info"
+            >
+                Không có sản phẩm
+            </span>
+
+            <div
+                class="inventory-pagination-buttons"
+                id="inventory-pagination-buttons"
+            >
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+<!-- =========================================================
+     HISTORY MANAGEMENT PHẦN THÊM
+     ========================================================= -->
+
+<section
+    class="history-page"
+    id="history-page"
+>
+
+    <div class="history-page-header">
+
+        <div>
+            <h2>
+                Lịch sử hoạt động
+            </h2>
+
+            <p>
+                Theo dõi các hoạt động phát sinh trong hệ thống
+            </p>
+        </div>
+
+        <button
+            type="button"
+            class="history-refresh-button"
+            id="history-refresh-button"
+        >
+            ↻ Làm mới
+        </button>
+
+    </div>
+
+
+    <!-- =========================
+         TOOLBAR
+         ========================= -->
+
+    <div class="history-toolbar">
+
+        <div class="history-search">
+
+            <span class="history-search-icon">
+                ⌕
+            </span>
+
+            <input
+                type="text"
+                id="history-search-input"
+                placeholder="Tìm kiếm lịch sử..."
+            >
+
+        </div>
+
+
+        <select
+            class="history-filter"
+            id="history-action-filter"
+        >
+
+            <option value="all">
+                Tất cả hoạt động
+            </option>
+
+            <option value="add">
+                Thêm
+            </option>
+
+            <option value="update">
+                Cập nhật
+            </option>
+
+            <option value="delete">
+                Xóa
+            </option>
+
+            <option value="create">
+                Tạo
+            </option>
+
+            <option value="import">
+                Nhập hàng
+            </option>
+
+        </select>
+
+
+        <select
+            class="history-filter"
+            id="history-object-filter"
+        >
+
+            <option value="all">
+                Tất cả đối tượng
+            </option>
+
+            <option value="Sản phẩm">
+                Sản phẩm
+            </option>
+
+            <option value="Danh mục">
+                Danh mục
+            </option>
+
+            <option value="Khách hàng">
+                Khách hàng
+            </option>
+
+            <option value="Hóa đơn">
+                Hóa đơn
+            </option>
+
+            <option value="Phiếu nhập">
+                Phiếu nhập
+            </option>
+
+        </select>
+
+    </div>
+
+
+    <!-- =========================
+         HISTORY TABLE
+         ========================= -->
+
+    <div class="history-table-card">
+
+        <div class="history-table-wrapper">
+
+            <table class="history-table">
+
+                <thead>
+
+                    <tr>
+                        <th>STT</th>
+                        <th>Thời gian</th>
+                        <th>Người thực hiện</th>
+                        <th>Hoạt động</th>
+                        <th>Đối tượng</th>
+                        <th>Mã</th>
+                        <th>Chi tiết</th>
+                    </tr>
+
+                </thead>
+
+                <tbody
+                    id="history-table-body"
+                >
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <div class="history-table-footer">
+
+            <span
+                class="history-count"
+                id="history-count"
+            >
+                Hiển thị 0 hoạt động
+            </span>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- =========================================================
+     STATISTICS MANAGEMENT PHẦN 11
+     ========================================================= -->
+<section class="statistics-page" id="statistics-page">
+    <div class="statistics-page-header">
+        <div>
+            <h2>
+                Thống kê doanh thu
+            </h2>
+            <p>
+                Theo dõi doanh thu và tình hình bán hàng
+            </p>
+        </div>
+    </div>
+
+
+    <!-- BỘ LỌC -->
+
+    <div class="statistics-filter">
+        <div class="statistics-filter-group">
+
+            <label>
+                Từ ngày
+            </label>
+            <input
+                type="date"
+                id="statistics-from-date"
+                value="2026-09-01"
+            >
+        </div>
+
+
+        <div class="statistics-filter-group">
+            <label>Đến ngày</label>
+            <input type="date" id="statistics-to-date" value="2026-09-07">
+        </div>
+
+        <button
+            type="button"
+            class="statistics-filter-button"
+            id="statistics-filter-button"
+        >
+            Thống kê
+        </button>
+    </div>
+
+
+    <!-- KPI -->
+    <div class="statistics-kpi-grid">
+        <div class="statistics-kpi-card">
+            <div class="statistics-kpi-title">
+                Tổng doanh thu
+            </div>
+            <div
+                class="statistics-kpi-value"
+                id="statistics-total-revenue"
+            >
+                0 ₫
+            </div>
+            <div class="statistics-kpi-note">
+                Trong khoảng thời gian đã chọn
+            </div>
+        </div>
+
+
+        <div class="statistics-kpi-card">
+            <div class="statistics-kpi-title">
+                Số hóa đơn
+            </div>
+            <div
+                class="statistics-kpi-value"
+                id="statistics-total-invoices"
+            >
+                0
+            </div>
+            <div class="statistics-kpi-note">
+                Hóa đơn bán hàng
+            </div>
+        </div>
+
+
+        <div class="statistics-kpi-card">
+            <div class="statistics-kpi-title">
+                Giá trị trung bình
+            </div>
+            <div
+                class="statistics-kpi-value"
+                id="statistics-average-revenue"
+            >
+                0 ₫
+            </div>
+            <div class="statistics-kpi-note">
+                Doanh thu trung bình / hóa đơn
+            </div>
+        </div>
+        <div class="statistics-kpi-card">
+            <div class="statistics-kpi-title">
+                Ngày doanh thu cao nhất
+            </div>
+            <div
+                class="statistics-kpi-value"
+                id="statistics-highest-revenue"
+            >
+                0 ₫
+            </div>
+            <div class="statistics-kpi-note">
+                Doanh thu trong ngày cao nhất
+            </div>
+        </div>
+    </div>
+
+
+    <!-- CHART + TOP PRODUCTS -->
+    <div class="statistics-content-grid">
+        <div class="statistics-card">
+            <div class="statistics-card-header">
+                <h3>
+                    Biểu đồ doanh thu
+                </h3>
+            </div>
+            <div class="statistics-card-body">
+                <div
+                    class="statistics-chart"
+                    id="statistics-revenue-chart"
+                ></div>
+            </div>
+        </div>
+        <div class="statistics-card">
+            <div class="statistics-card-header">
+                <h3>
+                    Sản phẩm doanh thu cao
+                </h3>
+            </div>
+            <div class="statistics-card-body">
+                <div
+                    class="statistics-product-list"
+                    id="statistics-top-products"
+                ></div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- BẢNG DOANH THU -->
+    <div class="statistics-card">
+        <div class="statistics-card-header">
+            <h3>
+                Chi tiết doanh thu theo ngày
+            </h3>
+        </div>
+
+        <div class="statistics-card-body">
+            <table class="statistics-table">
+             <thead>
+                    <tr>
+                        <th>
+                            Ngày
+                        </th>
+
+                        <th>
+                            Số hóa đơn
+                        </th>
+
+                        <th>
+                            Doanh thu
+                        </th>
+
+                        <th>
+                            Trung bình / hóa đơn
+                        </th>
+                    </tr>
+                </thead>
+                <tbody
+                    id="statistics-daily-table-body"
+                >
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- =========================================================
+     REPORTS MANAGEMENT PHẦN 12
+     ========================================================= -->
+<section
+    class="reports-page"
+    id="reports-page"
+>
+    <div class="reports-page-header">
+
+        <div>
+            <h2>
+                Báo cáo
+            </h2>
+
+            <p>
+                Tổng hợp tình hình kinh doanh và tồn kho
+            </p>
+        </div>
+
+    </div>
+
+
+    <!-- FILTER -->
+    <div class="reports-filter">
+        <div class="reports-filter-group">
+            <label>
+                Từ ngày
+            </label>
+            <input
+                type="date"
+                id="reports-from-date"
+                value="2026-09-01"
+            >
+
+        </div>
+
+
+        <div class="reports-filter-group">
+            <label>
+                Đến ngày
+            </label>
+            <input
+                type="date"
+                id="reports-to-date"
+                value="2026-09-07"
+            >
+        </div>
+
+
+        <div class="reports-filter-group">
+
+            <label>
+                Loại báo cáo
+            </label>
+
+            <select id="reports-type">
+
+                <option value="all">
+                    Tổng hợp
+                </option>
+
+                <option value="revenue">
+                    Doanh thu
+                </option>
+
+                <option value="product">
+                    Sản phẩm bán chạy
+                </option>
+
+                <option value="inventory">
+                    Tồn kho
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <button
+            type="button"
+            class="reports-filter-button"
+            id="reports-filter-button"
+        >
+            Xem báo cáo
+        </button>
+    </div>
+
+
+    <!-- ACTIONS -->
+    <div class="reports-actions">
+        <button
+            type="button"
+            class="reports-action-button"
+            onclick="exportReport()"
+        >
+            Xuất báo cáo
+        </button>
+    </div>
+
+
+    <!-- SUMMARY -->
+    <div class="reports-summary-grid">
+        <div class="reports-summary-card">
+            <div class="reports-summary-title">
+                Tổng doanh thu
+            </div>
+            <div
+                class="reports-summary-value"
+                id="report-total-revenue"
+            >
+                0 ₫
+            </div>
+        </div>
+
+        <div class="reports-summary-card">
+            <div class="reports-summary-title">
+                Tổng số hóa đơn
+            </div>
+            <div
+                class="reports-summary-value"
+                id="report-total-invoices"
+            >
+                0
+            </div>
+        </div>
+
+
+        <div class="reports-summary-card">
+
+            <div class="reports-summary-title">
+                Số sản phẩm đã bán
+            </div>
+
+            <div
+                class="reports-summary-value"
+                id="report-products-sold"
+            >
+                0
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- REVENUE -->
+    <div class="reports-card">
+        <div class="reports-card-header">
+            <h3>
+                Báo cáo doanh thu
+            </h3>
+        </div>
+        <div class="reports-card-body">
+            <table class="reports-table">
+
+                <thead>
+
+                    <tr>
+                        <th>
+                            Ngày
+                        </th>
+
+                        <th>
+                            Số hóa đơn
+                        </th>
+
+                        <th>
+                            Doanh thu
+                        </th>
+
+                        <th>
+                            Trung bình / hóa đơn
+                        </th>
+                    </tr>
+
+                </thead>
+
+                <tbody
+                    id="report-revenue-table-body"
+                >
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+    <!-- PRODUCTS -->
+    <div class="reports-card">
+        <div class="reports-card-header">
+            <h3>
+                Báo cáo sản phẩm bán chạy
+           </h3>
+        </div>
+
+        <div class="reports-card-body">
+
+            <table class="reports-table">
+
+                <thead>
+
+                    <tr>
+                        <th>
+                            Mã sản phẩm
+                        </th>
+
+                        <th>
+                            Tên sản phẩm
+                        </th>
+
+                        <th>
+                            Số lượng bán
+                        </th>
+
+                        <th>
+                            Doanh thu
+                        </th>
+                    </tr>
+
+                </thead>
+
+                <tbody
+                    id="report-product-table-body"
+                >
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- INVENTORY -->
+    <div class="reports-card">
+        <div class="reports-card-header">
+            <h3>
+                Báo cáo tồn kho
+            </h3>
+        </div>
+        <div class="reports-card-body">
+            <table class="reports-table">
+                <thead>
+                    <tr>
+                        <th>
+                            Mã sản phẩm
+                        </th>
+
+                        <th>
+                            Tên sản phẩm
+                        </th>
+
+                        <th>
+                            Tồn kho
+                        </th>
+
+                        <th>
+                            Tồn tối thiểu
+                        </th>
+
+                        <th>
+                            Trạng thái
+                        </th>
+                    </tr>
+
+                </thead>
+                <tbody
+                    id="report-inventory-table-body"
+                >
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- =========================================================
+     USER MANAGEMENT - PART 13
+     ========================================================= -->
+
+<section
+    class="users-page"
+    id="users-page"
+>
+
+    <div class="users-page-header">
+
+        <div>
+            <h2>
+                Người dùng
+            </h2>
+
+            <p>
+                Quản lý tài khoản và người dùng trong hệ thống
+            </p>
+        </div>
+
+    </div>
+
+
+    <!-- TOOLBAR -->
+
+    <div class="users-toolbar">
+
+        <div class="users-search-group">
+
+            <label for="users-search">
+                Tìm kiếm
+            </label>
+
+            <input
+                type="text"
+                id="users-search"
+                placeholder="Tìm theo tên, tài khoản, email, SĐT..."
+            >
+
+        </div>
+
+
+        <div class="users-filter-group">
+
+            <label for="users-role-filter">
+                Vai trò
+            </label>
+
+            <select id="users-role-filter">
+
+                <option value="all">
+                    Tất cả vai trò
+                </option>
+
+                <option value="owner">
+                    Chủ cửa hàng
+                </option>
+
+                <option value="staff">
+                    Nhân viên
+                </option>
+
+                <option value="customer">
+                    Khách hàng
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div class="users-filter-group">
+
+            <label for="users-status-filter">
+                Trạng thái
+            </label>
+
+            <select id="users-status-filter">
+
+                <option value="all">
+                    Tất cả trạng thái
+                </option>
+
+                <option value="active">
+                    Hoạt động
+                </option>
+
+                <option value="inactive">
+                    Đã khóa
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <button
+            type="button"
+            class="users-add-button"
+            id="users-add-button"
+        >
+            + Thêm tài khoản
+        </button>
+    </div>
+
+
+    <!-- USER TABLE -->
+
+    <div class="users-card">
+
+        <div class="users-card-header">
+
+            <h3>
+                Danh sách tài khoản
+            </h3>
+
+            <span
+                class="users-count"
+                id="users-count"
+            >
+                0 tài khoản
+            </span>
+
+        </div>
+
+
+        <div class="users-table-wrapper">
+
+            <table class="users-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            ID
+                        </th>
+
+                        <th>
+                            Họ tên
+                        </th>
+
+                        <th>
+                            Tài khoản
+                        </th>
+
+                        <th>
+                            Vai trò
+                        </th>
+
+                        <th>
+                            Số điện thoại
+                        </th>
+
+                        <th>
+                            Trạng thái
+                        </th>
+
+                        <th>
+                            Thao tác
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody
+                    id="users-table-body"
+                >
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     USER MODAL - PART 13
+     ========================================================= -->
+
+<div
+    class="user-modal-overlay"
+    id="user-modal-overlay"
+>
+
+    <div class="user-modal">
+
+        <div class="user-modal-header">
+
+            <h3 id="user-modal-title">
+                Thêm tài khoản
+            </h3>
+
+            <button
+                type="button"
+                class="user-modal-close"
+                id="user-modal-close"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <form id="user-form">
+
+            <div class="user-modal-body">
+
+                <div class="user-form-group">
+
+                    <label for="user-full-name">
+                        Họ và tên
+                    </label>
+
+                    <input
+                        type="text"
+                        id="user-full-name"
+                        placeholder="Nhập họ và tên"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="user-form-group">
+
+                    <label for="user-username">
+                        Tên tài khoản
+                    </label>
+
+                    <input
+                        type="text"
+                        id="user-username"
+                        placeholder="Ví dụ: staff01"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="user-form-group">
+
+                    <label for="user-password">
+                        Mật khẩu
+                    </label>
+
+                    <input
+                        type="password"
+                        id="user-password"
+                        placeholder="Nhập mật khẩu"
+                    >
+
+                    <div class="user-form-note">
+                        Khi sửa tài khoản, để trống nếu không muốn đổi mật khẩu.
+                    </div>
+
+                </div>
+
+
+                <div class="user-form-group">
+
+                    <label for="user-phone">
+                        Số điện thoại
+                    </label>
+
+                    <input
+                        type="tel"
+                        id="user-phone"
+                        placeholder="Nhập số điện thoại"
+                    >
+
+                </div>
+
+
+                <div class="user-form-group">
+
+                    <label for="user-email">
+                        Email
+                    </label>
+
+                    <input
+                        type="email"
+                        id="user-email"
+                        placeholder="Nhập email"
+                    >
+
+                </div>
+
+
+                <div class="user-form-group">
+
+                    <label for="user-role">
+                        Vai trò
+                    </label>
+
+                    <select id="user-role">
+
+                        <option value="owner">
+                            Chủ cửa hàng
+                        </option>
+
+                        <option value="staff">
+                            Nhân viên
+                        </option>
+
+                        <option value="customer">
+                            Khách hàng
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="user-form-group">
+
+                    <label for="user-status">
+                        Trạng thái
+                    </label>
+
+                    <select id="user-status">
+
+                        <option value="active">
+                            Hoạt động
+                        </option>
+
+                        <option value="inactive">
+                            Đã khóa
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+
+            <div class="user-modal-footer">
+
+                <button
+                    type="button"
+                    class="user-modal-cancel"
+                    id="user-modal-cancel"
+                >
+                    Hủy
+                </button>
+
+                <button
+                    type="submit"
+                    class="user-modal-save"
+                >
+                    Lưu tài khoản
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<!-- =========================================================
+     PERMISSIONS MANAGEMENT - PART 14
+     ========================================================= -->
+<section
+    class="permissions-page"
+    id="permissions-page"
+>
+
+    <div class="permissions-page-header">
+
+        <h2>Phân quyền</h2>
+
+        <p>
+            Quản lý quyền truy cập và chức năng theo vai trò
+        </p>
+
+    </div>
+
+
+    <!-- KHÔNG CÓ QUYỀN -->
+
+    <div
+        class="permission-denied"
+        id="permission-denied"
+        style="display: none;"
+    >
+
+        <div class="permission-denied-icon">
+            🔒
+        </div>
+
+        <h3>
+            Bạn không có quyền truy cập chức năng này
+        </h3>
+
+        <p>
+            Chỉ Quản trị viên mới được phép quản lý phân quyền.
+        </p>
+
+    </div>
+
+
+    <!-- NỘI DUNG PHÂN QUYỀN -->
+
+    <div
+        class="permission-content"
+        id="permission-content"
+    >
+
+        <!-- Tài khoản hiện tại -->
+
+        <div class="permission-account-card">
+
+            <h3>
+                Tài khoản hiện tại
+            </h3>
+
+            <div class="permission-account-info">
+
+                <div class="permission-info-item">
+
+                    <span class="permission-info-label">
+                        Họ tên
+                    </span>
+
+                    <span
+                        class="permission-info-value"
+                        id="permission-current-fullname"
+                    >
+                    </span>
+
+                </div>
+
+
+                <div class="permission-info-item">
+
+                    <span class="permission-info-label">
+                        Tài khoản
+                    </span>
+
+                    <span
+                        class="permission-info-value"
+                        id="permission-current-username"
+                    >
+                    </span>
+
+                </div>
+
+
+                <div class="permission-info-item">
+
+                    <span class="permission-info-label">
+                        Vai trò
+                    </span>
+
+                    <span
+                        class="permission-info-value"
+                        id="permission-current-role"
+                    >
+                    </span>
+
+                </div>
+
+
+                <div class="permission-info-item">
+
+                    <span class="permission-info-label">
+                        Trạng thái
+                    </span>
+
+                    <span
+                        class="permission-info-value"
+                        id="permission-current-status"
+                    >
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Chọn vai trò -->
+
+        <div class="permission-role-card">
+
+            <div class="permission-role-header">
+
+                <h3>
+                    Quyền theo vai trò
+                </h3>
+
+                <select
+                    class="permission-role-select"
+                    id="permission-role-select"
+                >
+
+                    <option value="ADMIN">
+                        Quản trị viên
+                    </option>
+
+                    <option value="OWNER">
+                        Chủ cửa hàng
+                    </option>
+
+                    <option value="SALES">
+                        Nhân viên bán hàng
+                    </option>
+
+                    <option value="CUSTOMER">
+                        Khách hàng
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div
+                class="permission-role-description"
+                id="permission-role-description"
+            >
+            </div>
+
+
+            <!-- Bảng quyền -->
+
+            <div class="permission-table-wrapper">
+
+                <table class="permission-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Chức năng
+                            </th>
+
+                            <th>
+                                Được phép
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody
+                        id="permission-table-body"
+                    >
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <div class="permission-actions">
+
+                <button
+                    type="button"
+                    class="permission-reset-button"
+                    id="permission-reset-button"
+                >
+                    Làm mới
+                </button>
+
+                <button
+                    type="button"
+                    class="permission-save-button"
+                    id="permission-save-button"
+                >
+                    Lưu thay đổi
+                </button>
+
+            </div>
+
+
+            <div class="permission-note">
+
+                <strong>Lưu ý:</strong>
+                Quyền truy cập được xác định dựa trên
+                tài khoản, trạng thái tài khoản và vai trò.
+                Tài khoản bị khóa sẽ không được phép sử dụng
+                các chức năng của hệ thống.
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- =========================================================
+     AI MANAGEMENT - PART 15
+     ========================================================= -->
+
+<section
+    class="ai-page"
+    id="ai-product-page"
+>
+
+    <div class="ai-page-header">
+
+        <h2>
+            AI tư vấn sản phẩm
+        </h2>
+
+        <p>
+            Phân tích nhu cầu và đề xuất sản phẩm phù hợp
+        </p>
+
+    </div>
+
+
+    <div class="ai-advice-layout">
+
+
+        <!-- =========================
+             NHẬP NHU CẦU
+        ========================== -->
+
+        <div class="ai-input-card">
+
+            <h3>
+                Nhu cầu khách hàng
+            </h3>
+
+            <p class="ai-input-description">
+                Nhập nhu cầu của khách hàng để hệ thống
+                phân tích và đề xuất sản phẩm phù hợp.
+            </p>
+
+
+            <label
+                class="ai-input-label"
+                for="ai-product-need"
+            >
+                Mô tả nhu cầu
+            </label>
+
+
+            <textarea
+                id="ai-product-need"
+                class="ai-need-input"
+                placeholder="Ví dụ: Tôi cần một chiếc quạt giá dưới 600 nghìn cho phòng nhỏ..."
+            ></textarea>
+
+
+            <div class="ai-input-example">
+
+                Có thể nhập nhu cầu về loại sản phẩm,
+                mục đích sử dụng hoặc ngân sách.
+
+            </div>
+
+
+            <button
+                type="button"
+                class="ai-advice-button"
+                id="ai-advice-button"
+            >
+                🤖 Tư vấn sản phẩm
+            </button>
+
+
+            <button
+                type="button"
+                class="permission-reset-button"
+                id="ai-reset-button"
+                style="width: 100%; margin-top: 10px;"
+            >
+                Làm mới
+            </button>
+
+        </div>
+
+
+        <!-- =========================
+             KẾT QUẢ
+        ========================== -->
+
+        <div class="ai-result-card">
+
+            <div class="ai-result-header">
+
+                <h3>
+                    Kết quả tư vấn
+                </h3>
+
+                <span
+                    class="ai-result-count"
+                    id="ai-result-count"
+                >
+                    0 sản phẩm
+                </span>
+
+            </div>
+
+
+            <div
+                id="ai-results"
+            >
+            </div>
+
+
+            <div class="ai-notice">
+
+                <strong>Lưu ý:</strong>
+                Kết quả tư vấn được tạo dựa trên
+                nhu cầu khách hàng, thông tin sản phẩm
+                và tình trạng tồn kho của hệ thống.
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+        </main>
+    </div>
+
+
+    <!-- JS -->
+    <script src="./js/api.js"></script>
+    <script src="./js/products.js"></script>
+    <script src="./js/categories.js"></script>
+    <script src="./js/customers.js"></script>
+    <script src="./js/invoices.js"></script>
+    <script src="./js/purchases.js"></script>
+    <script src="./js/inventory.js"></script>
+    <script src="./js/history.js"></script>
+    <script src="./js/statistics.js"></script>
+    <script src="./js/reports.js"></script>
+    <script src="./js/users.js"></script>
+    <script src="./js/permissions.js"></script>
+    <script src="./js/auth.js"></script>
+
+    <script>
+
+        /*
+         * ==========================================
+         * MOCK DATA
+         * ==========================================
+         *
+         * Chưa kết nối database thật.
+         * Database sẽ được tích hợp ở phần cuối dự án.
+         */
+
+        const dashboardData = {
+
+            todayRevenue: 12850000,
+
+            todayInvoices: 37,
+
+            totalProducts: 286,
+
+            totalCustomers: 542,
+
+            revenueChange: 8.6,
+
+            weekRevenue: 68450000,
+
+            revenue: [
+                7200000,
+                8400000,
+                6800000,
+                11200000,
+                9500000,
+                12850000,
+                12550000
+            ],
+
+            revenueLabels: [
+                "T2",
+                "T3",
+                "T4",
+                "T5",
+                "T6",
+                "T7",
+                "CN"
+            ],
+
+            topProducts: [
+                {
+                    name: "Nước suối Aquafina 500ml",
+                    quantity: 125
+                },
+                {
+                    name: "Nước ngọt Coca Cola",
+                    quantity: 98
+                },
+                {
+                    name: "Bột giặt OMO 3kg",
+                    quantity: 76
+                },
+                {
+                    name: "Quạt điện Senko",
+                    quantity: 42
+                },
+                {
+                    name: "Nồi cơm điện Sharp",
+                    quantity: 31
+                }
+            ],
+
+            recentInvoices: [
+                {
+                    code: "HD000125",
+                    customer: "Nguyễn Văn An",
+                    amount: 1250000,
+                    status: "Đã thanh toán"
+                },
+                {
+                    code: "HD000124",
+                    customer: "Trần Thị Lan",
+                    amount: 840000,
+                    status: "Đã thanh toán"
+                },
+                {
+                    code: "HD000123",
+                    customer: "Khách lẻ",
+                    amount: 325000,
+                    status: "Đã thanh toán"
+                },
+                {
+                    code: "HD000122",
+                    customer: "Phạm Văn Minh",
+                    amount: 2150000,
+                    status: "Đã thanh toán"
+                }
+            ],
+
+            inventoryWarnings: [
+                {
+                    name: "Nước suối Aquafina 500ml",
+                    quantity: 8,
+                    minimum: 20
+                },
+                {
+                    name: "Bột giặt OMO 3kg",
+                    quantity: 5,
+                    minimum: 15
+                },
+                {
+                    name: "Quạt điện Senko",
+                    quantity: 3,
+                    minimum: 10
+                },
+                {
+                    name: "Giấy vệ sinh Pulppy",
+                    quantity: 7,
+                    minimum: 20
+                }
+            ]
+        };
+
+
+        /*
+         * ==========================================
+         * FORMAT MONEY
+         * ==========================================
+         */
+
+        function formatMoney(value) {
+
+            return new Intl.NumberFormat(
+                "vi-VN"
+            ).format(value) + " ₫";
+
+        }
+
+
+        /*
+         * ==========================================
+         * LOAD KPI
+         * ==========================================
+         */
+
+        function loadDashboardStats() {
+
+            document.getElementById(
+                "today-revenue"
+            ).textContent =
+                formatMoney(
+                    dashboardData.todayRevenue
+                );
+
+
+            document.getElementById(
+                "today-invoices"
+            ).textContent =
+                dashboardData.todayInvoices;
+
+
+            document.getElementById(
+                "total-products"
+            ).textContent =
+                dashboardData.totalProducts;
+
+
+            document.getElementById(
+                "total-customers"
+            ).textContent =
+                dashboardData.totalCustomers;
+
+
+            document.getElementById(
+                "revenue-change"
+            ).textContent =
+                "+" +
+                dashboardData.revenueChange +
+                "%";
+
+
+            document.getElementById(
+                "week-revenue"
+            ).textContent =
+                formatMoney(
+                    dashboardData.weekRevenue
+                );
+
+        }
+
+
+        /*
+         * ==========================================
+         * REVENUE CHART
+         * ==========================================
+         */
+
+        function loadRevenueChart() {
+
+            const chart =
+                document.getElementById(
+                    "revenue-chart"
+                );
+
+            chart.innerHTML = "";
+
+            const max =
+                Math.max(
+                    ...dashboardData.revenue
+                );
+
+
+            dashboardData.revenue.forEach(
+                (value, index) => {
+
+                    const column =
+                        document.createElement(
+                            "div"
+                        );
+
+                    column.className =
+                        "chart-column";
+
+
+                    const height =
+                        (value / max) * 100;
+
+
+                    const bar =
+                        document.createElement(
+                            "div"
+                        );
+
+                    bar.className =
+                        "chart-bar";
+
+                    bar.style.height =
+                        height + "%";
+
+
+                    const label =
+                        document.createElement(
+                            "span"
+                        );
+
+                    label.className =
+                        "chart-label";
+
+                    label.textContent =
+                        dashboardData.revenueLabels[
+                            index
+                        ];
+
+
+                    const valueLabel =
+                        document.createElement(
+                            "span"
+                        );
+
+                    valueLabel.className =
+                        "chart-value";
+
+                    valueLabel.textContent =
+                        Math.round(
+                            value / 1000000
+                        ) + "tr";
+
+
+                    column.appendChild(
+                        valueLabel
+                    );
+
+                    column.appendChild(
+                        bar
+                    );
+
+                    column.appendChild(
+                        label
+                    );
+
+                    chart.appendChild(
+                        column
+                    );
+
+                }
+            );
+
+        }
+
+
+        /*
+         * ==========================================
+         * TOP PRODUCTS
+         * ==========================================
+         */
+
+        function loadTopProducts() {
+
+            const container =
+                document.getElementById(
+                    "top-products"
+                );
+
+            container.innerHTML = "";
+
+
+            dashboardData.topProducts.forEach(
+                (product, index) => {
+
+                    const item =
+                        document.createElement(
+                            "div"
+                        );
+
+                    item.className =
+                        "product-item";
+
+
+                    item.innerHTML = `
+
+                        <div class="product-rank">
+                            ${index + 1}
+                        </div>
+
+                        <div class="product-info">
+                            <strong>
+                                ${product.name}
+                            </strong>
+
+                            <span>
+                                Đã bán ${product.quantity}
+                            </span>
+                        </div>
+
+                        <div class="product-quantity">
+                            ${product.quantity}
+                        </div>
+
+                    `;
+
+
+                    container.appendChild(item);
+
+                }
+            );
+
+        }
+
+
+        /*
+         * ==========================================
+         * RECENT INVOICES
+         * ==========================================
+         */
+
+        function loadRecentInvoices() {
+
+            const container =
+                document.getElementById(
+                    "recent-invoices"
+                );
+
+            container.innerHTML = "";
+
+
+            dashboardData.recentInvoices.forEach(
+                invoice => {
+
+                    const row =
+                        document.createElement(
+                            "tr"
+                        );
+
+
+                    row.innerHTML = `
+
+                        <td>
+                            <strong>
+                                ${invoice.code}
+                            </strong>
+                        </td>
+
+                        <td>
+                            ${invoice.customer}
+                        </td>
+
+                        <td>
+                            ${formatMoney(
+                                invoice.amount
+                            )}
+                        </td>
+
+                        <td>
+                            <span class="status-badge">
+                                ${invoice.status}
+                            </span>
+                        </td>
+
+                    `;
+
+
+                    container.appendChild(row);
+
+                }
+            );
+
+        }
+
+
+        /*
+         * ==========================================
+         * INVENTORY WARNINGS
+         * ==========================================
+         */
+
+        function loadInventoryWarnings() {
+
+            const container =
+                document.getElementById(
+                    "inventory-warning-list"
+                );
+
+            container.innerHTML = "";
+
+
+            dashboardData.inventoryWarnings.forEach(
+                product => {
+
+                    const item =
+                        document.createElement(
+                            "div"
+                        );
+
+                    item.className =
+                        "inventory-warning";
+
+
+                    item.innerHTML = `
+
+                        <div class="warning-icon">
+                            !
+                        </div>
+
+                        <div class="warning-info">
+
+                            <strong>
+                                ${product.name}
+                            </strong>
+
+                            <span>
+                                Tồn: ${product.quantity}
+                                / Tối thiểu:
+                                ${product.minimum}
+                            </span>
+
+                        </div>
+
+                    `;
+
+
+                    container.appendChild(item);
+
+                }
+            );
+
+        }
+
+
+        /*
+         * ==========================================
+         * SYSTEM HEALTH
+         * ==========================================
+         */
+
+        async function loadSystemStatus() {
+
+            const dot =
+                document.getElementById(
+                    "system-status-dot"
+                );
+
+            const text =
+                document.getElementById(
+                    "system-status-text"
+                );
+
+
+            try {
+
+                const result =
+                    await checkSystemHealth();
+
+
+                if (
+                    result.backend &&
+                    result.database
+                ) {
+
+                    dot.classList.add(
+                        "online"
+                    );
+
+                    text.textContent =
+                        "Hệ thống hoạt động";
+
+                } else {
+
+                    dot.classList.add(
+                        "warning"
+                    );
+
+                    text.textContent =
+                        "Kiểm tra hệ thống";
+
+                }
+
+            } catch (error) {
+
+                dot.classList.add(
+                    "offline"
+                );
+
+                text.textContent =
+                    "Backend offline";
+
+            }
+
+        }
+
+
+        /*
+         * ==========================================
+         * MENU
+         * ==========================================
+         */
+
+        function setupMenu() {
+
+            const menuItems =
+            document.querySelectorAll(
+            ".menu-item"
+            );
+
+            menuItems.forEach(item => {
+
+            item.addEventListener(
+            "click",
+            function () {
+                menuItems.forEach(menu => {
+                    menu.classList.remove(
+                        "active"
+                    );
+                });
+                this.classList.add(
+                    "active"
+                );
+                const page =
+                    this.dataset.page;
+
+
+                // =========================
+                // DASHBOARD
+                // =========================
+
+                if (page === "dashboard") {
+                    showDashboardPage();
+                    return;
+                }
+
+                if (page === "products") {
+                    showProductPage();
+                    return;
+                }
+                if (page === "categories") {
+                    showCategoryPage();
+                    return;
+                }
+                if (page === "customers") {
+                    showCustomerPage();
+                    return;
+                }
+                if (page === "invoices") {
+                    showSalesInvoicePage();
+                    return;
+                }
+                if (page === "purchases") {
+                    showPurchasePage();
+                    return;
+                }
+                if (page === "inventory") {
+                    showInventoryPage();
+                    return;
+                }
+                if (page === "history") {
+                    showHistoryPage();
+                    return;
+                }
+                if (page === "statistics") {
+                    showStatisticsPage();
+                    return;
+                }
+                if (page === "reports") {
+                    showReportsPage();
+                    return;
+                }
+                if (page === "users") {
+                    showUsersPage();
+                    return;
+                }
+                if (page === "permissions") {
+                    showPermissionPage();
+                    return;
+                }
+                if (page === "ai-product") {
+                    showAIProductPage();
+                    return;
+                }
+
+
+                // =========================
+                // CÁC MODULE CHƯA LÀM
+                // =========================
+                console.log(
+                    "Chức năng sẽ được triển khai:",
+                    this.innerText.trim()
+                );
+                }
+             );
+            });
+        }
+
+
+        /*
+         * ==========================================
+         * LOGOUT
+         * ==========================================
+         */
+
+        function setupLogout() {
+            document
+                .getElementById(
+                    "logout-button"
+                )
+                .addEventListener(
+                    "click",
+                    function () {
+                        alert(
+                            "Chức năng đăng xuất sẽ sử dụng hệ thống xác thực ở Part 3."
+                        );
+                    }
+                );
+        }
+
+
+        /*
+         * ==========================================
+         * INIT DASHBOARD
+         * ==========================================
+         */
+
+        function initDashboard() {
+            loadDashboardStats();
+            loadRevenueChart();
+            loadTopProducts();
+            loadRecentInvoices();
+            loadInventoryWarnings();
+            loadSystemStatus();
+            setupMenu();
+            setupLogout();
+            setupProductModal();
+        }
+
+
+
+
+
+
+
+
+
+        /*
+ * ============================================================
+ * PRODUCT PAGE
+ * ============================================================
+ */
+
+function showProductPage() {
+    const dashboard =
+        document.querySelector(".dashboard-content");
+    const productsPage =
+        document.getElementById("products-page");
+    const categoriesPage =
+        document.getElementById("categories-page");
+    const customersPage =
+        document.getElementById("customers-page");
+    const invoicePage =
+        document.getElementById("sales-invoice-page");
+    const purchasePage =
+        document.getElementById("purchase-page");
+    const inventoryPage =
+        document.getElementById("inventory-page");
+    const historyPage =
+        document.getElementById("history-page");
+    const statisticsPage =
+        document.getElementById("statistics-page");
+    const reportsPage =
+        document.getElementById("reports-page");
+    const usersPage =
+        document.getElementById("users-page");
+    const permissionsPage =
+        document.getElementById("permissions-page");
+    const aiProductPage =
+        document.getElementById("ai-product-page");
+
+    if (
+        !dashboard ||
+        !productsPage ||
+        !categoriesPage ||
+        !customersPage || 
+        !invoicePage || 
+        !purchasePage || 
+        !inventoryPage || 
+        !historyPage || 
+        !statisticsPage ||
+        !reportsPage ||
+        !usersPage ||
+        !permissionsPage ||
+        !aiProductPage
+    ) {
+        return;
+    }
+
+    dashboard.style.display = "none";
+
+    categoriesPage.classList.remove("active");
+    customersPage.classList.remove("active");
+    productsPage.classList.add("active");
+    invoicePage.classList.remove("active");
+    if (purchasePage) {
+        purchasePage.classList.remove("active");
+    }
+    if (inventoryPage) {
+        inventoryPage.classList.remove("active");
+    }
+    if (historyPage) {
+        historyPage.classList.remove("active");
+    }
+    if (statisticsPage) {
+        statisticsPage.classList.remove("active");
+    }
+    if (reportsPage) {
+        reportsPage.classList.remove("active");
+    }
+    if (usersPage) {
+        usersPage.classList.remove("active");
+    }
+    if (permissionsPage) {
+        permissionsPage.classList.remove("active");
+    }
+    if(aiProductPage){
+        aiProductPage.classList.remove("active");
+    }
+
+
+    const title =
+        document.querySelector(".topbar h1");
+
+    const description =
+        document.querySelector(".topbar p");
+
+    if (title) {
+        title.textContent = "Quản lý sản phẩm";
+    }
+
+    if (description) {
+        description.textContent =
+            "Quản lý thông tin và trạng thái sản phẩm";
+    }
+
+    initProductManagement();
+}
+
+
+/*
+ * ============================================================
+ * DASHBOARD PAGE
+ * ============================================================
+ */
+
+function showDashboardPage() {
+    const dashboard =
+        document.querySelector(".dashboard-content");
+    const productsPage =
+        document.getElementById("products-page");
+    const categoriesPage =
+        document.getElementById("categories-page");
+    const customersPage =
+        document.getElementById("customers-page");
+    const invoicePage =
+        document.getElementById("sales-invoice-page");
+    const purchasePage =
+        document.getElementById("purchase-page");
+    const inventoryPage =
+        document.getElementById("inventory-page");
+    const historyPage =
+        document.getElementById("history-page");
+    const statisticsPage =
+        document.getElementById("statistics-page");
+    const reportsPage =
+        document.getElementById("reports-page");
+    const usersPage =
+        document.getElementById("users-page");
+    const permissionsPage =
+        document.getElementById("permissions-page");
+    const aiProductPage =
+        document.getElementById("ai-product-page");
+    if (
+        !dashboard ||
+        !productsPage ||
+        !categoriesPage ||
+        !customersPage || 
+        !invoicePage || 
+        !purchasePage || 
+        !inventoryPage || 
+        !historyPage || 
+        !statisticsPage ||
+        !reportsPage ||
+        !usersPage ||
+        !permissionsPage ||
+        !aiProductPage
+    ) {
+        return;
+    }
+
+    productsPage.classList.remove("active");
+    categoriesPage.classList.remove("active");
+    customersPage.classList.remove("active");
+    invoicePage.classList.remove("active");
+    if (purchasePage) {
+    purchasePage.classList.remove("active");
+    }
+    if (inventoryPage) {
+    inventoryPage.classList.remove("active");
+    }
+    if (historyPage) {
+    historyPage.classList.remove("active");
+    }
+    if (statisticsPage) {
+    statisticsPage.classList.remove("active");
+    }
+    if (reportsPage) {
+        reportsPage.classList.remove("active");
+    }
+    if (usersPage) {
+        usersPage.classList.remove("active");
+    }
+    if (permissionsPage) {
+        permissionsPage.classList.remove("active");
+    }
+    if(aiProductPage){
+        aiProductPage.classList.remove("active")
+    }
+
+    dashboard.style.display = "block";
+
+    const title =
+        document.querySelector(".topbar h1");
+    const description =
+        document.querySelector(".topbar p");
+
+    if (title) {
+        title.textContent = "Dashboard";
+    }
+
+    if (description) {
+        description.textContent =
+            "Tổng quan hoạt động kinh doanh";
+    }
+}
+
+/* ============================================================
+   CATEGORY PAGE
+   ============================================================ */
+
+function showCategoryPage() {
+    const dashboard =
+        document.querySelector(".dashboard-content");
+    const productsPage =
+        document.getElementById("products-page");
+    const categoriesPage =
+        document.getElementById("categories-page");
+    const customersPage =
+        document.getElementById("customers-page");
+    const invoicePage = 
+        document.getElementById("sales-invoice-page");
+    const purchasePage =
+        document.getElementById("purchase-page");
+    const inventoryPage =
+        document.getElementById("inventory-page");
+    const historyPage =
+        document.getElementById("history-page");
+    const statisticsPage =
+        document.getElementById("statistics-page");
+    const reportsPage =
+        document.getElementById("reports-page");
+    const usersPage =
+        document.getElementById("users-page");
+    const permissionsPage =
+        document.getElementById("permissions-page");
+    const aiProductPage =
+        document.getElementById("ai-product-page");
+    if (
+        !dashboard ||
+        !productsPage ||
+        !categoriesPage ||
+        !customersPage || 
+        !invoicePage || 
+        !purchasePage || 
+        !inventoryPage || 
+        !historyPage || 
+        !statisticsPage ||
+        !reportsPage ||
+        !usersPage ||
+        !permissionsPage ||
+        !aiProductPage
+    ) {
+        return;
+    }
+
+    dashboard.style.display = "none";
+
+    productsPage.classList.remove("active");
+    customersPage.classList.remove("active");
+    categoriesPage.classList.add("active");
+    invoicePage.classList.remove("active");
+    if (purchasePage) {
+    purchasePage.classList.remove("active");
+    }
+    if (inventoryPage) {
+    inventoryPage.classList.remove("active");
+    }
+    if (historyPage) {
+    historyPage.classList.remove("active");
+    }
+    if (statisticsPage) { 
+        statisticsPage.classList.remove("active");
+    }
+    if (reportsPage) {
+        reportsPage.classList.remove("active");
+    }
+    if (usersPage) {
+        usersPage.classList.remove("active");
+    }
+    if (permissionsPage) {
+        permissionsPage.classList.remove("active");
+    }
+    if(aiProductPage){
+        aiProductPage.classList.remove("active");
+    }
+    const title =
+        document.querySelector(".topbar h1");
+    const description =
+        document.querySelector(".topbar p");
+    if (title) {
+        title.textContent = "Quản lý danh mục";
+    }
+
+    if (description) {
+        description.textContent =
+            "Quản lý các nhóm sản phẩm trong cửa hàng";
+    }
+
+    initCategoryManagement();
+}
+
+/* ============================================================
+   CUSTOMER PAGE
+   ============================================================ */
+function showCustomerPage() {
+    const dashboard =
+        document.querySelector(".dashboard-content");
+    const productsPage =
+        document.getElementById("products-page");
+    const categoriesPage =
+        document.getElementById("categories-page");
+    const customersPage =
+        document.getElementById("customers-page");
+    const invoicePage = 
+        document.getElementById("sales-invoice-page");
+    const purchasePage =
+        document.getElementById("purchase-page");
+    const inventoryPage =
+        document.getElementById("inventory-page");
+    const historyPage =
+        document.getElementById("history-page");
+    const statisticsPage =
+        document.getElementById("statistics-page");
+    const reportsPage =
+        document.getElementById("reports-page");
+    const usersPage =
+        document.getElementById("users-page");
+    const permissionsPage =
+        document.getElementById("permissions-page");
+    const aiProductPage =
+        document.getElementById("ai-product-page");
+    if (
+        !dashboard ||
+        !productsPage ||
+        !categoriesPage ||
+        !customersPage ||
+        !invoicePage ||
+        !purchasePage ||
+        !inventoryPage ||
+        !historyPage ||
+        !statisticsPage ||
+        !reportsPage || 
+        !usersPage ||
+        !permissionsPage ||
+        !aiProductPage
+    ) {
+        return;
+    }
+
+    dashboard.style.display = "none";
+
+    productsPage.classList.remove("active");
+    categoriesPage.classList.remove("active");
+    customersPage.classList.add("active");
+    invoicePage.classList.remove("active");
+    if (purchasePage) {
+        purchasePage.classList.remove("active");
+    }
+    if (inventoryPage) {
+        inventoryPage.classList.remove("active");
+    }
+    if (historyPage) {
+    historyPage.classList.remove("active");
+    }
+    if (statisticsPage) {
+        statisticsPage.classList.remove("active");
+    }
+    if (reportsPage) {
+        reportsPage.classList.remove("active");
+    }
+    if (usersPage) {
+        usersPage.classList.remove("active");
+    }
+    if (permissionsPage) {
+        permissionsPage.classList.remove("active");
+    }
+    if(aiProductPage){
+        aiProductPage.classList.remove("active");
+    }
+
+
+    const title =
+        document.querySelector(".topbar h1");
+    const description =
+        document.querySelector(".topbar p");
+    if (title) {
+        title.textContent = "Quản lý khách hàng";
+    }
+
+    if (description) {
+        description.textContent =
+            "Quản lý thông tin và nhóm khách hàng";
+    }
+
+    initCustomerManagement();
+}
+/* ============================================================
+   SALES INVOICE PAGE
+   ============================================================ */
+function showSalesInvoicePage() {
+    const dashboard =
+        document.querySelector(".dashboard-content");
+    const productsPage =
+        document.getElementById("products-page");
+    const categoriesPage =
+        document.getElementById("categories-page");
+    const customersPage =
+        document.getElementById("customers-page");
+    const invoicePage =
+        document.getElementById("sales-invoice-page");
+    const purchasePage =
+        document.getElementById("purchase-page");
+    const inventoryPage =
+        document.getElementById("inventory-page");
+    const historyPage =
+        document.getElementById("history-page");
+    const statisticsPage =
+        document.getElementById("statistics-page");
+    const reportsPage =
+        document.getElementById("reports-page");
+    const usersPage =
+        document.getElementById("users-page");
+    const permissionsPage =
+        document.getElementById("permissions-page");
+    const aiProductPage =
+        document.getElementById("ai-product-page");
+
+    if (
+        !dashboard ||
+        !productsPage ||
+        !categoriesPage ||
+        !customersPage ||
+        !invoicePage ||
+        !purchasePage ||
+        !inventoryPage || 
+        !historyPage || 
+        !statisticsPage ||
+        !reportsPage ||
+        !usersPage ||
+        !permissionsPage ||
+        !aiProductPage
+    ) {
+        return;
+    }
+
+    dashboard.style.display = "none";
+    productsPage.classList.remove("active");
+    categoriesPage.classList.remove("active");
+    customersPage.classList.remove("active");
+    invoicePage.classList.add("active");
+    if (purchasePage) {
+        purchasePage.classList.remove("active");
+    }
+    if (inventoryPage) {
+        inventoryPage.classList.remove("active");
+    }
+    if (historyPage) {
+        historyPage.classList.remove("active");
+    }
+    if (statisticsPage) {
+        statisticsPage.classList.remove("active");
+    }
+    if (reportsPage) {
+        reportsPage.classList.remove("active");
+    }
+    if (usersPage) {
+        usersPage.classList.remove("active");
+    }
+    if (permissionsPage) {
+        permissionsPage.classList.remove("active");
+    }
+    if(aiProductPage){
+        aiProductPage.classList.remove("active");
+    }
+    
+    const title =
+        document.querySelector(".topbar h1");
+    const description =
+        document.querySelector(".topbar p");
+    if (title) {
+        title.textContent =
+            "Lập hóa đơn bán hàng";
+    }
+    if (description) {
+        description.textContent =
+            "Tạo hóa đơn và ghi nhận thanh toán";
+    }
+    initSalesInvoice();
+}
+
+/* ============================================================
+   PURCHASE PAGE
+   ============================================================ */
+function showPurchasePage() {
+    const dashboard =
+        document.querySelector(".dashboard-content");
+    const productsPage =
+        document.getElementById("products-page");
+    const categoriesPage =
+        document.getElementById("categories-page");
+    const customersPage =
+        document.getElementById("customers-page");
+    const invoicePage =
+        document.getElementById("sales-invoice-page");
+    const purchasePage =
+        document.getElementById("purchase-page");
+    const inventoryPage =
+        document.getElementById("inventory-page");
+    const historyPage =
+        document.getElementById("history-page");
+    const statisticsPage =
+        document.getElementById("statistics-page");
+    const reportsPage =
+        document.getElementById("reports-page");
+    const usersPage =
+        document.getElementById("users-page");
+    const permissionsPage =
+        document.getElementById("permissions-page");
+    const aiProductPage =
+        document.getElementById("ai-product-page");
+    if (
+        !dashboard ||
+        !productsPage ||
+        !categoriesPage ||
+        !customersPage ||
+        !invoicePage ||
+        !purchasePage ||
+        !inventoryPage ||
+        !historyPage ||
+        !statisticsPage ||
+        !reportsPage ||
+        !usersPage ||
+        !permissionsPage ||
+        !aiProductPage
+    ) { 
+        return;
+    }
+
+    dashboard.style.display = "none";
+    productsPage.classList.remove("active");
+    categoriesPage.classList.remove("active");
+    customersPage.classList.remove("active");
+    invoicePage.classList.remove("active");
+    purchasePage.classList.add("active");
+    if (inventoryPage) {
+        inventoryPage.classList.remove("active");
+    }
+    if (historyPage) {
+        historyPage.classList.remove("active");
+    }
+    if (statisticsPage) {
+        statisticsPage.classList.remove("active");
+    }
+    if (reportsPage) {
+        reportsPage.classList.remove("active");
+    }
+    if (usersPage) {
+        usersPage.classList.remove("active");
+    }
+    if (permissionsPage) {
+        permissionsPage.classList.remove("active");
+    }
+    if(aiProductPage){
+        aiProductPage.classList.remove("active");
+    }
+    const title =
+        document.querySelector(".topbar h1");
+    const description =
+        document.querySelector(".topbar p");
+    if (title) {
+        title.textContent = "Nhập hàng";
+    }
+    if (description) {
+        description.textContent =
+            "Lập phiếu nhập hàng và cập nhật tồn kho";
+    }
+    initPurchaseManagement();
+}
+
+/* ============================================================
+   INVENTORY PAGE
+   ============================================================ */
+
+function showInventoryPage() {
+    const dashboard =
+        document.querySelector(".dashboard-content");
+    const productsPage =
+        document.getElementById("products-page");
+    const categoriesPage =
+        document.getElementById("categories-page");
+    const customersPage =
+        document.getElementById("customers-page");
+    const invoicePage =
+        document.getElementById("sales-invoice-page");
+    const purchasePage =
+        document.getElementById("purchase-page");
+    const inventoryPage =
+        document.getElementById("inventory-page");
+    const historyPage =
+        document.getElementById("history-page");
+    const statisticsPage =
+        document.getElementById("statistics-page");
+    const reportsPage =
+        document.getElementById("reports-page");
+    const usersPage =
+        document.getElementById("users-page");
+    const permissionsPage =
+        document.getElementById("permissions-page");
+    const aiProductPage =
+        document.getElementById("ai-product-page");
+    if (
+        !dashboard ||
+        !productsPage ||
+        !categoriesPage ||
+        !customersPage ||
+        !invoicePage ||
+        !purchasePage ||
+        !inventoryPage ||
+        !historyPage  ||
+        !statisticsPage ||
+        !reportsPage ||
+        !usersPage ||
+        !permissionsPage ||
+        !aiProductPage
+    ) { 
+        return;
+    }
+
+
+    dashboard.style.display = "none";
+    productsPage.classList.remove("active");
+    categoriesPage.classList.remove("active");
+    customersPage.classList.remove("active");
+    invoicePage.classList.remove("active");
+    purchasePage.classList.remove("active");
+    inventoryPage.classList.add("active");
+    if (historyPage) {
+        historyPage.classList.remove("active");
+    }
+    if (statisticsPage) {
+        statisticsPage.classList.remove("active");
+    }
+    if (reportsPage) {
+        reportsPage.classList.remove("active");
+    }
+    if (usersPage) {
+        usersPage.classList.remove("active");
+    }
+    if (permissionsPage) {
+        permissionsPage.classList.remove("active");
+    }
+    if(aiProductPage){
+        aiProductPage.classList.remove("active");
+    }
+    const title =
+        document.querySelector(".topbar h1");
+    const description =
+        document.querySelector(".topbar p");
+    if (title) {
+
+        title.textContent =
+            "Quản lý tồn kho";
+    }
+
+    if (description) {
+
+        description.textContent =
+            "Theo dõi số lượng tồn kho và tình trạng sản phẩm";
+    }
+    initInventoryManagement();
+}
+
+/* ============================================================
+   HISTORY PAGE
+   ============================================================ */
+
+function showHistoryPage() {
+    const dashboard =
+        document.querySelector(".dashboard-content");
+    const productsPage =
+        document.getElementById("products-page");
+    const categoriesPage =
+        document.getElementById("categories-page");
+    const customersPage =
+        document.getElementById("customers-page");
+    const invoicePage =
+        document.getElementById("sales-invoice-page");
+    const purchasePage =
+        document.getElementById("purchase-page");
+    const inventoryPage =
+        document.getElementById("inventory-page");
+    const historyPage =
+        document.getElementById("history-page");
+    const statisticsPage =
+        document.getElementById("statistics-page");
+    const reportsPage =
+        document.getElementById("reports-page");
+    const usersPage =
+        document.getElementById("users-page");
+    const permissionsPage =
+        document.getElementById("permissions-page");
+    const aiProductPage =
+        document.getElementById("ai-product-page");
+
+
+    if (
+        !dashboard ||
+        !productsPage ||
+        !categoriesPage ||
+        !customersPage ||
+        !invoicePage ||
+        !purchasePage ||
+        !inventoryPage ||
+        !historyPage ||
+        !statisticsPage ||
+        !reportsPage ||
+        !usersPage ||
+        !permissionsPage ||
+        !aiProductPage
+    ) {
+        return;
+    }
+    dashboard.style.display = "none";
+
+    productsPage.classList.remove("active");
+    categoriesPage.classList.remove("active");
+    customersPage.classList.remove("active");
+    invoicePage.classList.remove("active");
+    if (purchasePage) {
+        purchasePage.classList.remove("active");
+    }
+    if (inventoryPage) {
+    inventoryPage.classList.remove("active");
+    }
+    historyPage.classList.add("active");
+    if (statisticsPage) {
+        statisticsPage.classList.remove("active");
+    }
+    if (reportsPage) {
+        reportsPage.classList.remove("active");
+    }
+    if (usersPage) {
+        usersPage.classList.remove("active");
+    }
+    if (permissionsPage) {
+        permissionsPage.classList.remove("active");
+    }
+    if(aiProductPage){
+        aiProductPage.classList.remove("active");
+    }
+    const title =
+        document.querySelector(".topbar h1");
+    const description =
+        document.querySelector(".topbar p");
+    if (title) {
+        title.textContent =
+            "Lịch sử hoạt động";
+    }
+    if (description) {
+        description.textContent =
+            "Theo dõi các hoạt động phát sinh trong hệ thống";
+    }
+    initHistoryManagement();
+}
+
+/* ============================================================
+   STATISTICS PAGE
+   ============================================================ */
+function showStatisticsPage() {
+    const dashboard =
+        document.querySelector(".dashboard-content");
+    const productsPage =
+        document.getElementById("products-page");
+    const categoriesPage =
+        document.getElementById("categories-page");
+    const customersPage =
+        document.getElementById("customers-page");
+    const invoicePage =
+        document.getElementById("sales-invoice-page");
+    const purchasePage =
+        document.getElementById("purchase-page");
+    const inventoryPage =
+        document.getElementById("inventory-page");
+    const historyPage =
+        document.getElementById("history-page");
+    const statisticsPage =
+        document.getElementById("statistics-page");
+    const reportsPage =
+        document.getElementById("reports-page");
+    const usersPage =
+        document.getElementById("users-page");
+    const permissionsPage =
+        document.getElementById("permissions-page");
+    const aiProductPage =
+        document.getElementById("ai-product-page");
+
+    if (
+        !dashboard ||
+        !productsPage ||
+        !categoriesPage ||
+        !customersPage ||
+        !invoicePage ||
+        !purchasePage ||
+        !inventoryPage ||
+        !historyPage ||
+        !statisticsPage ||
+        !reportsPage ||
+        !usersPage ||
+        !permissionsPage ||
+        !aiProductPage
+    ) {
+        return;
+    }
+
+    dashboard.style.display = "none";
+
+    productsPage.classList.remove("active");
+    categoriesPage.classList.remove("active");
+    customersPage.classList.remove("active");
+    invoicePage.classList.remove("active");
+    purchasePage.classList.remove("active");
+    if (inventoryPage) {
+    inventoryPage.classList.remove("active");
+    }
+    historyPage.classList.remove("active");
+    statisticsPage.classList.add("active");
+    if (reportsPage) {
+        reportsPage.classList.remove("active");
+    }
+    if (usersPage) {
+        usersPage.classList.remove("active");
+    }
+    if (permissionsPage) {
+        permissionsPage.classList.remove("active");
+    }
+    if(aiProductPage){
+        aiProductPage.classList.remove("active");
+    }
+
+    const title =
+        document.querySelector(
+            ".topbar h1"
+        );
+
+    const description =
+        document.querySelector(
+            ".topbar p"
+        );
+    if (title) {
+        title.textContent =
+            "Thống kê doanh thu";
+    }
+    if (description) {
+        description.textContent =
+            "Theo dõi doanh thu và tình hình bán hàng";
+    }
+    initRevenueStatistics();
+}
+
+function showReportsPage() {
+    const dashboard =
+        document.querySelector(".dashboard-content");
+    const productsPage =
+        document.getElementById("products-page");
+    const categoriesPage =
+        document.getElementById("categories-page");
+    const customersPage =
+        document.getElementById("customers-page");
+    const invoicePage =
+        document.getElementById("sales-invoice-page");
+    const purchasePage =
+        document.getElementById("purchase-page");
+    const inventoryPage =
+        document.getElementById("inventory-page");
+    const historyPage =
+        document.getElementById("history-page");
+    const statisticsPage =
+        document.getElementById("statistics-page");
+    const reportsPage =
+        document.getElementById("reports-page");
+    const usersPage =
+        document.getElementById("users-page");
+    const permissionsPage =
+        document.getElementById("permissions-page");
+    const aiProductPage =
+        document.getElementById("ai-product-page");
+    if (
+        !dashboard ||
+        !productsPage ||
+        !categoriesPage ||
+        !customersPage ||
+        !invoicePage ||
+        !purchasePage ||
+        !inventoryPage ||
+        !historyPage ||
+        !statisticsPage ||
+        !reportsPage ||
+        !usersPage ||
+        !permissionsPage ||
+        !aiProductPage
+    ) {
+        return;
+    }
+
+    dashboard.style.display = "none";
+    productsPage.classList.remove("active");
+    categoriesPage.classList.remove("active");
+    customersPage.classList.remove("active");
+    invoicePage.classList.remove("active");
+    if (purchasePage) {
+        purchasePage.classList.remove("active");
+    }
+    if (inventoryPage) {
+        inventoryPage.classList.remove("active");
+    }
+    if (historyPage) {
+        historyPage.classList.remove("active");
+    }
+    if (statisticsPage) {
+        statisticsPage.classList.remove("active");
+    }
+    reportsPage.classList.add("active");
+    if (usersPage) {
+        usersPage.classList.remove("active");
+    }
+    if (permissionsPage) {
+        permissionsPage.classList.remove("active");
+    }
+    if(aiProductPage){
+        aiProductPage.classList.remove("active");
+    }
+
+    const title =
+        document.querySelector(".topbar h1");
+
+    const description =
+        document.querySelector(".topbar p");
+
+    if (title) {
+        title.textContent = "Báo cáo";
+    }
+
+    if (description) {
+        description.textContent =
+            "Tổng hợp tình hình kinh doanh và tồn kho";
+    }
+
+    initReports();
+}
+
+function showUsersPage() {
+    const dashboard =
+        document.querySelector(".dashboard-content");
+
+    const productsPage =
+        document.getElementById("products-page");
+
+    const categoriesPage =
+        document.getElementById("categories-page");
+
+    const customersPage =
+        document.getElementById("customers-page");
+
+    const invoicePage =
+        document.getElementById("sales-invoice-page");
+
+    const purchasePage =
+        document.getElementById("purchase-page");
+
+    const inventoryPage =
+        document.getElementById("inventory-page");
+
+    const historyPage =
+        document.getElementById("history-page");
+
+    const statisticsPage =
+        document.getElementById("statistics-page");
+
+    const reportsPage =
+        document.getElementById("reports-page");
+
+    const usersPage =
+        document.getElementById("users-page");
+    const permissionsPage =
+        document.getElementById("permissions-page");
+    const aiProductPage =
+        document.getElementById("ai-product-page");
+    if (
+        !dashboard ||
+        !productsPage ||
+        !categoriesPage ||
+        !customersPage ||
+        !invoicePage ||
+        !purchasePage ||
+        !inventoryPage ||
+        !historyPage ||
+        !statisticsPage ||
+        !reportsPage ||
+        !usersPage ||
+        !permissionsPage ||
+        !aiProductPage
+    ) {
+        return;
+    }
+
+    dashboard.style.display = "none";
+
+    productsPage.classList.remove("active");
+    categoriesPage.classList.remove("active");
+    customersPage.classList.remove("active");
+    invoicePage.classList.remove("active");
+
+    if (purchasePage) {
+        purchasePage.classList.remove("active");
+    }
+
+    if (inventoryPage) {
+        inventoryPage.classList.remove("active");
+    }
+
+    if (historyPage) {
+        historyPage.classList.remove("active");
+    }
+
+    if (statisticsPage) {
+        statisticsPage.classList.remove("active");
+    }
+
+    if (reportsPage) {
+        reportsPage.classList.remove("active");
+    }
+
+    usersPage.classList.add("active");
+    if (permissionsPage) {
+        permissionsPage.classList.remove("active");
+    }
+    if(aiProductPage){
+        aiProductPage.classList.remove("active");
+    }
+
+    const title =
+        document.querySelector(".topbar h1");
+
+    const description =
+        document.querySelector(".topbar p");
+
+    if (title) {
+        title.textContent = "Người dùng";
+    }
+
+    if (description) {
+        description.textContent =
+            "Quản lý tài khoản và người dùng trong hệ thống";
+    }
+
+    renderUsers();
+    setupUsersEvents();
+}
+
+
+/* ============================================================
+   PERMISSIONS PAGE
+   ============================================================ */
+function showPermissionPage() {
+    const dashboard =
+        document.querySelector(".dashboard-content");
+    const productsPage =
+        document.getElementById("products-page");
+    const categoriesPage =
+        document.getElementById("categories-page");
+    const customersPage =
+        document.getElementById("customers-page");
+    const invoicePage =
+        document.getElementById("sales-invoice-page");
+    const purchasePage =
+        document.getElementById("purchase-page");
+    const inventoryPage =
+        document.getElementById("inventory-page");
+    const historyPage =
+        document.getElementById("history-page");
+    const statisticsPage =
+        document.getElementById("statistics-page");
+    const reportsPage =
+        document.getElementById("reports-page");
+    const usersPage =
+        document.getElementById("users-page");
+    const permissionsPage =
+        document.getElementById("permissions-page");
+    const aiProductPage =
+        document.getElementById("ai-product-page");
+
+    if (
+        !dashboard ||
+        !productsPage ||
+        !categoriesPage ||
+        !customersPage ||
+        !invoicePage ||
+        !purchasePage ||
+        !inventoryPage ||
+        !historyPage ||
+        !statisticsPage ||
+        !reportsPage ||
+        !usersPage ||
+        !permissionsPage ||
+        !aiProductPage
+    ) {
+        return;
+    }
+
+
+    dashboard.style.display = "none";
+
+    if (productsPage) {
+        productsPage.classList.remove("active");
+    }
+    if (categoriesPage) {
+        categoriesPage.classList.remove("active");
+    }
+    if (customersPage) {
+        customersPage.classList.remove("active");
+    }
+    if (invoicePage) {
+        invoicePage.classList.remove("active");
+    }
+    if (purchasePage) {
+        purchasePage.classList.remove("active");
+    }
+    if (inventoryPage) {
+        inventoryPage.classList.remove("active");
+    }
+    if (historyPage) {
+        historyPage.classList.remove("active");
+    }
+    if (statisticsPage) {
+        statisticsPage.classList.remove("active");
+    }
+    if (reportsPage) {
+        reportsPage.classList.remove("active");
+    }
+    if (usersPage) {
+        usersPage.classList.remove("active");
+    }
+    permissionsPage.classList.add("active");
+    if(aiProductPage){
+        aiProductPage.classList.remove("active");
+    }
+
+
+    const title =
+        document.querySelector(".topbar h1");
+
+    const description =
+        document.querySelector(".topbar p");
+
+
+    if (title) {
+        title.textContent = "Phân quyền";
+    }
+
+    if (description) {
+        description.textContent =
+            "Quản lý quyền truy cập và chức năng theo vai trò";
+    }
+
+
+    initPermissionManagement();
+}
+
+/* ============================================================
+   AI PAGE
+   ============================================================ */
+function showAIProductPage() {
+    const dashboard =
+        document.querySelector(".dashboard-content");
+    const productsPage =
+        document.getElementById("products-page");
+    const categoriesPage =
+        document.getElementById("categories-page");
+    const customersPage =
+        document.getElementById("customers-page");
+    const invoicePage =
+        document.getElementById("sales-invoice-page");
+    const purchasePage =
+        document.getElementById("purchase-page");
+    const inventoryPage =
+        document.getElementById("inventory-page");
+    const historyPage =
+        document.getElementById("history-page");
+    const statisticsPage =
+        document.getElementById("statistics-page");
+    const reportsPage =
+        document.getElementById("reports-page");
+    const usersPage =
+        document.getElementById("users-page");
+    const permissionsPage =
+        document.getElementById("permissions-page");
+    const aiProductPage =
+        document.getElementById("ai-product-page");
+
+
+    if (
+        !dashboard ||
+        !productsPage ||
+        !categoriesPage ||
+        !customersPage ||
+        !invoicePage ||
+        !purchasePage ||
+        !inventoryPage ||
+        !historyPage ||
+        !statisticsPage ||
+        !reportsPage ||
+        !usersPage ||
+        !permissionsPage ||
+        !aiProductPage
+    ) {
+        return;
+    }
+
+
+    dashboard.style.display = "none";
+
+
+    if (productsPage) {
+        productsPage.classList.remove("active");
+    }
+
+    if (categoriesPage) {
+        categoriesPage.classList.remove("active");
+    }
+
+    if (customersPage) {
+        customersPage.classList.remove("active");
+    }
+
+    if (invoicePage) {
+        invoicePage.classList.remove("active");
+    }
+
+    if (purchasePage) {
+        purchasePage.classList.remove("active");
+    }
+
+    if (inventoryPage) {
+        inventoryPage.classList.remove("active");
+    }
+
+    if (historyPage) {
+        historyPage.classList.remove("active");
+    }
+
+    if (statisticsPage) {
+        statisticsPage.classList.remove("active");
+    }
+
+    if (reportsPage) {
+        reportsPage.classList.remove("active");
+    }
+    if(usersPage) {
+        usersPage.classList.remove("active");
+    }
+    if (permissionsPage) {
+        permissionsPage.classList.remove("active");
+    }
+
+    aiProductPage.classList.add("active");
+
+
+    const title =
+        document.querySelector(".topbar h1");
+
+    const description =
+        document.querySelector(".topbar p");
+
+
+    if (title) {
+
+        title.textContent =
+            "AI tư vấn sản phẩm";
+    }
+
+
+    if (description) {
+
+        description.textContent =
+            "Phân tích nhu cầu và đề xuất sản phẩm phù hợp";
+    }
+
+
+    if (
+        typeof window.initAIProductAdvice ===
+        "function"
+    ) {
+
+        window.initAIProductAdvice();
+    }
+}
+
+
+
+function setupProductModal() {
+
+    const addButton =
+        document.getElementById(
+            "add-product-button"
+        );
+
+
+    const closeButton =
+        document.getElementById(
+            "product-modal-close"
+        );
+
+
+    const cancelButton =
+        document.getElementById(
+            "product-cancel-button"
+        );
+
+
+    const form =
+        document.getElementById(
+            "product-form"
+        );
+
+
+    if (addButton) {
+
+        addButton.addEventListener(
+            "click",
+            openAddProductModal
+        );
+
+    }
+
+
+    if (closeButton) {
+
+        closeButton.addEventListener(
+            "click",
+            closeProductModal
+        );
+
+    }
+
+
+    if (cancelButton) {
+
+        cancelButton.addEventListener(
+            "click",
+            closeProductModal
+        );
+
+    }
+
+
+    if (form) {
+
+        form.addEventListener(
+            "submit",
+            saveProduct
+        );
+
+    }
+
+
+    const modal =
+        document.getElementById(
+            "product-modal"
+        );
+
+
+    if (modal) {
+
+        modal.addEventListener(
+            "click",
+            function (event) {
+
+                if (
+                    event.target ===
+                    modal
+                ) {
+
+                    closeProductModal();
+
+                }
+
+            }
+        );
+
+    }
+
+}
+        document.addEventListener(
+            "DOMContentLoaded",
+            initDashboard
+        );
+
+    </script>
+
+</body>
+</html>

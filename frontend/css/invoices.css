@@ -1,0 +1,373 @@
+/* ================================
+   SALES INVOICE
+   ================================ */
+
+.sales-invoice-page {
+    display: none;
+}
+
+.sales-invoice-page.active {
+    display: block;
+}
+
+.sales-invoice-page-header {
+    margin-bottom: 24px;
+}
+
+.sales-invoice-page-header h2 {
+    margin: 0 0 6px;
+    font-size: 24px;
+    color: #1f2937;
+}
+
+.sales-invoice-page-header p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+/* Layout */
+
+.sales-invoice-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 330px;
+    gap: 20px;
+}
+
+/* Card */
+
+.sales-invoice-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.sales-invoice-card-header {
+    padding: 17px 20px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.sales-invoice-card-header h3 {
+    margin: 0;
+    font-size: 16px;
+    color: #1f2937;
+}
+
+.sales-invoice-card-body {
+    padding: 20px;
+}
+
+/* Customer */
+
+.invoice-customer-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.invoice-form-group {
+    margin-bottom: 16px;
+}
+
+.invoice-form-group label {
+    display: block;
+    margin-bottom: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.invoice-form-group select,
+.invoice-form-group input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 7px;
+    background: white;
+    outline: none;
+    font-size: 14px;
+}
+
+.invoice-form-group select:focus,
+.invoice-form-group input:focus {
+    border-color: #2563eb;
+}
+
+/* Product adding */
+
+.invoice-add-product {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 120px auto;
+    gap: 10px;
+    align-items: end;
+}
+
+.invoice-add-button {
+    height: 40px;
+    padding: 0 16px;
+    border: none;
+    border-radius: 7px;
+    background: #2563eb;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.invoice-add-button:hover {
+    background: #1d4ed8;
+}
+
+/* Product table */
+
+.invoice-product-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.invoice-product-table {
+    width: 100%;
+    min-width: 760px;
+    border-collapse: collapse;
+}
+
+.invoice-product-table th {
+    padding: 12px 14px;
+    background: #f9fafb;
+    color: #6b7280;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.invoice-product-table td {
+    padding: 13px 14px;
+    border-top: 1px solid #f0f1f3;
+    font-size: 14px;
+    color: #374151;
+}
+
+.invoice-product-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+.invoice-product-name {
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.invoice-product-code {
+    color: #6b7280;
+    font-size: 12px;
+}
+
+.invoice-quantity-input {
+    width: 75px;
+    padding: 7px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    outline: none;
+    text-align: center;
+}
+
+.invoice-quantity-input:focus {
+    border-color: #2563eb;
+}
+
+.invoice-remove-button {
+    border: none;
+    border-radius: 6px;
+    padding: 7px 10px;
+    background: #fef2f2;
+    color: #dc2626;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.invoice-remove-button:hover {
+    background: #fee2e2;
+}
+
+.invoice-empty {
+    padding: 45px 20px;
+    text-align: center;
+    color: #6b7280;
+}
+
+/* Summary */
+
+.invoice-summary-card {
+    position: sticky;
+    top: 20px;
+}
+
+.invoice-summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+    font-size: 14px;
+    color: #4b5563;
+}
+
+.invoice-summary-row strong {
+    color: #1f2937;
+}
+
+.invoice-discount-input {
+    width: 120px;
+    box-sizing: border-box;
+    padding: 8px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    outline: none;
+    text-align: right;
+}
+
+.invoice-discount-input:focus {
+    border-color: #2563eb;
+}
+
+.invoice-summary-total {
+    margin-top: 8px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.invoice-summary-total span {
+    font-size: 15px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.invoice-summary-total strong {
+    font-size: 20px;
+    color: #2563eb;
+}
+
+/* Payment */
+
+.invoice-payment-title {
+    margin: 24px 0 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.invoice-payment-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.invoice-payment-option {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 10px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 7px;
+    cursor: pointer;
+}
+
+.invoice-payment-option:hover {
+    background: #f9fafb;
+}
+
+.invoice-payment-option input {
+    margin: 0;
+}
+
+.invoice-payment-option span {
+    font-size: 14px;
+    color: #374151;
+}
+
+/* Buttons */
+
+.invoice-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 22px;
+}
+
+.invoice-cancel-button,
+.invoice-create-button {
+    flex: 1;
+    border: none;
+    border-radius: 7px;
+    padding: 11px 14px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.invoice-cancel-button {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.invoice-cancel-button:hover {
+    background: #e5e7eb;
+}
+
+.invoice-create-button {
+    background: #2563eb;
+    color: white;
+}
+
+.invoice-create-button:hover {
+    background: #1d4ed8;
+}
+
+/* Invoice code */
+
+.invoice-code-box {
+    margin-bottom: 20px;
+    padding: 11px 13px;
+    border-radius: 7px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+}
+
+.invoice-code-box span {
+    color: #6b7280;
+    font-size: 12px;
+}
+
+.invoice-code-box strong {
+    display: block;
+    margin-top: 3px;
+    color: #2563eb;
+    font-size: 15px;
+}
+
+/* Responsive */
+
+@media (max-width: 1000px) {
+    .sales-invoice-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .invoice-summary-card {
+        position: static;
+    }
+}
+
+@media (max-width: 700px) {
+    .invoice-customer-info {
+        grid-template-columns: 1fr;
+    }
+
+    .invoice-add-product {
+        grid-template-columns: 1fr;
+    }
+
+    .invoice-add-button {
+        width: 100%;
+    }
+}
