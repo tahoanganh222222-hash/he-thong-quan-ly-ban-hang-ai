@@ -1,1021 +1,387 @@
-/* =========================================================
-   REPORTS - PART 12
-   =========================================================
-   Báo cáo độc lập với index.html
-   ========================================================= */
-
+/* Báo cáo tổng hợp từ dữ liệu thật trong SQL Server. */
 (function () {
-
     "use strict";
 
+    let sourceData = { invoices: [], products: [], inventory: [] };
+    let currentReport = { revenue: [], products: [], inventory: [], invoices: [] };
+    let dateRangeInitialized = false;
 
-    /* =====================================================
-       REPORT DATA
-       ===================================================== */
-
-    const reportData = {
-
-        revenue: [
-
-            {
-                date: "01/09/2026",
-                invoices: 18,
-                revenue: 3250000
-            },
-
-            {
-                date: "02/09/2026",
-                invoices: 24,
-                revenue: 4680000
-            },
-
-            {
-                date: "03/09/2026",
-                invoices: 21,
-                revenue: 3750000
-            },
-
-            {
-                date: "04/09/2026",
-                invoices: 27,
-                revenue: 5120000
-            },
-
-            {
-                date: "05/09/2026",
-                invoices: 31,
-                revenue: 6240000
-            },
-
-            {
-                date: "06/09/2026",
-                invoices: 29,
-                revenue: 5830000
-            },
-
-            {
-                date: "07/09/2026",
-                invoices: 35,
-                revenue: 7150000
-            }
-
-        ],
-
-
-        products: [
-
-            {
-                code: "SP004",
-                name: "Nước giặt OMO 3.6kg",
-                sold: 70,
-                revenue: 8750000
-            },
-
-            {
-                code: "SP005",
-                name: "Quạt điện Senko",
-                sold: 12,
-                revenue: 6240000
-            },
-
-            {
-                code: "SP006",
-                name: "Máy sấy tóc Philips",
-                sold: 14,
-                revenue: 4900000
-            },
-
-            {
-                code: "SP002",
-                name: "Nước ngọt Coca Cola 330ml",
-                sold: 385,
-                revenue: 3850000
-            },
-
-            {
-                code: "SP001",
-                name: "Nước suối Aquafina 500ml",
-                sold: 520,
-                revenue: 3120000
-            }
-
-        ],
-
-
-        inventory: [
-
-            {
-                code: "SP005",
-                name: "Quạt điện Senko",
-                quantity: 12,
-                minQuantity: 15
-            },
-
-            {
-                code: "SP006",
-                name: "Máy sấy tóc Philips",
-                quantity: 8,
-                minQuantity: 10
-            },
-
-            {
-                code: "SP004",
-                name: "Nước giặt OMO 3.6kg",
-                quantity: 30,
-                minQuantity: 10
-            },
-
-            {
-                code: "SP001",
-                name: "Nước suối Aquafina 500ml",
-                quantity: 120,
-                minQuantity: 30
-            }
-
-        ]
-
+    const money = value => Number(value || 0).toLocaleString("vi-VN") + " ₫";
+    const displayDate = iso => {
+        const [year, month, day] = String(iso || "").slice(0, 10).split("-");
+        return year && month && day ? `${day}/${month}/${year}` : "";
     };
+    const escapeHTML = value => String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
 
-
-    /* =====================================================
-       FORMAT MONEY
-       ===================================================== */
-
-    function formatReportMoney(value) {
-
-        return Number(value || 0).toLocaleString("vi-VN") + " ₫";
-
-    }
-
-
-    /* =====================================================
-       DATE
-       ===================================================== */
-
-    function parseInputDate(value) {
-
-        if (!value) {
-            return null;
-        }
-
-        const parts = value.split("-");
-
-        if (parts.length !== 3) {
-            return null;
-        }
-
-        const year = Number(parts[0]);
-        const month = Number(parts[1]);
-        const day = Number(parts[2]);
-
-        const date = new Date(
-            year,
-            month - 1,
-            day
+    async function loadReportSource() {
+        const [invoices, products, inventory] = await Promise.all([
+            salesApi.invoices.list(),
+            salesApi.products.list(),
+            salesApi.inventory.list()
+        ]);
+        const detailedInvoices = await Promise.all(
+            invoices.map(invoice => salesApi.invoices.get(invoice.id))
         );
-
-        date.setHours(0, 0, 0, 0);
-
-        return date;
-
+        sourceData = { invoices: detailedInvoices, products, inventory };
     }
 
-
-    function parseDataDate(value) {
-
-        if (!value) {
-            return null;
+    function initializeDateRange() {
+        if (!sourceData.invoices.length) return;
+        const dates = sourceData.invoices.map(item => item.date).filter(Boolean).sort();
+        const from = document.getElementById("reports-from-date");
+        const to = document.getElementById("reports-to-date");
+        if (from && to) {
+            const followedFirstDate = !dateRangeInitialized || from.value === from.min;
+            const followedLastDate = !dateRangeInitialized || to.value === to.max;
+            from.min = dates[0];
+            from.max = dates[dates.length - 1];
+            to.min = dates[0];
+            to.max = dates[dates.length - 1];
+            if (followedFirstDate) from.value = dates[0];
+            if (followedLastDate) to.value = dates[dates.length - 1];
+            dateRangeInitialized = true;
         }
+    }
 
-        const parts = value.split("/");
-
-        if (parts.length !== 3) {
-            return null;
-        }
-
-        const day = Number(parts[0]);
-        const month = Number(parts[1]);
-        const year = Number(parts[2]);
-
-        const date = new Date(
-            year,
-            month - 1,
-            day
+    function buildReport(fromDate, toDate) {
+        const invoices = sourceData.invoices.filter(
+            invoice => invoice.date >= fromDate && invoice.date <= toDate
         );
+        const revenueByDate = new Map();
+        const productsById = new Map(sourceData.products.map(item => [item.id, item]));
+        const soldByProduct = new Map();
 
-        date.setHours(0, 0, 0, 0);
+        invoices.forEach(invoice => {
+            const daily = revenueByDate.get(invoice.date) || {
+                isoDate: invoice.date,
+                date: displayDate(invoice.date),
+                invoices: 0,
+                revenue: 0
+            };
+            daily.invoices += 1;
+            daily.revenue += Number(invoice.finalAmount || 0);
+            revenueByDate.set(invoice.date, daily);
 
-        return date;
+            const discountFactor = Number(invoice.totalAmount || 0) > 0
+                ? Number(invoice.finalAmount || 0) / Number(invoice.totalAmount)
+                : 1;
+            (invoice.items || []).forEach(item => {
+                const product = productsById.get(item.productId) || {};
+                const sold = soldByProduct.get(item.productId) || {
+                    code: product.code || "",
+                    name: item.productName || product.name || "",
+                    sold: 0,
+                    revenue: 0
+                };
+                sold.sold += Number(item.quantity || 0);
+                sold.revenue += Number(item.amount || 0) * discountFactor;
+                soldByProduct.set(item.productId, sold);
+            });
+        });
 
+        currentReport = {
+            invoices,
+            revenue: [...revenueByDate.values()].sort((a, b) => a.isoDate.localeCompare(b.isoDate)),
+            products: [...soldByProduct.values()].sort((a, b) => b.sold - a.sold),
+            inventory: sourceData.inventory
+        };
     }
 
-
-    /* =====================================================
-       FILTER REVENUE
-       ===================================================== */
-
-    function filterRevenue(
-        fromDate,
-        toDate
-    ) {
-
-        return reportData.revenue.filter(
-            function (item) {
-
-                const itemDate =
-                    parseDataDate(item.date);
-
-                if (!itemDate) {
-                    return false;
-                }
-
-                return (
-                    itemDate >= fromDate &&
-                    itemDate <= toDate
-                );
-
-            }
+    function renderSummary() {
+        const totalRevenue = currentReport.invoices.reduce(
+            (sum, item) => sum + Number(item.finalAmount || 0), 0
         );
-
+        const productsSold = currentReport.products.reduce(
+            (sum, item) => sum + Number(item.sold || 0), 0
+        );
+        document.getElementById("report-total-revenue").textContent = money(totalRevenue);
+        document.getElementById("report-total-invoices").textContent =
+            currentReport.invoices.length.toLocaleString("vi-VN");
+        document.getElementById("report-products-sold").textContent =
+            productsSold.toLocaleString("vi-VN");
     }
 
-
-    /* =====================================================
-       SUMMARY
-       ===================================================== */
-
-    function renderReportSummary(
-        revenueData,
-        productData
-    ) {
-
-        const totalRevenue =
-            revenueData.reduce(
-                function (sum, item) {
-
-                    return (
-                        sum +
-                        Number(item.revenue || 0)
-                    );
-
-                },
-                0
-            );
-
-
-        const totalInvoices =
-            revenueData.reduce(
-                function (sum, item) {
-
-                    return (
-                        sum +
-                        Number(item.invoices || 0)
-                    );
-
-                },
-                0
-            );
-
-
-        const totalProductsSold =
-            productData.reduce(
-                function (sum, item) {
-
-                    return (
-                        sum +
-                        Number(item.sold || 0)
-                    );
-
-                },
-                0
-            );
-
-
-        const revenueElement =
-            document.getElementById(
-                "report-total-revenue"
-            );
-
-
-        const invoiceElement =
-            document.getElementById(
-                "report-total-invoices"
-            );
-
-
-        const productElement =
-            document.getElementById(
-                "report-products-sold"
-            );
-
-
-        if (revenueElement) {
-
-            revenueElement.textContent =
-                formatReportMoney(
-                    totalRevenue
-                );
-
-        }
-
-
-        if (invoiceElement) {
-
-            invoiceElement.textContent =
-                totalInvoices.toLocaleString(
-                    "vi-VN"
-                );
-
-        }
-
-
-        if (productElement) {
-
-            productElement.textContent =
-                totalProductsSold.toLocaleString(
-                    "vi-VN"
-                );
-
-        }
-
-    }
-
-
-    /* =====================================================
-       REVENUE REPORT
-       ===================================================== */
-
-    function renderRevenueReport(
-        revenueData
-    ) {
-
-        const tableBody =
-            document.getElementById(
-                "report-revenue-table-body"
-            );
-
-
-        if (!tableBody) {
+    function renderRevenue() {
+        const body = document.getElementById("report-revenue-table-body");
+        if (!currentReport.revenue.length) {
+            body.innerHTML = '<tr><td colspan="4" style="text-align:center">Không có dữ liệu trong khoảng thời gian này.</td></tr>';
             return;
         }
+        body.innerHTML = currentReport.revenue.map(item => `
+            <tr>
+                <td>${item.date}</td>
+                <td>${item.invoices}</td>
+                <td class="money">${money(item.revenue)}</td>
+                <td class="money">${money(item.invoices ? item.revenue / item.invoices : 0)}</td>
+            </tr>
+        `).join("");
+    }
 
+    function renderProducts() {
+        const body = document.getElementById("report-product-table-body");
+        if (!currentReport.products.length) {
+            body.innerHTML = '<tr><td colspan="4" style="text-align:center">Chưa có sản phẩm được bán trong khoảng thời gian này.</td></tr>';
+            return;
+        }
+        body.innerHTML = currentReport.products.map(item => `
+            <tr>
+                <td>${escapeHTML(item.code)}</td>
+                <td>${escapeHTML(item.name)}</td>
+                <td>${item.sold.toLocaleString("vi-VN")}</td>
+                <td class="money">${money(item.revenue)}</td>
+            </tr>
+        `).join("");
+    }
 
-        /*
-         * Không có dữ liệu
-         */
-
-        if (!revenueData.length) {
-
-            tableBody.innerHTML = `
+    function renderInventory() {
+        const body = document.getElementById("report-inventory-table-body");
+        if (!currentReport.inventory.length) {
+            body.innerHTML = '<tr><td colspan="5" style="text-align:center">Chưa có dữ liệu tồn kho.</td></tr>';
+            return;
+        }
+        body.innerHTML = currentReport.inventory.map(item => {
+            const low = Number(item.quantity) <= Number(item.minimum);
+            return `
                 <tr>
-                    <td
-                        colspan="4"
-                        style="text-align: center;"
-                    >
-                        Không có dữ liệu trong khoảng thời gian này.
-                    </td>
+                    <td>${escapeHTML(item.code)}</td>
+                    <td>${escapeHTML(item.name)}</td>
+                    <td>${Number(item.quantity).toLocaleString("vi-VN")}</td>
+                    <td>${Number(item.minimum).toLocaleString("vi-VN")}</td>
+                    <td><span class="${low ? "report-warning" : "report-normal"}">
+                        ${low ? "Sắp hết hàng" : "Bình thường"}
+                    </span></td>
                 </tr>
             `;
-
-            return;
-
-        }
-
-
-        tableBody.innerHTML =
-            revenueData.map(
-                function (item) {
-
-                    const average =
-                        item.invoices > 0
-                            ? item.revenue /
-                              item.invoices
-                            : 0;
-
-
-                    return `
-                        <tr>
-
-                            <td>
-                                ${item.date}
-                            </td>
-
-                            <td>
-                                ${item.invoices}
-                            </td>
-
-                            <td class="money">
-                                ${formatReportMoney(
-                                    item.revenue
-                                )}
-                            </td>
-
-                            <td class="money">
-                                ${formatReportMoney(
-                                    average
-                                )}
-                            </td>
-
-                        </tr>
-                    `;
-
-                }
-            ).join("");
-
+        }).join("");
     }
-
-
-    /* =====================================================
-       PRODUCT REPORT
-       ===================================================== */
-
-    function renderProductReport(
-        productData
-    ) {
-
-        const tableBody =
-            document.getElementById(
-                "report-product-table-body"
-            );
-
-
-        if (!tableBody) {
-            return;
-        }
-
-
-        tableBody.innerHTML =
-            productData.map(
-                function (item) {
-
-                    return `
-                        <tr>
-
-                            <td>
-                                ${item.code}
-                            </td>
-
-                            <td>
-                                ${item.name}
-                            </td>
-
-                            <td>
-                                ${Number(
-                                    item.sold || 0
-                                ).toLocaleString(
-                                    "vi-VN"
-                                )}
-                            </td>
-
-                            <td class="money">
-                                ${formatReportMoney(
-                                    item.revenue
-                                )}
-                            </td>
-
-                        </tr>
-                    `;
-
-                }
-            ).join("");
-
-    }
-
-
-    /* =====================================================
-       INVENTORY REPORT
-       ===================================================== */
-
-    function renderInventoryReport() {
-
-        const tableBody =
-            document.getElementById(
-                "report-inventory-table-body"
-            );
-
-
-        if (!tableBody) {
-            return;
-        }
-
-
-        tableBody.innerHTML =
-            reportData.inventory.map(
-                function (item) {
-
-                    const quantity =
-                        Number(
-                            item.quantity || 0
-                        );
-
-
-                    const minQuantity =
-                        Number(
-                            item.minQuantity || 0
-                        );
-
-
-                    const lowStock =
-                        quantity <= minQuantity;
-
-
-                    return `
-                        <tr>
-
-                            <td>
-                                ${item.code}
-                            </td>
-
-                            <td>
-                                ${item.name}
-                            </td>
-
-                            <td>
-                                ${quantity.toLocaleString(
-                                    "vi-VN"
-                                )}
-                            </td>
-
-                            <td>
-                                ${minQuantity.toLocaleString(
-                                    "vi-VN"
-                                )}
-                            </td>
-
-                            <td>
-
-                                ${
-                                    lowStock
-
-                                        ? `
-                                            <span
-                                                class="report-warning"
-                                            >
-                                                Sắp hết hàng
-                                            </span>
-                                        `
-
-                                        : `
-                                            <span
-                                                class="report-normal"
-                                            >
-                                                Bình thường
-                                            </span>
-                                        `
-                                }
-
-                            </td>
-
-                        </tr>
-                    `;
-
-                }
-            ).join("");
-
-    }
-
-
-    /* =====================================================
-       REPORT TYPE
-       ===================================================== */
-
-    function setupReportType() {
-
-        const typeSelect =
-            document.getElementById(
-                "reports-type"
-            );
-
-
-        if (!typeSelect) {
-            return;
-        }
-
-
-        /*
-         * Dùng onchange thay vì addEventListener
-         * để không bị đăng ký nhiều lần.
-         */
-
-        typeSelect.onchange =
-            function () {
-
-                updateReportSections(
-                    typeSelect.value
-                );
-
-            };
-
-    }
-
 
     function updateReportSections(type) {
-
-        const revenueTable =
-            document.getElementById(
-                "report-revenue-table-body"
-            );
-
-
-        const productTable =
-            document.getElementById(
-                "report-product-table-body"
-            );
-
-
-        const inventoryTable =
-            document.getElementById(
-                "report-inventory-table-body"
-            );
-
-
-        const revenueCard =
-            revenueTable
-                ? revenueTable.closest(
-                    ".reports-card"
-                )
-                : null;
-
-
-        const productCard =
-            productTable
-                ? productTable.closest(
-                    ".reports-card"
-                )
-                : null;
-
-
-        const inventoryCard =
-            inventoryTable
-                ? inventoryTable.closest(
-                    ".reports-card"
-                )
-                : null;
-
-
-        /*
-         * Hiển thị tất cả
-         */
-
-        if (revenueCard) {
-            revenueCard.style.display = "";
-        }
-
-        if (productCard) {
-            productCard.style.display = "";
-        }
-
-        if (inventoryCard) {
-            inventoryCard.style.display = "";
-        }
-
-
-        /*
-         * Lọc theo loại báo cáo
-         */
-
-        if (type === "revenue") {
-
-            if (productCard) {
-                productCard.style.display = "none";
-            }
-
-            if (inventoryCard) {
-                inventoryCard.style.display = "none";
-            }
-
-        }
-
-
-        if (type === "product") {
-
-            if (revenueCard) {
-                revenueCard.style.display = "none";
-            }
-
-            if (inventoryCard) {
-                inventoryCard.style.display = "none";
-            }
-
-        }
-
-
-        if (type === "inventory") {
-
-            if (revenueCard) {
-                revenueCard.style.display = "none";
-            }
-
-            if (productCard) {
-                productCard.style.display = "none";
-            }
-
-        }
-
+        const card = id => document.getElementById(id)?.closest(".reports-card");
+        const cards = {
+            revenue: card("report-revenue-table-body"),
+            product: card("report-product-table-body"),
+            inventory: card("report-inventory-table-body")
+        };
+        Object.entries(cards).forEach(([key, element]) => {
+            if (element) element.style.display = type === "all" || type === key ? "" : "none";
+        });
     }
 
-
-    /* =====================================================
-       FILTER
-       ===================================================== */
-
-    function setupReportFilter() {
-
-        const filterButton =
-            document.getElementById(
-                "reports-filter-button"
-            );
-
-
-        if (!filterButton) {
-            return;
+    function applyReportFilter(showMessage = false) {
+        const fromDate = document.getElementById("reports-from-date")?.value;
+        const toDate = document.getElementById("reports-to-date")?.value;
+        if (!fromDate || !toDate) {
+            if (showMessage) alert("Vui lòng chọn đầy đủ Từ ngày và Đến ngày.");
+            return false;
         }
-
-
-        /*
-         * QUAN TRỌNG:
-         *
-         * Không dùng:
-         *
-         * addEventListener()
-         *
-         * vì initReports() có thể được gọi
-         * nhiều lần bởi index.html.
-         *
-         * onclick luôn chỉ giữ 1 handler.
-         */
-
-        filterButton.onclick =
-            function () {
-
-                const fromInput =
-                    document.getElementById(
-                        "reports-from-date"
-                    );
-
-
-                const toInput =
-                    document.getElementById(
-                        "reports-to-date"
-                    );
-
-
-                if (!fromInput || !toInput) {
-
-                    alert(
-                        "Không tìm thấy khoảng thời gian báo cáo."
-                    );
-
-                    return;
-
-                }
-
-
-                const fromDate =
-                    parseInputDate(
-                        fromInput.value
-                    );
-
-
-                const toDate =
-                    parseInputDate(
-                        toInput.value
-                    );
-
-
-                /*
-                 * Kiểm tra ngày
-                 */
-
-                if (!fromDate || !toDate) {
-
-                    alert(
-                        "Vui lòng chọn đầy đủ Từ ngày và Đến ngày."
-                    );
-
-                    return;
-
-                }
-
-
-                /*
-                 * Từ ngày > Đến ngày
-                 */
-
-                if (fromDate > toDate) {
-
-                    alert(
-                        "Từ ngày không được lớn hơn Đến ngày."
-                    );
-
-                    return;
-
-                }
-
-
-                /*
-                 * Lọc doanh thu
-                 */
-
-                const filteredRevenue =
-                    filterRevenue(
-                        fromDate,
-                        toDate
-                    );
-
-
-                /*
-                 * Products hiện chưa có ngày
-                 * nên vẫn dùng dữ liệu prototype.
-                 */
-
-                const filteredProducts =
-                    reportData.products;
-
-
-                /*
-                 * Render lại
-                 */
-
-                renderReportSummary(
-                    filteredRevenue,
-                    filteredProducts
-                );
-
-
-                renderRevenueReport(
-                    filteredRevenue
-                );
-
-
-                renderProductReport(
-                    filteredProducts
-                );
-
-
-                renderInventoryReport();
-
-
-                /*
-                 * Áp dụng loại báo cáo
-                 */
-
-                const typeSelect =
-                    document.getElementById(
-                        "reports-type"
-                    );
-
-
-                if (typeSelect) {
-
-                    updateReportSections(
-                        typeSelect.value
-                    );
-
-                }
-
-
-                /*
-                 * Chỉ alert đúng 1 lần.
-                 */
-
-                alert(
-                    "Đã cập nhật báo cáo theo khoảng thời gian."
-                );
-
-            };
-
+        if (fromDate > toDate) {
+            if (showMessage) alert("Từ ngày không được lớn hơn Đến ngày.");
+            return false;
+        }
+        buildReport(fromDate, toDate);
+        renderSummary();
+        renderRevenue();
+        renderProducts();
+        renderInventory();
+        updateReportSections(document.getElementById("reports-type")?.value || "all");
+        return true;
     }
 
+    function reportTablesHTML(type) {
+        const tableStyle = 'border-collapse:collapse;width:100%;margin:14px 0 24px';
+        const cellStyle = 'border:1px solid #bbb;padding:7px;text-align:left';
+        const makeTable = (title, headers, rows) => `
+            <h2>${title}</h2><table style="${tableStyle}">
+            <thead><tr>${headers.map(value => `<th style="${cellStyle}">${value}</th>`).join("")}</tr></thead>
+            <tbody>${rows.map(row => `<tr>${row.map(value => `<td style="${cellStyle}">${escapeHTML(value)}</td>`).join("")}</tr>`).join("")}</tbody>
+            </table>`;
+        let html = "";
+        if (type === "all" || type === "revenue") {
+            html += makeTable("Doanh thu", ["Ngày", "Số hóa đơn", "Doanh thu", "Trung bình / hóa đơn"],
+                currentReport.revenue.map(item => [
+                    item.date, item.invoices, money(item.revenue),
+                    money(item.invoices ? item.revenue / item.invoices : 0)
+                ]));
+        }
+        if (type === "all" || type === "product") {
+            html += makeTable("Sản phẩm bán chạy", ["Mã", "Tên sản phẩm", "Số lượng bán", "Doanh thu"],
+                currentReport.products.map(item => [item.code, item.name, item.sold, money(item.revenue)]));
+        }
+        if (type === "all" || type === "inventory") {
+            html += makeTable("Tồn kho", ["Mã", "Tên sản phẩm", "Tồn kho", "Tồn tối thiểu", "Trạng thái"],
+                currentReport.inventory.map(item => [
+                    item.code, item.name, item.quantity, item.minimum,
+                    Number(item.quantity) <= Number(item.minimum) ? "Sắp hết hàng" : "Bình thường"
+                ]));
+        }
+        return html;
+    }
 
-    /* =====================================================
-       EXPORT
-       ===================================================== */
+    function buildExportDocument() {
+        const fromDate = document.getElementById("reports-from-date").value;
+        const toDate = document.getElementById("reports-to-date").value;
+        const type = document.getElementById("reports-type").value;
+        const totalRevenue = currentReport.invoices.reduce(
+            (sum, item) => sum + Number(item.finalAmount || 0), 0
+        );
+        return `<!doctype html><html lang="vi"><head><meta charset="utf-8">
+            <title>Báo cáo kinh doanh</title></head><body style="font-family:Arial,sans-serif;color:#222">
+            <h1>BÁO CÁO KINH DOANH</h1>
+            <p>Thời gian: ${displayDate(fromDate)} - ${displayDate(toDate)}</p>
+            <p>Tổng doanh thu: <strong>${money(totalRevenue)}</strong> ·
+               Tổng hóa đơn: <strong>${currentReport.invoices.length}</strong></p>
+            ${reportTablesHTML(type)}
+            </body></html>`;
+    }
 
-    function exportReport() {
+    function downloadExcel(content) {
+        const blob = new Blob(["\ufeff", content], {
+            type: "application/vnd.ms-excel;charset=utf-8"
+        });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `bao-cao-${new Date().toISOString().slice(0, 10)}.xls`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+    }
 
+    async function logReportExport(format) {
+        const fromDate = document.getElementById("reports-from-date").value;
+        const toDate = document.getElementById("reports-to-date").value;
+        const type = document.getElementById("reports-type").value;
+        try {
+            await salesApi.history.create({
+                action: "Xuất",
+                actionType: "export",
+                object: "Báo cáo",
+                code: `${type.toUpperCase()}-${new Date().toISOString().slice(0, 10)}`,
+                detail: `Xuất báo cáo ${type} dạng ${format.toUpperCase()} từ ${fromDate} đến ${toDate}`
+            });
+        } catch (error) {
+            console.error("Không thể ghi lịch sử xuất báo cáo:", error);
+        }
+    }
+
+    async function exportReport(format = "excel") {
         if (
             typeof requirePermission === "function" &&
             !requirePermission("report_export")
-        ) {
+        ) return;
+        if (!applyReportFilter(false)) {
+            alert("Vui lòng chọn khoảng ngày hợp lệ trước khi xuất báo cáo.");
             return;
         }
-
-        alert(
-            "Chức năng xuất báo cáo sẽ được tích hợp sau khi kết nối backend."
-        );
-
+        const content = buildExportDocument();
+        if (format === "pdf") {
+            const printWindow = window.open("", "_blank");
+            if (!printWindow) {
+                alert("Trình duyệt đang chặn cửa sổ in. Hãy cho phép cửa sổ bật lên rồi thử lại.");
+                return;
+            }
+            printWindow.document.open();
+            printWindow.document.write(content);
+            printWindow.document.close();
+            printWindow.focus();
+            setTimeout(() => printWindow.print(), 300);
+        } else {
+            downloadExcel(content);
+        }
+        await logReportExport(format);
     }
 
-
-    /* =====================================================
-       INITIAL RENDER
-       ===================================================== */
-
-    function renderInitialReports() {
-
-        renderReportSummary(
-            reportData.revenue,
-            reportData.products
-        );
-
-
-        renderRevenueReport(
-            reportData.revenue
-        );
-
-
-        renderProductReport(
-            reportData.products
-        );
-
-
-        renderInventoryReport();
-
+    function closeExportMenu() {
+        const button = document.getElementById("report-export-button");
+        const menu = document.getElementById("report-export-menu");
+        if (!button || !menu) return;
+        menu.hidden = true;
+        button.setAttribute("aria-expanded", "false");
     }
 
+    function setupExportMenu() {
+        const button = document.getElementById("report-export-button");
+        const menu = document.getElementById("report-export-menu");
+        if (!button || !menu || button.dataset.initialized) return;
 
-    /* =====================================================
-       INIT
-       ===================================================== */
+        button.addEventListener("click", function (event) {
+            event.stopPropagation();
+            const willOpen = menu.hidden;
+            menu.hidden = !willOpen;
+            button.setAttribute("aria-expanded", String(willOpen));
+            if (willOpen) {
+                menu.querySelector("button")?.focus();
+            }
+        });
 
-    function initReports() {
+        menu.addEventListener("click", function (event) {
+            const choice = event.target.closest("[data-report-format]");
+            if (!choice) return;
+            const format = choice.dataset.reportFormat;
+            closeExportMenu();
+            exportReport(format);
+        });
 
+        document.addEventListener("click", function (event) {
+            if (!event.target.closest(".report-export-wrap")) {
+                closeExportMenu();
+            }
+        });
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") {
+                closeExportMenu();
+                button.focus();
+            }
+        });
+
+        button.dataset.initialized = "true";
+    }
+
+    async function initReports() {
         if (
             typeof requirePermission === "function" &&
             !requirePermission("report_export")
-        ) {
-            return;
+        ) return;
+
+        const body = document.getElementById("report-revenue-table-body");
+        if (body) body.innerHTML = '<tr><td colspan="4" style="text-align:center">Đang tải dữ liệu...</td></tr>';
+        try {
+            await loadReportSource();
+            initializeDateRange();
+            applyReportFilter(false);
+        } catch (error) {
+            console.error("Không thể tải báo cáo:", error);
+            if (body) body.innerHTML = `<tr><td colspan="4" style="text-align:center">${escapeHTML(error.message || "Không thể tải báo cáo")}</td></tr>`;
         }
 
-        /*
-         * Render dữ liệu ban đầu
-         */
-
-        renderInitialReports();
-
-
-        /*
-         * Thiết lập nút lọc
-         */
-
-        setupReportFilter();
-
-
-        /*
-         * Thiết lập loại báo cáo
-         */
-
-        setupReportType();
-
-
-        /*
-         * Đặt trạng thái ban đầu
-         */
-
-        const typeSelect =
-            document.getElementById(
-                "reports-type"
-            );
-
-
-        if (typeSelect) {
-
-            updateReportSections(
-                typeSelect.value
-            );
-
+        const filter = document.getElementById("reports-filter-button");
+        const type = document.getElementById("reports-type");
+        if (filter && !filter.dataset.initialized) {
+            filter.addEventListener("click", () => applyReportFilter(true));
+            filter.dataset.initialized = "true";
         }
-
+        if (type && !type.dataset.initialized) {
+            type.addEventListener("change", () => updateReportSections(type.value));
+            type.dataset.initialized = "true";
+        }
+        setupExportMenu();
     }
 
+    document.addEventListener("sales:data-changed", function () {
+        if (document.getElementById("reports-page")?.classList.contains("active")) {
+            loadReportSource().then(() => {
+                initializeDateRange();
+                applyReportFilter(false);
+            }).catch(console.error);
+        }
+    });
 
-    /* =====================================================
-       EXPORT RA GLOBAL
-       ===================================================== */
-
-    /*
-     * index.html có thể tiếp tục gọi:
-     *
-     * initReports()
-     *
-     * mà không cần sửa.
-     */
-
-    window.initReports =
-        initReports;
-
-
-    /*
-     * HTML đang dùng:
-     *
-     * onclick="exportReport()"
-     *
-     * nên phải expose hàm này.
-     */
-
-    window.exportReport =
-        exportReport;
-
-
+    window.initReports = initReports;
+    window.exportReport = exportReport;
 })();

@@ -1,15 +1,7 @@
 /* =========================================================
    AUTHENTICATION
    Login / Logout / Session
-   Frontend version
-
-   Hiện tại:
-   - Dùng users được lưu trong localStorage
-   - Dùng để test frontend
-
-   Sau này:
-   - Thay loginLocal() bằng API FastAPI
-   - Không cần viết lại toàn bộ auth.js
+   Xác thực bằng FastAPI, JWT và SQL Server
    ========================================================= */
 
 (function () {
@@ -65,10 +57,10 @@
        ========================================================= */
 
     const roleNames = {
-    admin: "Quản trị viên",
-    owner: "Chủ cửa hàng",
-    staff: "Nhân viên",
-    customer: "Khách hàng"
+    admin: "Admin",
+    owner: "Owner",
+    staff: "Staff",
+    customer: "Customer"
     };
 
 
@@ -208,6 +200,16 @@
 
         try {
 
+            const accessToken = localStorage.getItem(
+                "sales_management_access_token"
+            );
+
+            if (!accessToken) {
+                currentUser = null;
+                localStorage.removeItem(CURRENT_USER_STORAGE_KEY);
+                return null;
+            }
+
             const data =
                 localStorage.getItem(
                     CURRENT_USER_STORAGE_KEY
@@ -224,6 +226,16 @@
 
             const user =
                 JSON.parse(data);
+
+            if (
+                accessToken &&
+                user &&
+                ["admin", "owner", "staff", "customer"].includes(user.role) &&
+                user.isActive !== false
+            ) {
+                currentUser = user;
+                return currentUser;
+            }
 
 
             if (!user) {
@@ -499,7 +511,58 @@
        LOGIN FORM
        ========================================================= */
 
-    function handleLoginSubmit(event) {
+    async function loginWithAPI(username, password) {
+
+        username = String(username || "").trim();
+        password = String(password || "");
+
+        if (!username) {
+            return {
+                success: false,
+                message: "Vui lòng nhập tên tài khoản.",
+                field: "login-username"
+            };
+        }
+
+        if (!password) {
+            return {
+                success: false,
+                message: "Vui lòng nhập mật khẩu.",
+                field: "login-password"
+            };
+        }
+
+        try {
+            const response = await apiRequest("/api/auth/login", {
+                method: "POST",
+                body: JSON.stringify({ username, password })
+            });
+            const user = {
+                id: response.user.id,
+                username: response.user.username,
+                fullName: response.user.full_name,
+                role: response.user.role,
+                isActive: response.user.is_active
+            };
+            localStorage.setItem(
+                "sales_management_access_token",
+                response.access_token
+            );
+            saveCurrentUser(user);
+            return {
+                success: true,
+                user,
+                message: response.message
+            };
+        } catch (error) {
+            return {
+                success: false,
+                message: error.message || "Tên tài khoản hoặc mật khẩu không đúng."
+            };
+        }
+    }
+
+    async function handleLoginSubmit(event) {
 
         if (event) {
 
@@ -547,7 +610,7 @@
 
 
         const result =
-            loginLocal(
+            await loginWithAPI(
                 username,
                 password
             );
@@ -641,6 +704,12 @@
 
         showApplication();
 
+        if (
+            typeof window.showDashboardPage === "function"
+        ) {
+            window.showDashboardPage();
+        }
+
 
         /*
          * Cho các module khác biết login đã thành công.
@@ -668,6 +737,10 @@
 
         localStorage.removeItem(
             CURRENT_USER_STORAGE_KEY
+        );
+
+        localStorage.removeItem(
+            "sales_management_access_token"
         );
 
 
@@ -837,6 +910,43 @@
                         : "";
             }
         );
+
+        /*
+         * Avatar và màu giao diện theo đúng tài khoản đang đăng nhập.
+         */
+
+        const avatar =
+            getElement(
+                "current-user-avatar"
+            );
+
+        if (avatar) {
+
+            const avatarSource =
+                user
+                    ? (
+                        user.role ||
+                        user.username ||
+                        user.fullName ||
+                        "U"
+                    )
+                    : "U";
+
+            avatar.textContent =
+                String(avatarSource)
+                    .trim()
+                    .charAt(0)
+                    .toUpperCase() || "U";
+        }
+
+        if (document.body) {
+
+            if (user && user.role) {
+                document.body.dataset.userRole = user.role;
+            } else {
+                delete document.body.dataset.userRole;
+            }
+        }
 
 
         /*
@@ -1051,7 +1161,7 @@
        ========================================================= */
 
     window.loginLocal =
-        loginLocal;
+        loginWithAPI;
 
 
     window.logout =

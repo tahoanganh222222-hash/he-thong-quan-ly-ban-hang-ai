@@ -1,18 +1,7 @@
 /* =========================================================
    AI01 - TƯ VẤN SẢN PHẨM
 
-   Frontend version
-
-   Hiện tại:
-   - Dùng mock products
-   - Mô phỏng logic AI
-   - Không gọi API AI
-
-   Sau này:
-   - Gửi nhu cầu + dữ liệu sản phẩm/tồn kho
-     tới backend FastAPI
-   - Backend gọi Gemini API
-   - Nhận kết quả và hiển thị lại
+   Dữ liệu sản phẩm và tồn kho được tải từ REST API.
    ========================================================= */
 
 (function () {
@@ -21,92 +10,35 @@
 
 
     /* =========================================================
-       MOCK PRODUCTS
+       REAL PRODUCTS
        ========================================================= */
 
-    const aiProducts = [
+    let aiProducts = [];
 
-        {
-            id: 1,
-            code: "SP001",
-            name: "Nước suối Aquafina 500ml",
-            category: "Đồ uống",
-            sellingPrice: 6000,
-            unit: "Chai",
-            stock: 120
-        },
+    async function loadAIProducts() {
 
-        {
-            id: 2,
-            code: "SP002",
-            name: "Nước ngọt Coca Cola 330ml",
-            category: "Đồ uống",
-            sellingPrice: 10000,
-            unit: "Lon",
-            stock: 85
-        },
-
-        {
-            id: 3,
-            code: "SP003",
-            name: "Mì Hảo Hảo tôm chua cay",
-            category: "Thực phẩm",
-            sellingPrice: 5000,
-            unit: "Gói",
-            stock: 150
-        },
-
-        {
-            id: 4,
-            code: "SP004",
-            name: "Nước giặt OMO 3.6kg",
-            category: "Hàng gia dụng",
-            sellingPrice: 125000,
-            unit: "Túi",
-            stock: 30
-        },
-
-        {
-            id: 5,
-            code: "SP005",
-            name: "Quạt điện Senko",
-            category: "Thiết bị điện",
-            sellingPrice: 520000,
-            unit: "Cái",
-            stock: 12
-        },
-
-        {
-            id: 6,
-            code: "SP006",
-            name: "Máy sấy tóc Philips",
-            category: "Thiết bị điện",
-            sellingPrice: 350000,
-            unit: "Cái",
-            stock: 8
-        },
-
-        {
-            id: 7,
-            code: "SP007",
-            name: "Bóng đèn LED 12W",
-            category: "Thiết bị điện",
-            sellingPrice: 45000,
-            unit: "Cái",
-            stock: 45
-        },
-
-        {
-            id: 8,
-            code: "SP008",
-            name: "Giấy A4 Double A",
-            category: "Văn phòng phẩm",
-            sellingPrice: 78000,
-            unit: "Ram",
-            stock: 40
+        if (!window.salesApi?.products) {
+            throw new Error("API sản phẩm chưa sẵn sàng.");
         }
 
-    ];
+        const products =
+            await window.salesApi.products.list();
+
+        aiProducts =
+            products
+                .filter(product => product.isActive !== false)
+                .map(product => ({
+                    id: product.id,
+                    code: product.code || "",
+                    name: product.name || "Sản phẩm",
+                    category: product.category || "",
+                    sellingPrice: Number(product.sellingPrice || 0),
+                    unit: product.unit || "",
+                    stock: Number(product.stock || 0)
+                }));
+
+        return aiProducts;
+    }
 
 
     /* =========================================================
@@ -789,14 +721,16 @@
 
     function canUseAIProductAdvice() {
 
-        /*
-         * Frontend mock:
-         *
-         * owner và customer được sử dụng.
-         *
-         * Nếu chưa có auth.js hoặc chưa đăng nhập,
-         * cho phép hiển thị để test prototype.
-         */
+        /* Dùng cùng cấu hình với màn hình phân quyền. */
+        if (
+            typeof window.hasCurrentUserPermission ===
+            "function"
+        ) {
+
+            return window.hasCurrentUserPermission(
+                "ai_product_advice"
+            );
+        }
 
         if (
             typeof window.getCurrentRole !==
@@ -818,6 +752,7 @@
 
 
         return (
+            role === "admin" ||
             role === "owner" ||
             role === "customer"
         );
@@ -832,7 +767,7 @@
 
         const inputArea =
             getElement(
-                "ai-advice-content"
+                "ai-results"
             );
 
         if (!inputArea) {
@@ -856,7 +791,7 @@
 
                     <p>
                         Chức năng AI tư vấn sản phẩm
-                        chỉ dành cho Chủ cửa hàng và Khách hàng.
+                        chưa được cấp cho tài khoản hiện tại.
                     </p>
 
                 </div>
@@ -870,7 +805,7 @@
        REQUEST ADVICE
        ========================================================= */
 
-    function requestProductAdvice() {
+    async function requestProductAdvice() {
 
         if (!canUseAIProductAdvice()) {
 
@@ -909,28 +844,27 @@
 
         renderLoading();
 
-
-        /*
-         * Mô phỏng thời gian AI xử lý.
-         */
-
-        setTimeout(
-            function () {
-
-                const recommendations =
-                    getRecommendations(
-                        need
-                    );
-
-
-                renderRecommendations(
-                    recommendations,
+        try {
+            await loadAIProducts();
+            const recommendations =
+                getRecommendations(
                     need
                 );
-
-            },
-            500
-        );
+            renderRecommendations(
+                recommendations,
+                need
+            );
+        } catch (error) {
+            const result = getElement("ai-results");
+            if (result) {
+                result.innerHTML = `
+                    <div class="ai-no-product">
+                        <h4>Không thể tải dữ liệu sản phẩm</h4>
+                        <p>${String(error.message || "Vui lòng kiểm tra kết nối backend.")}</p>
+                    </div>
+                `;
+            }
+        }
     }
 
 
@@ -960,39 +894,62 @@
        INIT
        ========================================================= */
 
-    function initAIProductAdvice() {
+    async function initAIProductAdvice() {
 
-        const button =
-            getElement(
-                "ai-advice-button"
-            );
+    const button =
+        getElement("ai-advice-button");
 
-        const resetButton =
-            getElement(
-                "ai-reset-button"
-            );
+    const resetButton =
+        getElement("ai-reset-button");
 
 
-        if (button) {
+    if (button && !button.dataset.aiInitialized) {
 
-            button.addEventListener(
-                "click",
-                requestProductAdvice
-            );
-        }
+        button.addEventListener(
+            "click",
+            requestProductAdvice
+        );
 
-
-        if (resetButton) {
-
-            resetButton.addEventListener(
-                "click",
-                resetAIAdvice
-            );
-        }
-
-
-        renderEmptyResult();
+        button.dataset.aiInitialized = "true";
     }
+
+
+    if (
+        resetButton &&
+        !resetButton.dataset.aiInitialized
+    ) {
+
+        resetButton.addEventListener(
+            "click",
+            resetAIAdvice
+        );
+
+        resetButton.dataset.aiInitialized = "true";
+    }
+
+
+    renderLoading();
+    try {
+        await loadAIProducts();
+        renderEmptyResult();
+    } catch (error) {
+        const result = getElement("ai-results");
+        if (result) {
+            result.innerHTML = `
+                <div class="ai-no-product">
+                    <h4>Không thể tải dữ liệu sản phẩm</h4>
+                    <p>${String(error.message || "Vui lòng kiểm tra kết nối backend.")}</p>
+                </div>
+            `;
+        }
+    }
+}
+
+    document.addEventListener("sales:data-changed", function () {
+        if (getElement("ai-product-page")?.classList.contains("active")) {
+            loadAIProducts().catch(console.error);
+        }
+    });
 
 
     /* =========================================================

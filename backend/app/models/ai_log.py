@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, String, Text
+from sqlalchemy import DateTime, ForeignKey, String, UnicodeText
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base
@@ -25,12 +25,12 @@ class AILog(Base):
     )
 
     input_data: Mapped[str | None] = mapped_column(
-        Text,
+        UnicodeText,
         nullable=True
     )
 
     output_data: Mapped[str | None] = mapped_column(
-        Text,
+        UnicodeText,
         nullable=True
     )
 

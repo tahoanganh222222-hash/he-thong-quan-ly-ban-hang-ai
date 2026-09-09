@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from sqlalchemy import Boolean, ForeignKey, Numeric, String
+from sqlalchemy import Boolean, ForeignKey, Numeric, String, Unicode
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base
@@ -21,7 +21,7 @@ class Product(Base):
     )
 
     name: Mapped[str] = mapped_column(
-        String(150),
+        Unicode(150),
         nullable=False
     )
 
@@ -41,7 +41,7 @@ class Product(Base):
     )
 
     unit: Mapped[str] = mapped_column(
-        String(30),
+        Unicode(30),
         nullable=False
     )
 

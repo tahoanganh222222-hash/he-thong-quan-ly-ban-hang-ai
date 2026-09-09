@@ -4,112 +4,23 @@
 
    ================================ */
 
-let customers = [
-    {
-        id: 1,
-        code: "KH001",
-        name: "Nguyễn Văn An",
-        phone: "0912345678",
-        email: "nguyenvanan@gmail.com",
-        address: "Thái Nguyên",
-        customerGroup: "Khách thường",
-        isActive: true
-    },
-    {
-        id: 2,
-        code: "KH002",
-        name: "Trần Thị Bình",
-        phone: "0987654321",
-        email: "tranthibinh@gmail.com",
-        address: "Hà Nội",
-        customerGroup: "Khách thân thiết",
-        isActive: true
-    },
-    {
-        id: 3,
-        code: "KH003",
-        name: "Lê Văn Cường",
-        phone: "0905123456",
-        email: "levancuong@gmail.com",
-        address: "Thái Nguyên",
-        customerGroup: "Khách thường",
-        isActive: true
-    },
-    {
-        id: 4,
-        code: "KH004",
-        name: "Phạm Thị Dung",
-        phone: "0978123456",
-        email: "phamthidung@gmail.com",
-        address: "Bắc Ninh",
-        customerGroup: "Khách thân thiết",
-        isActive: true
-    },
-    {
-        id: 5,
-        code: "KH005",
-        name: "Hoàng Văn Đức",
-        phone: "0961234567",
-        email: "",
-        address: "Thái Nguyên",
-        customerGroup: "Khách thường",
-        isActive: false
-    },
-    {
-        id: 6,
-        code: "KH006",
-        name: "Đỗ Thị Hà",
-        phone: "0934567890",
-        email: "dothiha@gmail.com",
-        address: "Hà Nội",
-        customerGroup: "Khách VIP",
-        isActive: true
-    },
-    {
-        id: 7,
-        code: "KH007",
-        name: "Nguyễn Minh Hoàng",
-        phone: "0923456789",
-        email: "nguyenminhhoang@gmail.com",
-        address: "Thái Nguyên",
-        customerGroup: "Khách thường",
-        isActive: true
-    },
-    {
-        id: 8,
-        code: "KH008",
-        name: "Vũ Thị Lan",
-        phone: "0945678901",
-        email: "vuthilan@gmail.com",
-        address: "Bắc Giang",
-        customerGroup: "Khách thân thiết",
-        isActive: true
-    },
-    {
-        id: 9,
-        code: "KH009",
-        name: "Bùi Văn Nam",
-        phone: "0915678901",
-        email: "",
-        address: "Thái Nguyên",
-        customerGroup: "Khách thường",
-        isActive: true
-    },
-    {
-        id: 10,
-        code: "KH010",
-        name: "Phan Thị Oanh",
-        phone: "0981234567",
-        email: "phanthioanh@gmail.com",
-        address: "Hà Nội",
-        customerGroup: "Khách VIP",
-        isActive: true
-    }
-];
+let customers = [];
 
 let currentCustomerPage = 1;
 const customerPageSize = 7;
 let editingCustomerId = null;
+let customerEventsInitialized = false;
+
+async function loadCustomersFromAPI() {
+
+    try {
+        customers = await window.salesApi.customers.list();
+    } catch (error) {
+        customers = [];
+        console.error("Không thể tải danh sách khách hàng:", error);
+        alert("Không thể tải dữ liệu khách hàng từ máy chủ.");
+    }
+}
 
 
 /* ================================
@@ -571,7 +482,7 @@ function generateCustomerCode() {
 
    ================================ */
 
-function saveCustomer(event) {
+async function saveCustomer(event) {
 
     event.preventDefault();
 
@@ -656,18 +567,21 @@ function saveCustomer(event) {
 
     if (editingCustomerId === null) {
 
-        customers.push({
-
-            id: Date.now(),
-            code,
-            name,
-            phone,
-            email,
-            address,
-            customerGroup,
-            isActive: true
-
-        });
+        try {
+            const createdCustomer = await window.salesApi.customers.create({
+                code,
+                name,
+                phone,
+                email,
+                address,
+                customerGroup,
+                isActive: true
+            });
+            customers.push(createdCustomer);
+        } catch (error) {
+            alert(error.message || "Không thể thêm khách hàng.");
+            return;
+        }
 
         alert("Thêm khách hàng thành công.");
 
@@ -677,15 +591,21 @@ function saveCustomer(event) {
             item => item.id === editingCustomerId
         );
 
-        if (customer) {
+        if (!customer) {
+            return;
+        }
 
-            customer.code = code;
-            customer.name = name;
-            customer.phone = phone;
-            customer.email = email;
-            customer.address = address;
-            customer.customerGroup = customerGroup;
-
+        try {
+            const updatedCustomer = await window.salesApi.customers.update(
+                editingCustomerId,
+                { code, name, phone, email, address, customerGroup }
+            );
+            customers = customers.map(item =>
+                item.id === editingCustomerId ? updatedCustomer : item
+            );
+        } catch (error) {
+            alert(error.message || "Không thể cập nhật khách hàng.");
+            return;
         }
 
         alert("Cập nhật khách hàng thành công.");
@@ -705,7 +625,7 @@ function saveCustomer(event) {
 
    ================================ */
 
-function toggleCustomerStatus(id) {
+async function toggleCustomerStatus(id) {
 
     // KIỂM TRA PHÂN QUYỀN
     if (
@@ -735,7 +655,18 @@ function toggleCustomerStatus(id) {
         return;
     }
 
-    customer.isActive = !customer.isActive;
+    try {
+        const updatedCustomer = await window.salesApi.customers.update(
+            id,
+            { isActive: !customer.isActive }
+        );
+        customers = customers.map(item =>
+            item.id === id ? updatedCustomer : item
+        );
+    } catch (error) {
+        alert(error.message || "Không thể cập nhật trạng thái khách hàng.");
+        return;
+    }
 
     renderCustomers();
 }
@@ -866,7 +797,7 @@ function setupCustomerModal() {
 
    ================================ */
 
-function initCustomerManagement() {
+async function initCustomerManagement() {
 
     // KIỂM TRA PHÂN QUYỀN
     if (
@@ -876,11 +807,15 @@ function initCustomerManagement() {
         return;
     }
 
+    await loadCustomersFromAPI();
+
     currentCustomerPage = 1;
 
-    setupCustomerFilters();
-
-    setupCustomerModal();
+    if (!customerEventsInitialized) {
+        setupCustomerFilters();
+        setupCustomerModal();
+        customerEventsInitialized = true;
+    }
 
     renderCustomers();
 }

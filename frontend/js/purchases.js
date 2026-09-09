@@ -1,63 +1,19 @@
 let purchaseItems = [];
 
-let purchaseProducts = [
-    {
-        id: 1,
-        code: "SP001",
-        name: "Nước suối 500ml",
-        purchasePrice: 5000,
-        stock: 120
-    },
-    {
-        id: 2,
-        code: "SP002",
-        name: "Nước ngọt Coca Cola",
-        purchasePrice: 9000,
-        stock: 80
-    },
-    {
-        id: 3,
-        code: "SP003",
-        name: "Bột giặt OMO",
-        purchasePrice: 65000,
-        stock: 35
-    },
-    {
-        id: 4,
-        code: "SP004",
-        name: "Quạt điện",
-        purchasePrice: 450000,
-        stock: 12
-    },
-    {
-        id: 5,
-        code: "SP005",
-        name: "Máy sấy tóc",
-        purchasePrice: 280000,
-        stock: 8
-    },
-    {
-        id: 6,
-        code: "SP006",
-        name: "Ổ cắm điện",
-        purchasePrice: 55000,
-        stock: 25
-    },
-    {
-        id: 7,
-        code: "SP007",
-        name: "Giấy vệ sinh",
-        purchasePrice: 42000,
-        stock: 50
-    },
-    {
-        id: 8,
-        code: "SP008",
-        name: "Nước rửa chén",
-        purchasePrice: 32000,
-        stock: 40
+let purchaseProducts = [];
+
+async function fetchPurchaseProducts() {
+
+    try {
+        purchaseProducts = (
+            await window.salesApi.products.list()
+        ).filter(product => product.isActive);
+    } catch (error) {
+        purchaseProducts = [];
+        console.error("Không thể tải sản phẩm nhập hàng:", error);
+        alert("Không thể tải dữ liệu sản phẩm từ máy chủ.");
     }
-];
+}
 
 function formatPurchaseMoney(value) {
     return Number(value || 0).toLocaleString("vi-VN") + " ₫";
@@ -386,7 +342,7 @@ function updatePurchaseSummary() {
     }
 }
 
-function createPurchaseReceipt() {
+async function createPurchaseReceipt() {
     if (
         typeof requirePermission === "function" &&
         !requirePermission("purchase_track")
@@ -431,18 +387,22 @@ function createPurchaseReceipt() {
     if (!confirmed) {
         return;
     }
-    /*
-     * Prototype:
-     * Cập nhật tồn kho mock.
-     * Chưa ghi database thật.
-     */
-        purchaseItems.forEach(item => {
-            const product =
-            purchaseProducts.find( product => product.id === item.productId);
-        if (product) {
-            product.stock += item.quantity;
+    /* Ghi phiếu nhập và cập nhật tồn kho qua REST API. */
+        try {
+            await window.salesApi.purchases.create({
+                receiptCode,
+                supplierName: supplier,
+                items: purchaseItems.map(item => ({
+                    productId: item.productId,
+                    quantity: item.quantity,
+                    unitPrice: item.unitPrice
+                }))
+            });
+            await fetchPurchaseProducts();
+        } catch (error) {
+            alert(error.message || "Không thể tạo phiếu nhập.");
+            return;
         }
-        });
 
         addHistory({
             action: "Thêm",
@@ -546,6 +506,11 @@ function setupPurchaseProductSelect() {
         return;
     }
 
+    if (select.dataset.purchaseListenerAttached === "true") {
+        return;
+    }
+    select.dataset.purchaseListenerAttached = "true";
+
     select.addEventListener(
         "change",
         function () {
@@ -568,13 +533,15 @@ function setupPurchaseProductSelect() {
     );
 }
 
-function initPurchaseManagement() {
+async function initPurchaseManagement() {
     if (
         typeof requirePermission === "function" &&
         !requirePermission("purchase_track")
     ) {
         return;
     }
+
+    await fetchPurchaseProducts();
 
     loadPurchaseProducts();
     renderPurchaseItems();

@@ -7,6 +7,8 @@ from app.models.invoice import Invoice, InvoiceDetail
 from app.models.purchase import PurchaseReceipt, PurchaseReceiptDetail
 from app.models.inventory import Inventory
 from app.models.ai_log import AILog
+from app.models.role_permission import RolePermission
+from app.models.activity_log import ActivityLog
 
 __all__ = [
     "Base",
@@ -20,4 +22,6 @@ __all__ = [
     "PurchaseReceiptDetail",
     "Inventory",
     "AILog",
+    "RolePermission",
+    "ActivityLog",
 ]

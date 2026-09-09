@@ -14,10 +14,17 @@ async function apiRequest(endpoint, options = {}) {
         `${API_BASE_URL}${endpoint}`;
 
 
+    const accessToken = localStorage.getItem(
+        "sales_management_access_token"
+    );
+
     const defaultOptions = {
 
         headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            ...(accessToken
+                ? { Authorization: `Bearer ${accessToken}` }
+                : {})
         }
 
     };
@@ -55,10 +62,14 @@ async function apiRequest(endpoint, options = {}) {
 
         if (!response.ok) {
 
-            throw new Error(
+            const requestError = new Error(
                 data.detail ||
                 "Có lỗi xảy ra khi gọi API."
             );
+
+            requestError.status = response.status;
+
+            throw requestError;
 
         }
 
@@ -96,7 +107,7 @@ async function checkBackend() {
 async function checkSystemHealth() {
 
     return await apiRequest(
-        "/api/health"
+        "/health"
     );
 
 }

@@ -1,24 +1,21 @@
 from datetime import datetime, timedelta, timezone
 
+import bcrypt
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 
 from app.core.config import settings
 
 
 ALGORITHM = "HS256"
 
-pwd_context = CryptContext(
-    schemes=["bcrypt"],
-    deprecated="auto"
-)
-
-
 def hash_password(password: str) -> str:
     """
     Hash mật khẩu trước khi lưu vào database.
     """
-    return pwd_context.hash(password)
+    password_bytes = password.encode("utf-8")
+    if len(password_bytes) > 72:
+        raise ValueError("Mật khẩu không được dài quá 72 byte")
+    return bcrypt.hashpw(password_bytes, bcrypt.gensalt()).decode("utf-8")
 
 
 def verify_password(
@@ -29,10 +26,13 @@ def verify_password(
     Kiểm tra mật khẩu người dùng nhập
     với password hash trong database.
     """
-    return pwd_context.verify(
-        plain_password,
-        password_hash
-    )
+    password_bytes = plain_password.encode("utf-8")
+    if len(password_bytes) > 72:
+        return False
+    try:
+        return bcrypt.checkpw(password_bytes, password_hash.encode("utf-8"))
+    except (TypeError, ValueError):
+        return False
 
 
 def create_access_token(

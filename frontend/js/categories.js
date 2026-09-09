@@ -100,39 +100,17 @@ function getFilteredCategories() {
 
 
     return categories.filter(category => {
-
-        const matchesSearch =
-            category.name
-                .toLowerCase()
-                .includes(keyword) ||
-
-            category.description
-                .toLowerCase()
-                .includes(keyword);
-
-
+        const matchesSearch = category.name.toLowerCase().includes(keyword) ||
+            category.description.toLowerCase().includes(keyword);
         let matchesStatus = true;
-
-
         if (status === "active") {
-
-            matchesStatus =
-                category.isActive === true;
-
+            matchesStatus = category.isActive === true;
         }
-
-
         if (status === "inactive") {
-
-            matchesStatus =
-                category.isActive === false;
-
+            matchesStatus = category.isActive === false;
         }
-
-
         return matchesSearch &&
                matchesStatus;
-
     });
 
 }

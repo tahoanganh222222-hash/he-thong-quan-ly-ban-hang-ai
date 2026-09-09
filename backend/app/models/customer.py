@@ -1,4 +1,4 @@
-from sqlalchemy import String
+from sqlalchemy import String, Unicode
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base
@@ -19,7 +19,7 @@ class Customer(Base):
     )
 
     name: Mapped[str] = mapped_column(
-        String(100),
+        Unicode(100),
         nullable=False
     )
 
@@ -34,12 +34,12 @@ class Customer(Base):
     )
 
     address: Mapped[str | None] = mapped_column(
-        String(255),
+        Unicode(255),
         nullable=True
     )
 
     customer_group: Mapped[str | None] = mapped_column(
-        String(50),
+        Unicode(50),
         nullable=True
     )
 

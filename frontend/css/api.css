@@ -867,3 +867,11 @@ td strong {
     }
 
 }
+
+.dashboard-empty-state {
+    width: 100%;
+    padding: 24px 12px;
+    color: #64748b;
+    text-align: center;
+    font-size: 14px;
+}

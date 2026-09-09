@@ -11,6 +11,7 @@ connection_string = (
     f"SERVER={settings.DB_SERVER},{settings.DB_PORT};"
     f"DATABASE={settings.DB_NAME};"
     "Trusted_Connection=yes;"
+    f"Encrypt={'yes' if settings.DB_ENCRYPT else 'no'};"
     f"TrustServerCertificate="
     f"{'yes' if settings.DB_TRUST_SERVER_CERTIFICATE else 'no'};"
 )
@@ -23,7 +24,7 @@ DATABASE_URL = (
 
 engine = create_engine(
     DATABASE_URL,
-    echo=settings.DEBUG,
+    echo=settings.APP_DEBUG,
     pool_pre_ping=True,
     pool_recycle=1800,
 )

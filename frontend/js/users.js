@@ -1,10 +1,8 @@
 /* =========================================================
    USERS MANAGEMENT
-   Frontend version
-   - Không cần sửa index.html
+   Dữ liệu từ FastAPI + SQL Server
    - Role: owner / staff / customer
-   - Lưu dữ liệu bằng localStorage
-   - Sẵn cấu trúc để sau này chuyển sang FastAPI API
+   - Tài khoản tạo mới có thể đăng nhập ngay
    ========================================================= */
 
 (function () {
@@ -233,27 +231,15 @@
 
 
     /* =========================================================
-       DATA LAYER
-       =========================================================
-
-       Hiện tại:
-       localStorage
-
-       Sau này:
-       thay các function này bằng fetch() tới FastAPI.
-
-       Ví dụ sau này:
-
-       GET    /api/users
-       POST   /api/users
-       PUT    /api/users/{id}
-       PATCH  /api/users/{id}/status
-
-       Phần giao diện phía dưới không cần thay đổi.
+       DATA LAYER - FASTAPI
        ========================================================= */
 
 
     async function getUsers() {
+
+        users = (
+            await window.salesApi.users.list()
+        ).map(normalizeUser);
 
         return users;
     }
@@ -261,24 +247,11 @@
 
     async function createUser(userData) {
 
-        const newId =
-            users.length > 0
-                ? Math.max(
-                    ...users.map(
-                        user => Number(user.id)
-                    )
-                ) + 1
-                : 1;
-
-        const newUser =
-            normalizeUser({
-                id: newId,
-                ...userData
-            });
+        const newUser = normalizeUser(
+            await window.salesApi.users.create(userData)
+        );
 
         users.push(newUser);
-
-        saveUsersToStorage();
 
         return newUser;
     }
@@ -286,59 +259,33 @@
 
     async function updateUser(userId, userData) {
 
-        const user =
-            users.find(
-                item =>
-                    Number(item.id) ===
-                    Number(userId)
-            );
-
-        if (!user) {
-
-            throw new Error(
-                "Không tìm thấy tài khoản."
-            );
-        }
-
-        Object.assign(
-            user,
-            normalizeUser({
-                ...user,
-                ...userData,
-                id: user.id
-            })
+        const updatedUser = normalizeUser(
+            await window.salesApi.users.update(userId, userData)
         );
 
-        saveUsersToStorage();
+        users = users.map(user =>
+            Number(user.id) === Number(userId)
+                ? updatedUser
+                : user
+        );
 
-        return user;
+        return updatedUser;
     }
-
 
     async function changeUserStatus(userId) {
 
-        const user =
-            users.find(
-                item =>
-                    Number(item.id) ===
-                    Number(userId)
-            );
+        const user = users.find(
+            item => Number(item.id) === Number(userId)
+        );
 
         if (!user) {
-
-            throw new Error(
-                "Không tìm thấy tài khoản."
-            );
+            throw new Error("Không tìm thấy tài khoản.");
         }
 
-        user.isActive =
-            !user.isActive;
-
-        saveUsersToStorage();
-
-        return user;
+        return updateUser(userId, {
+            isActive: !user.isActive
+        });
     }
-
 
     /* =========================================================
        FILTER USERS
@@ -1124,6 +1071,9 @@
                     username:
                         data.username,
 
+                    password:
+                        data.password,
+
                     phone:
                         data.phone,
 
@@ -1206,17 +1156,14 @@
                         data.role,
 
                     isActive:
-                        data.status === "active"
+                        data.status === "active",
+
+                    ...(data.password
+                        ? { password: data.password }
+                        : {})
                 }
             );
 
-
-            /*
-             * Không lưu password ở frontend.
-             *
-             * Sau này backend sẽ xử lý:
-             * password -> hash -> database
-             */
 
             alert(
                 "Cập nhật tài khoản thành công."
@@ -1982,14 +1929,14 @@
 
 
     /* =========================================================
-       RESET DEMO DATA
+       TẢI LẠI DANH SÁCH
        ========================================================= */
 
-    function resetUsersToDefault() {
+    async function resetUsersToDefault() {
 
         const confirmed =
             confirm(
-                "Bạn có chắc muốn khôi phục danh sách tài khoản mặc định không?"
+                "Bạn có muốn tải lại danh sách tài khoản từ database không?"
             );
 
 
@@ -1998,19 +1945,13 @@
         }
 
 
-        users =
-            defaultUsers.map(
-                normalizeUser
-            );
-
-
-        saveUsersToStorage();
+        await getUsers();
 
         renderUsers();
 
 
         alert(
-            "Đã khôi phục dữ liệu tài khoản mặc định."
+            "Đã tải lại danh sách tài khoản từ database."
         );
     }
 
@@ -2072,14 +2013,29 @@
        INITIALIZE
        ========================================================= */
 
-    function initUsers() {
-
-        loadUsersFromStorage();
+    async function initUsers() {
 
         setupUsersEvents();
 
+        if (localStorage.getItem("sales_management_access_token")) {
+            try {
+                await getUsers();
+            } catch (error) {
+                console.error("Không thể tải danh sách tài khoản:", error);
+                users = [];
+            }
+        } else {
+            users = [];
+        }
+
         renderUsers();
     }
+
+    window.addEventListener("auth:login", initUsers);
+    window.addEventListener("auth:logout", function () {
+        users = [];
+        renderUsers();
+    });
 
 
     if (

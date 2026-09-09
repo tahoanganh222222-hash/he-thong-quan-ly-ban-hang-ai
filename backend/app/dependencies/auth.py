@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.database import get_db
 from app.core.security import ALGORITHM
+from app.models.role_permission import RolePermission
 from app.models.user import User
 
 
@@ -102,3 +103,47 @@ def require_roles(
         return current_user
 
     return role_checker
+
+
+def _has_permission(db: Session, user: User, permission_key: str) -> bool:
+    if user.role == "admin":
+        return True
+    permission = (
+        db.query(RolePermission)
+        .filter(
+            RolePermission.role == user.role,
+            RolePermission.permission_key == permission_key,
+        )
+        .first()
+    )
+    return bool(permission and permission.allowed)
+
+
+def require_permission(permission_key: str) -> Callable:
+    def permission_checker(
+        current_user: User = Depends(get_current_user),
+        db: Session = Depends(get_db),
+    ) -> User:
+        if not _has_permission(db, current_user, permission_key):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Bạn không có quyền sử dụng chức năng này",
+            )
+        return current_user
+
+    return permission_checker
+
+
+def require_any_permission(*permission_keys: str) -> Callable:
+    def permission_checker(
+        current_user: User = Depends(get_current_user),
+        db: Session = Depends(get_db),
+    ) -> User:
+        if not any(_has_permission(db, current_user, key) for key in permission_keys):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Bạn không có quyền sử dụng chức năng này",
+            )
+        return current_user
+
+    return permission_checker

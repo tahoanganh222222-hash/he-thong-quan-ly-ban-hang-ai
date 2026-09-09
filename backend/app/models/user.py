@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, String
+from sqlalchemy import Boolean, String, Unicode
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base
@@ -21,8 +21,18 @@ class User(Base):
     )
 
     full_name: Mapped[str] = mapped_column(
-        String(100),
+        Unicode(100),
         nullable=False
+    )
+
+    phone: Mapped[str | None] = mapped_column(
+        Unicode(20),
+        nullable=True
+    )
+
+    email: Mapped[str | None] = mapped_column(
+        Unicode(100),
+        nullable=True
     )
 
     role: Mapped[str] = mapped_column(

@@ -77,14 +77,6 @@ function syncCurrentPermissionUser() {
 
 
 /* =========================================================
-   2. STORAGE
-   ========================================================= */
-
-const PERMISSION_STORAGE_KEY =
-    "sales_management_role_permissions";
-
-
-/* =========================================================
    3. DANH SÁCH QUYỀN
    ========================================================= */
 
@@ -100,6 +92,12 @@ const permissionDefinitions = [
         key: "permission",
         name: "Phân quyền",
         description: "Quản lý quyền sử dụng chức năng của các vai trò."
+    },
+
+    {
+        key: "user_manage",
+        name: "Quản lý người dùng",
+        description: "Tạo, sửa, khóa và quản lý tài khoản người dùng."
     },
 
     {
@@ -193,24 +191,25 @@ const defaultRolePermissions = {
 
         login: true,
         permission: true,
+        user_manage: true,
 
         product_manage: true,
         customer_manage: true,
         search_filter: true,
 
-        invoice_create: false,
-        invoice_search: false,
+        invoice_create: true,
+        invoice_search: true,
 
-        purchase_track: false,
-        inventory_view: false,
+        purchase_track: true,
+        inventory_view: true,
 
-        revenue_statistics: false,
-        top_products: false,
+        revenue_statistics: true,
+        top_products: true,
 
         report_export: true,
 
-        sales_data_qa: false,
-        ai_product_advice: false,
+        sales_data_qa: true,
+        ai_product_advice: true,
 
         history_view: true
     },
@@ -220,6 +219,7 @@ const defaultRolePermissions = {
 
         login: true,
         permission: false,
+        user_manage: false,
 
         product_manage: false,
         customer_manage: true,
@@ -247,6 +247,7 @@ const defaultRolePermissions = {
 
         login: true,
         permission: false,
+        user_manage: true,
 
         product_manage: false,
         customer_manage: false,
@@ -274,6 +275,7 @@ const defaultRolePermissions = {
 
         login: true,
         permission: false,
+        user_manage: false,
 
         product_manage: false,
         customer_manage: false,
@@ -353,117 +355,62 @@ function clonePermissions(data) {
 
 
 /* =========================================================
-   8. LOAD LOCAL STORAGE
+   8. LOAD PERMISSIONS FROM DATABASE
    ========================================================= */
 
-function loadPermissionsFromStorage() {
+async function loadPermissionsFromAPI() {
+
+    rolePermissions =
+        clonePermissions(
+            defaultRolePermissions
+        );
+
+    if (
+        !currentPermissionUser ||
+        !window.salesApi ||
+        !window.salesApi.permissions
+    ) {
+        permissionDrafts = clonePermissions(rolePermissions);
+        return false;
+    }
 
     try {
 
         const saved =
-            localStorage.getItem(
-                PERMISSION_STORAGE_KEY
-            );
-
-        if (!saved) {
-
-            rolePermissions =
-                clonePermissions(
-                    defaultRolePermissions
-                );
-
-            permissionDrafts =
-                clonePermissions(
-                    rolePermissions
-                );
-
-            return;
-        }
-
-
-        const parsed =
-            JSON.parse(saved);
-
-
-        /*
-            Merge dữ liệu đã lưu với dữ liệu mặc định.
-            Tránh trường hợp thiếu key.
-        */
+            await window.salesApi.permissions.list();
 
         Object.keys(
             defaultRolePermissions
         ).forEach(function (role) {
 
             rolePermissions[role] = {
-
                 ...defaultRolePermissions[role],
-
-                ...(parsed[role] || {})
-
+                ...(saved[role] || {})
             };
 
         });
 
-
         permissionDrafts =
             clonePermissions(
                 rolePermissions
             );
-
-
-    } catch (error) {
-
-        console.error(
-            "Lỗi khi tải dữ liệu phân quyền:",
-            error
-        );
-
-        rolePermissions =
-            clonePermissions(
-                defaultRolePermissions
-            );
-
-        permissionDrafts =
-            clonePermissions(
-                defaultRolePermissions
-            );
-
-    }
-
-}
-
-
-/* =========================================================
-   9. SAVE LOCAL STORAGE
-   ========================================================= */
-
-function savePermissionsToStorage() {
-
-    try {
-
-        localStorage.setItem(
-
-            PERMISSION_STORAGE_KEY,
-
-            JSON.stringify(
-                rolePermissions
-            )
-
-        );
 
         return true;
 
     } catch (error) {
 
         console.error(
-            "Lỗi khi lưu dữ liệu phân quyền:",
+            "Lỗi khi tải dữ liệu phân quyền từ database:",
             error
         );
 
+        permissionDrafts =
+            clonePermissions(
+                rolePermissions
+            );
+
         return false;
-
     }
-
 }
 
 
@@ -580,10 +527,7 @@ function canManagePermissions() {
         return false;
     }
 
-    return (
-        currentPermissionUser.role === "ADMIN" &&
-        hasCurrentUserPermission("permission")
-    );
+    return hasCurrentUserPermission("permission");
 
 }
 
@@ -592,13 +536,15 @@ function canManagePermissions() {
    14. KHỞI TẠO TRANG
    ========================================================= */
 
-function initPermissionManagement() {
+async function initPermissionManagement() {
 
     syncCurrentPermissionUser();
 
-    loadPermissionsFromStorage();
+    await loadPermissionsFromAPI();
 
     renderPermissionPage();
+
+    applyPermissionVisibility();
 
 }
 
@@ -911,6 +857,7 @@ function renderRolePermissions(role) {
                             data-permission="${escapeHTML(permission.key)}"
 
                             ${allowed ? "checked" : ""}
+                            ${role === "ADMIN" ? "disabled" : ""}
                         >
 
                         <span class="permission-slider"></span>
@@ -1225,7 +1172,7 @@ function updatePermissionSaveState() {
    22. LƯU QUYỀN
    ========================================================= */
 
-function savePermissions() {
+async function savePermissions() {
 
     if (!canManagePermissions()) {
 
@@ -1252,6 +1199,16 @@ function savePermissions() {
         roleSelect.value;
 
 
+    if (role === "ADMIN") {
+
+        alert(
+            "Quản trị viên luôn có toàn quyền và không thể thay đổi."
+        );
+
+        return;
+    }
+
+
     if (!rolePermissions[role]) {
 
         alert(
@@ -1276,27 +1233,28 @@ function savePermissions() {
     }
 
 
-    /*
-        Copy draft → saved.
-    */
+    try {
 
-    rolePermissions[role] =
-        clonePermissions(
-            permissionDrafts[role]
-        );
+        const saved =
+            await window.salesApi.permissions.update(
+                role,
+                permissionDrafts[role]
+            );
 
+        rolePermissions[role] = {
+            ...defaultRolePermissions[role],
+            ...saved
+        };
 
-    /*
-        Lưu localStorage.
-    */
+        permissionDrafts[role] =
+            clonePermissions(
+                rolePermissions[role]
+            );
 
-    const success =
-        savePermissionsToStorage();
-
-
-    if (!success) {
+    } catch (error) {
 
         alert(
+            error.message ||
             "Không thể lưu quyền. Vui lòng thử lại."
         );
 
@@ -1312,6 +1270,8 @@ function savePermissions() {
 
 
     updatePermissionSaveState();
+
+    applyPermissionVisibility();
 
 
     /*
@@ -1385,7 +1345,7 @@ function resetPermissions() {
     Không phải nút "Làm mới".
 */
 
-function resetAllPermissionsToDefault() {
+async function resetAllPermissionsToDefault() {
 
     const confirmed =
         confirm(
@@ -1398,19 +1358,31 @@ function resetAllPermissionsToDefault() {
     }
 
 
-    rolePermissions =
-        clonePermissions(
-            defaultRolePermissions
+    if (!canManagePermissions()) {
+        alert("Bạn không có quyền thay đổi phân quyền.");
+        return;
+    }
+
+    try {
+
+        for (const role of ["SALES", "OWNER", "CUSTOMER"]) {
+            await window.salesApi.permissions.update(
+                role,
+                defaultRolePermissions[role]
+            );
+        }
+
+        await loadPermissionsFromAPI();
+
+    } catch (error) {
+
+        alert(
+            error.message ||
+            "Không thể khôi phục quyền mặc định."
         );
 
-
-    permissionDrafts =
-        clonePermissions(
-            defaultRolePermissions
-        );
-
-
-    savePermissionsToStorage();
+        return;
+    }
 
 
     renderPermissionPage();
@@ -1596,6 +1568,28 @@ function requirePermission(permissionKey) {
 }
 
 
+function requireAnyPermission(permissionKeys) {
+
+    const keys = Array.isArray(permissionKeys)
+        ? permissionKeys
+        : [permissionKeys];
+
+    if (
+        keys.some(function (permissionKey) {
+            return hasCurrentUserPermission(permissionKey);
+        })
+    ) {
+        return true;
+    }
+
+    alert(
+        "Bạn không có quyền sử dụng chức năng này."
+    );
+
+    return false;
+}
+
+
 /* =========================================================
    28. ẨN / HIỆN PHẦN TỬ THEO QUYỀN
    ========================================================= */
@@ -1614,30 +1608,71 @@ function applyPermissionVisibility() {
 
     const elements =
         document.querySelectorAll(
-            "[data-permission]"
+            "[data-permission]:not(.permission-checkbox), [data-permission-any]"
         );
 
 
     elements.forEach(
         function (element) {
 
-            const permissionKey =
-                element.dataset.permission;
+            const permissionKeys =
+                (
+                    element.dataset.permissionAny ||
+                    element.dataset.permission ||
+                    ""
+                )
+                .split(",")
+                .map(function (key) {
+                    return key.trim();
+                })
+                .filter(Boolean);
 
 
             if (
-                hasCurrentUserPermission(
-                    permissionKey
-                )
+                permissionKeys.some(function (permissionKey) {
+                    return hasCurrentUserPermission(permissionKey);
+                })
             ) {
 
                 element.style.display = "";
+
+                element.classList.remove(
+                    "permission-disabled"
+                );
+
+                element.removeAttribute(
+                    "aria-disabled"
+                );
 
                 element.removeAttribute(
                     "aria-hidden"
                 );
 
             } else {
+
+                if (
+                    element.classList.contains(
+                        "menu-item"
+                    )
+                ) {
+
+                    element.style.display = "";
+
+                    element.classList.add(
+                        "permission-disabled"
+                    );
+
+                    element.setAttribute(
+                        "aria-disabled",
+                        "true"
+                    );
+
+                    element.removeAttribute(
+                        "aria-hidden"
+                    );
+
+                    return;
+                }
 
                 element.style.display = "none";
 
@@ -1839,6 +1874,11 @@ function injectPermissionStyles() {
             vertical-align: middle;
         }
 
+        .menu-item.permission-disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
 
         .status-allowed {
             color: #16a34a;
@@ -1961,13 +2001,13 @@ function injectPermissionStyles() {
 
 document.addEventListener(
     "DOMContentLoaded",
-    function () {
+    async function () {
 
         /*
             Load dữ liệu.
         */
         syncCurrentPermissionUser();
-        loadPermissionsFromStorage();
+        await loadPermissionsFromAPI();
 
 
         /*
@@ -2101,6 +2141,29 @@ document.addEventListener(
 );
 
 
+window.addEventListener(
+    "auth:login",
+    async function () {
+        syncCurrentPermissionUser();
+        await loadPermissionsFromAPI();
+        renderPermissionPage();
+        applyPermissionVisibility();
+    }
+);
+
+
+window.addEventListener(
+    "auth:logout",
+    function () {
+        syncCurrentPermissionUser();
+        rolePermissions = clonePermissions(defaultRolePermissions);
+        permissionDrafts = clonePermissions(defaultRolePermissions);
+        renderPermissionPage();
+        applyPermissionVisibility();
+    }
+);
+
+
 /* =========================================================
    32. API FRONTEND CHO CÁC MODULE KHÁC
    ========================================================= */
@@ -2142,3 +2205,18 @@ console.log(
 
 window.syncCurrentPermissionUser =
     syncCurrentPermissionUser;
+
+window.loadPermissionsFromAPI =
+    loadPermissionsFromAPI;
+
+window.requirePermission =
+    requirePermission;
+
+window.requireAnyPermission =
+    requireAnyPermission;
+
+window.hasCurrentUserPermission =
+    hasCurrentUserPermission;
+
+window.applyPermissionVisibility =
+    applyPermissionVisibility;

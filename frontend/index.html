@@ -11,7 +11,7 @@
 
     <title>Hệ thống quản lý bán hàng</title>
 
-    <link
+<link
     rel="stylesheet"
     href="./css/api.css"
 >
@@ -67,6 +67,10 @@
     rel="stylesheet"
     href="css/ai.css"
 >
+<link
+    rel="stylesheet"
+    href="css/theme.css"
+>
 
 
 </head>
@@ -97,7 +101,7 @@
 
 
 
-    <div class="app">
+    <div class="app" id="app">
         <!-- =========================
              SIDEBAR
              ========================= -->
@@ -133,44 +137,51 @@
 
 
                 <button class="menu-item"
-                data-page="products">
+                data-page="products"
+                data-permission="product_manage">
                     <span class="menu-icon">▣</span>
                     <span>Sản phẩm</span>
                 </button>
 
                 <button class="menu-item"
-                data-page="categories">
+                data-page="categories"
+                data-permission="product_manage">
                     <span class="menu-icon">▤</span>
                     <span>Danh mục</span>
                 </button>
 
                 <button class="menu-item" 
                 data-page="customers"
+                data-permission="customer_manage"
                 >
                     <span class="menu-icon">♙</span>
                     <span>Khách hàng</span>
                 </button>
 
                 <button class="menu-item"
-                data-page="invoices">
+                data-page="invoices"
+                data-permission-any="invoice_create,invoice_search">
                     <span class="menu-icon">▧</span>
                     <span>Hóa đơn</span>
                 </button>
 
                 <button class="menu-item"
-                data-page="purchases">
+                data-page="purchases"
+                data-permission="purchase_track">
                     <span class="menu-icon">⇩</span>
                     <span>Nhập hàng</span>
                 </button>
 
                 <button class="menu-item"
-                data-page="inventory">
+                data-page="inventory"
+                data-permission="inventory_view">
                     <span class="menu-icon">◫</span>
                     <span>Tồn kho</span>
                 </button>
 
                 <button class="menu-item"
-                data-page="history">
+                data-page="history"
+                data-permission="history_view">
                     <span class="menu-icon">◷</span>
                     <span>Lịch sử</span>
                 </button>
@@ -181,13 +192,15 @@
                 </div>
 
                 <button class="menu-item"
-                data-page="statistics">
+                data-page="statistics"
+                data-permission="revenue_statistics">
                     <span class="menu-icon">▥</span>
                     <span>Thống kê doanh thu</span>
                 </button>
 
                 <button class="menu-item"
-                data-page="reports">
+                data-page="reports"
+                data-permission="report_export">
                     <span class="menu-icon">▤</span>
                     <span>Báo cáo</span>
                 </button>
@@ -198,7 +211,8 @@
                 </div>
 
                 <button class="menu-item"
-                data-page="users">
+                data-page="users"
+                data-permission="user_manage">
                     <span class="menu-icon">♙</span>
                     <span>Người dùng</span>
                 </button>
@@ -212,6 +226,7 @@
                     class="menu-item"
                     id="role-management-menu"
                     data-page="permissions"
+                    data-permission="permission"
                 >
                     <span class="menu-icon">⚿</span>
                     <span>Phân quyền</span>
@@ -223,17 +238,22 @@
                 </div>
 
                 <button class="menu-item"
-                data-page="ai-product">
+                data-page="ai-product"
+                data-permission="ai_product_advice">
                     <span class="menu-icon">✦</span>
                     <span>AI tư vấn sản phẩm</span>
                 </button>
 
-                <button class="menu-item">
+                <button class="menu-item"
+                data-page="ai-revenue"
+                data-permission="revenue_statistics">
                     <span class="menu-icon">✦</span>
                     <span>AI báo cáo doanh thu</span>
                 </button>
 
-                <button class="menu-item">
+                <button class="menu-item"
+                data-page="ai-qa"
+                data-permission="sales_data_qa">
                     <span class="menu-icon">✦</span>
                     <span>AI hỏi đáp dữ liệu</span>
                 </button>
@@ -286,16 +306,16 @@
 
                 <div class="user-info">
 
-                    <div class="user-avatar">
+                    <div class="user-avatar" id="current-user-avatar">
                         A
                     </div>
 
                     <div class="user-detail">
-                        <strong id="current-user-name">
-                            Quản trị viên
+                        <strong id="current-user-name" data-current-username>
+                            admin
                         </strong>
 
-                        <span id="current-user-role">
+                        <span id="current-user-role" data-current-role>
                             Admin
                         </span>
                     </div>
@@ -314,7 +334,7 @@
                 <!-- KPI CARDS -->
                 <div class="stats-grid">
 
-                    <div class="stat-card">
+                    <div class="stat-card" data-permission="revenue_statistics">
 
                         <div class="stat-card-header">
                             <span>
@@ -340,7 +360,7 @@
                     </div>
 
 
-                    <div class="stat-card">
+                    <div class="stat-card" data-permission-any="invoice_search,revenue_statistics">
 
                         <div class="stat-card-header">
                             <span>
@@ -363,7 +383,7 @@
                     </div>
 
 
-                    <div class="stat-card">
+                    <div class="stat-card" data-permission-any="product_manage,invoice_create,purchase_track,inventory_view,top_products,ai_product_advice">
 
                         <div class="stat-card-header">
                             <span>
@@ -386,7 +406,7 @@
                     </div>
 
 
-                    <div class="stat-card">
+                    <div class="stat-card" data-permission="customer_manage">
 
                         <div class="stat-card-header">
                             <span>
@@ -418,7 +438,7 @@
 
 
                     <!-- DOANH THU -->
-                    <div class="dashboard-card revenue-card">
+                    <div class="dashboard-card revenue-card" data-permission="revenue_statistics">
 
                         <div class="card-header">
 
@@ -433,13 +453,10 @@
                             </div>
 
                             <select id="revenue-period">
-                                <option value="7">
-                                    7 ngày
-                                </option>
-
-                                <option value="30">
-                                    30 ngày
-                                </option>
+                                <option value="7"> 7 ngày</option>
+                                <option value="30">30 ngày</option>
+                                <option value="365">1 năm</option>
+                                <option value="all">Toàn bộ</option>
                             </select>
 
                         </div>
@@ -471,7 +488,7 @@
 
 
                     <!-- SẢN PHẨM BÁN CHẠY -->
-                    <div class="dashboard-card">
+                    <div class="dashboard-card" data-permission="top_products">
 
                         <div class="card-header">
 
@@ -507,7 +524,7 @@
 
 
                     <!-- HÓA ĐƠN GẦN ĐÂY -->
-                    <div class="dashboard-card">
+                    <div class="dashboard-card" data-permission="invoice_search">
 
                         <div class="card-header">
 
@@ -521,7 +538,11 @@
                                 </p>
                             </div>
 
-                            <button class="view-all-button">
+                            <button
+                                type="button"
+                                class="view-all-button"
+                                id="dashboard-view-all-invoices"
+                            >
                                 Xem tất cả
                             </button>
 
@@ -566,7 +587,7 @@
 
 
                     <!-- CẢNH BÁO TỒN KHO -->
-                    <div class="dashboard-card">
+                    <div class="dashboard-card" data-permission="inventory_view">
 
                         <div class="card-header">
 
@@ -619,7 +640,10 @@
 
                     <div class="ai-actions">
 
-                        <button class="ai-action">
+                        <button
+                            class="ai-action"
+                            data-permission="ai_product_advice"
+                        >
 
                             <span class="ai-action-icon">
                                 ✦
@@ -638,7 +662,10 @@
                         </button>
 
 
-                        <button class="ai-action">
+                        <button
+                            class="ai-action"
+                            data-permission="revenue_statistics"
+                        >
 
                             <span class="ai-action-icon">
                                 ✦
@@ -654,7 +681,10 @@
                         </button>
 
 
-                        <button class="ai-action">
+                        <button
+                            class="ai-action"
+                            data-permission="sales_data_qa"
+                        >
                             <span class="ai-action-icon">                               ✦
                             </span>
                             <span>
@@ -702,7 +732,7 @@
 
     <!-- TOOLBAR -->
 
-    <div class="product-toolbar">
+    <div class="product-toolbar" data-permission="search_filter">
 
         <div class="product-search">
 
@@ -852,6 +882,137 @@
 
     </div>
 
+</section>
+
+<!-- AI REPORT - phân tích doanh thu từ dữ liệu bán hàng -->
+<section
+    class="ai-page"
+    id="ai-revenue-page"
+>
+    <div class="ai-page-header">
+        <h2>AI báo cáo doanh thu</h2>
+        <p>Tổng hợp số liệu và tạo nhận xét kinh doanh tự động</p>
+    </div>
+
+    <div class="ai-advice-layout">
+        <div class="ai-input-card">
+            <h3>Phạm vi báo cáo</h3>
+            <p class="ai-input-description">
+                Chọn khoảng thời gian cần phân tích. Báo cáo sử dụng dữ liệu
+                doanh thu, hóa đơn và sản phẩm của hệ thống.
+            </p>
+
+            <label class="ai-input-label" for="ai-revenue-period">
+                Khoảng thời gian
+            </label>
+            <select id="ai-revenue-period" class="ai-select-input">
+                <option value="7">7 ngày gần nhất</option>
+                <option value="30">30 ngày gần nhất</option>
+                <option value="all">Toàn bộ dữ liệu</option>
+            </select>
+
+            <button
+                type="button"
+                class="ai-advice-button"
+                id="ai-revenue-generate-button"
+            >
+                Tạo báo cáo AI
+            </button>
+            <button
+                type="button"
+                class="ai-reset-button"
+                id="ai-revenue-reset-button"
+            >
+                Làm mới
+            </button>
+        </div>
+
+        <div class="ai-result-card">
+            <div class="ai-result-header">
+                <h3>Kết quả phân tích</h3>
+                <span class="ai-result-count" id="ai-revenue-status">
+                    Chưa tạo báo cáo
+                </span>
+            </div>
+            <div id="ai-revenue-results"></div>
+            <div class="ai-notice">
+                <strong>Lưu ý:</strong>
+                Nội dung được sinh từ số liệu hiện có trong hệ thống và dùng
+                để hỗ trợ quyết định kinh doanh.
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- AI DATA Q&A - hỏi đáp trên dữ liệu bán hàng -->
+<section
+    class="ai-page"
+    id="ai-qa-page"
+>
+    <div class="ai-page-header">
+        <h2>AI hỏi đáp dữ liệu</h2>
+        <p>Đặt câu hỏi bằng tiếng Việt về doanh thu, hóa đơn và tồn kho</p>
+    </div>
+
+    <div class="ai-advice-layout">
+        <div class="ai-input-card">
+            <h3>Câu hỏi của bạn</h3>
+            <p class="ai-input-description">
+                Hệ thống sẽ phân tích câu hỏi và trả lời bằng dữ liệu bán hàng
+                đang có.
+            </p>
+
+            <label class="ai-input-label" for="ai-data-question">
+                Nội dung câu hỏi
+            </label>
+            <textarea
+                id="ai-data-question"
+                class="ai-need-input"
+                placeholder="Ví dụ: Sản phẩm nào bán chạy nhất?"
+            ></textarea>
+            <div class="ai-quick-questions" aria-label="Câu hỏi gợi ý">
+                <button type="button" data-ai-question="Doanh thu 7 ngày là bao nhiêu?">
+                    Doanh thu 7 ngày
+                </button>
+                <button type="button" data-ai-question="Sản phẩm nào bán chạy nhất?">
+                    Sản phẩm bán chạy
+                </button>
+                <button type="button" data-ai-question="Sản phẩm nào sắp hết hàng?">
+                    Cảnh báo tồn kho
+                </button>
+            </div>
+
+            <button
+                type="button"
+                class="ai-advice-button"
+                id="ai-qa-submit-button"
+            >
+                Hỏi dữ liệu
+            </button>
+            <button
+                type="button"
+                class="ai-reset-button"
+                id="ai-qa-reset-button"
+            >
+                Làm mới
+            </button>
+        </div>
+
+        <div class="ai-result-card">
+            <div class="ai-result-header">
+                <h3>Câu trả lời</h3>
+                <span class="ai-result-count" id="ai-qa-status">
+                    Sẵn sàng
+                </span>
+            </div>
+            <div id="ai-qa-results"></div>
+            <div class="ai-notice">
+                <strong>Gợi ý:</strong>
+                Có thể hỏi về tổng doanh thu, số hóa đơn, khách hàng,
+                sản phẩm bán chạy hoặc sản phẩm sắp hết hàng.
+            </div>
+        </div>
+    </div>
 </section>
 
 
@@ -1077,7 +1238,7 @@
         </button>
     </div>
     <!-- TOOLBAR -->
-    <div class="category-toolbar">
+    <div class="category-toolbar" data-permission="search_filter">
         <div class="category-search">
             <span class="category-search-icon">
                 ⌕
@@ -1244,7 +1405,7 @@
             + Thêm khách hàng
         </button>
     </div>
-    <div class="customer-toolbar">
+    <div class="customer-toolbar" data-permission="search_filter">
         <div class="customer-search">
             <span class="customer-search-icon">⌕</span>
             <input
@@ -2021,7 +2182,7 @@
 
 
     <!-- TOOLBAR -->
-    <div class="inventory-toolbar">
+    <div class="inventory-toolbar" data-permission="search_filter">
 
         <div class="inventory-search">
 
@@ -2198,6 +2359,7 @@
             type="button"
             class="history-refresh-button"
             id="history-refresh-button"
+            onclick="refreshHistory()"
         >
             ↻ Làm mới
         </button>
@@ -2209,7 +2371,7 @@
          TOOLBAR
          ========================= -->
 
-    <div class="history-toolbar">
+    <div class="history-toolbar" data-permission="history_view">
 
         <div class="history-search">
 
@@ -2255,6 +2417,10 @@
                 Nhập hàng
             </option>
 
+            <option value="export">
+                Xuất báo cáo
+            </option>
+
         </select>
 
 
@@ -2285,6 +2451,14 @@
 
             <option value="Phiếu nhập">
                 Phiếu nhập
+            </option>
+
+            <option value="Tồn kho">
+                Tồn kho
+            </option>
+
+            <option value="Báo cáo">
+                Báo cáo
             </option>
 
         </select>
@@ -2359,7 +2533,7 @@
 
     <!-- BỘ LỌC -->
 
-    <div class="statistics-filter">
+    <div class="statistics-filter" data-permission="revenue_statistics">
         <div class="statistics-filter-group">
 
             <label>
@@ -2545,7 +2719,7 @@
 
 
     <!-- FILTER -->
-    <div class="reports-filter">
+    <div class="reports-filter" data-permission="report_export">
         <div class="reports-filter-group">
             <label>
                 Từ ngày
@@ -2611,14 +2785,42 @@
 
 
     <!-- ACTIONS -->
-    <div class="reports-actions">
-        <button
-            type="button"
-            class="reports-action-button"
-            onclick="exportReport()"
-        >
-            Xuất báo cáo
-        </button>
+    <div class="reports-actions" data-permission="report_export">
+        <div class="report-export-wrap">
+            <button
+                type="button"
+                class="reports-action-button report-export-main"
+                id="report-export-button"
+                aria-haspopup="menu"
+                aria-expanded="false"
+            >
+                Xuất báo cáo
+                <span class="report-export-arrow" aria-hidden="true">⌄</span>
+            </button>
+
+            <div
+                class="report-export-menu"
+                id="report-export-menu"
+                role="menu"
+                hidden
+            >
+                <button type="button" role="menuitem" data-report-format="excel">
+                    <span class="report-export-format">X</span>
+                    <span>
+                        <strong>Xuất Excel</strong>
+                        <small>Tải tệp bảng tính .xls</small>
+                    </span>
+                </button>
+
+                <button type="button" role="menuitem" data-report-format="pdf">
+                    <span class="report-export-format pdf">P</span>
+                    <span>
+                        <strong>Xuất PDF</strong>
+                        <small>Mở bản in để lưu PDF</small>
+                    </span>
+                </button>
+            </div>
+        </div>
     </div>
 
 
@@ -2824,7 +3026,7 @@
 
     <div class="users-toolbar">
 
-        <div class="users-search-group">
+        <div class="users-search-group" data-permission="search_filter">
 
             <label for="users-search">
                 Tìm kiếm
@@ -2839,7 +3041,7 @@
         </div>
 
 
-        <div class="users-filter-group">
+        <div class="users-filter-group" data-permission="search_filter">
 
             <label for="users-role-filter">
                 Vai trò
@@ -2868,7 +3070,7 @@
         </div>
 
 
-        <div class="users-filter-group">
+        <div class="users-filter-group" data-permission="search_filter">
 
             <label for="users-status-filter">
                 Trạng thái
@@ -3097,6 +3299,10 @@
                     </label>
 
                     <select id="user-role">
+
+                        <option value="admin">
+                            Quản trị viên
+                        </option>
 
                         <option value="owner">
                             Chủ cửa hàng
@@ -3474,7 +3680,7 @@
 
             <button
                 type="button"
-                class="permission-reset-button"
+                class="ai-reset-button"
                 id="ai-reset-button"
                 style="width: 100%; margin-top: 10px;"
             >
@@ -3534,482 +3740,26 @@
 
     <!-- JS -->
     <script src="./js/api.js"></script>
+    <script src="./js/data-api.js?v=20260909-3"></script>
+    <script src="js/dashboard.js"></script>
     <script src="./js/products.js"></script>
     <script src="./js/categories.js"></script>
     <script src="./js/customers.js"></script>
     <script src="./js/invoices.js"></script>
     <script src="./js/purchases.js"></script>
     <script src="./js/inventory.js"></script>
-    <script src="./js/history.js"></script>
-    <script src="./js/statistics.js"></script>
-    <script src="./js/reports.js"></script>
+    <script src="./js/history.js?v=20260909-3"></script>
+    <script src="./js/statistics.js?v=20260909-3"></script>
+    <script src="./js/reports.js?v=20260909-2"></script>
     <script src="./js/users.js"></script>
     <script src="./js/permissions.js"></script>
     <script src="./js/auth.js"></script>
+    <script src="js/ai-product.js?v=20260909-3"></script>
+    <script src="./js/ai-assistant.js?v=20260909-3"></script>
 
     <script>
 
-        /*
-         * ==========================================
-         * MOCK DATA
-         * ==========================================
-         *
-         * Chưa kết nối database thật.
-         * Database sẽ được tích hợp ở phần cuối dự án.
-         */
-
-        const dashboardData = {
-
-            todayRevenue: 12850000,
-
-            todayInvoices: 37,
-
-            totalProducts: 286,
-
-            totalCustomers: 542,
-
-            revenueChange: 8.6,
-
-            weekRevenue: 68450000,
-
-            revenue: [
-                7200000,
-                8400000,
-                6800000,
-                11200000,
-                9500000,
-                12850000,
-                12550000
-            ],
-
-            revenueLabels: [
-                "T2",
-                "T3",
-                "T4",
-                "T5",
-                "T6",
-                "T7",
-                "CN"
-            ],
-
-            topProducts: [
-                {
-                    name: "Nước suối Aquafina 500ml",
-                    quantity: 125
-                },
-                {
-                    name: "Nước ngọt Coca Cola",
-                    quantity: 98
-                },
-                {
-                    name: "Bột giặt OMO 3kg",
-                    quantity: 76
-                },
-                {
-                    name: "Quạt điện Senko",
-                    quantity: 42
-                },
-                {
-                    name: "Nồi cơm điện Sharp",
-                    quantity: 31
-                }
-            ],
-
-            recentInvoices: [
-                {
-                    code: "HD000125",
-                    customer: "Nguyễn Văn An",
-                    amount: 1250000,
-                    status: "Đã thanh toán"
-                },
-                {
-                    code: "HD000124",
-                    customer: "Trần Thị Lan",
-                    amount: 840000,
-                    status: "Đã thanh toán"
-                },
-                {
-                    code: "HD000123",
-                    customer: "Khách lẻ",
-                    amount: 325000,
-                    status: "Đã thanh toán"
-                },
-                {
-                    code: "HD000122",
-                    customer: "Phạm Văn Minh",
-                    amount: 2150000,
-                    status: "Đã thanh toán"
-                }
-            ],
-
-            inventoryWarnings: [
-                {
-                    name: "Nước suối Aquafina 500ml",
-                    quantity: 8,
-                    minimum: 20
-                },
-                {
-                    name: "Bột giặt OMO 3kg",
-                    quantity: 5,
-                    minimum: 15
-                },
-                {
-                    name: "Quạt điện Senko",
-                    quantity: 3,
-                    minimum: 10
-                },
-                {
-                    name: "Giấy vệ sinh Pulppy",
-                    quantity: 7,
-                    minimum: 20
-                }
-            ]
-        };
-
-
-        /*
-         * ==========================================
-         * FORMAT MONEY
-         * ==========================================
-         */
-
-        function formatMoney(value) {
-
-            return new Intl.NumberFormat(
-                "vi-VN"
-            ).format(value) + " ₫";
-
-        }
-
-
-        /*
-         * ==========================================
-         * LOAD KPI
-         * ==========================================
-         */
-
-        function loadDashboardStats() {
-
-            document.getElementById(
-                "today-revenue"
-            ).textContent =
-                formatMoney(
-                    dashboardData.todayRevenue
-                );
-
-
-            document.getElementById(
-                "today-invoices"
-            ).textContent =
-                dashboardData.todayInvoices;
-
-
-            document.getElementById(
-                "total-products"
-            ).textContent =
-                dashboardData.totalProducts;
-
-
-            document.getElementById(
-                "total-customers"
-            ).textContent =
-                dashboardData.totalCustomers;
-
-
-            document.getElementById(
-                "revenue-change"
-            ).textContent =
-                "+" +
-                dashboardData.revenueChange +
-                "%";
-
-
-            document.getElementById(
-                "week-revenue"
-            ).textContent =
-                formatMoney(
-                    dashboardData.weekRevenue
-                );
-
-        }
-
-
-        /*
-         * ==========================================
-         * REVENUE CHART
-         * ==========================================
-         */
-
-        function loadRevenueChart() {
-
-            const chart =
-                document.getElementById(
-                    "revenue-chart"
-                );
-
-            chart.innerHTML = "";
-
-            const max =
-                Math.max(
-                    ...dashboardData.revenue
-                );
-
-
-            dashboardData.revenue.forEach(
-                (value, index) => {
-
-                    const column =
-                        document.createElement(
-                            "div"
-                        );
-
-                    column.className =
-                        "chart-column";
-
-
-                    const height =
-                        (value / max) * 100;
-
-
-                    const bar =
-                        document.createElement(
-                            "div"
-                        );
-
-                    bar.className =
-                        "chart-bar";
-
-                    bar.style.height =
-                        height + "%";
-
-
-                    const label =
-                        document.createElement(
-                            "span"
-                        );
-
-                    label.className =
-                        "chart-label";
-
-                    label.textContent =
-                        dashboardData.revenueLabels[
-                            index
-                        ];
-
-
-                    const valueLabel =
-                        document.createElement(
-                            "span"
-                        );
-
-                    valueLabel.className =
-                        "chart-value";
-
-                    valueLabel.textContent =
-                        Math.round(
-                            value / 1000000
-                        ) + "tr";
-
-
-                    column.appendChild(
-                        valueLabel
-                    );
-
-                    column.appendChild(
-                        bar
-                    );
-
-                    column.appendChild(
-                        label
-                    );
-
-                    chart.appendChild(
-                        column
-                    );
-
-                }
-            );
-
-        }
-
-
-        /*
-         * ==========================================
-         * TOP PRODUCTS
-         * ==========================================
-         */
-
-        function loadTopProducts() {
-
-            const container =
-                document.getElementById(
-                    "top-products"
-                );
-
-            container.innerHTML = "";
-
-
-            dashboardData.topProducts.forEach(
-                (product, index) => {
-
-                    const item =
-                        document.createElement(
-                            "div"
-                        );
-
-                    item.className =
-                        "product-item";
-
-
-                    item.innerHTML = `
-
-                        <div class="product-rank">
-                            ${index + 1}
-                        </div>
-
-                        <div class="product-info">
-                            <strong>
-                                ${product.name}
-                            </strong>
-
-                            <span>
-                                Đã bán ${product.quantity}
-                            </span>
-                        </div>
-
-                        <div class="product-quantity">
-                            ${product.quantity}
-                        </div>
-
-                    `;
-
-
-                    container.appendChild(item);
-
-                }
-            );
-
-        }
-
-
-        /*
-         * ==========================================
-         * RECENT INVOICES
-         * ==========================================
-         */
-
-        function loadRecentInvoices() {
-
-            const container =
-                document.getElementById(
-                    "recent-invoices"
-                );
-
-            container.innerHTML = "";
-
-
-            dashboardData.recentInvoices.forEach(
-                invoice => {
-
-                    const row =
-                        document.createElement(
-                            "tr"
-                        );
-
-
-                    row.innerHTML = `
-
-                        <td>
-                            <strong>
-                                ${invoice.code}
-                            </strong>
-                        </td>
-
-                        <td>
-                            ${invoice.customer}
-                        </td>
-
-                        <td>
-                            ${formatMoney(
-                                invoice.amount
-                            )}
-                        </td>
-
-                        <td>
-                            <span class="status-badge">
-                                ${invoice.status}
-                            </span>
-                        </td>
-
-                    `;
-
-
-                    container.appendChild(row);
-
-                }
-            );
-
-        }
-
-
-        /*
-         * ==========================================
-         * INVENTORY WARNINGS
-         * ==========================================
-         */
-
-        function loadInventoryWarnings() {
-
-            const container =
-                document.getElementById(
-                    "inventory-warning-list"
-                );
-
-            container.innerHTML = "";
-
-
-            dashboardData.inventoryWarnings.forEach(
-                product => {
-
-                    const item =
-                        document.createElement(
-                            "div"
-                        );
-
-                    item.className =
-                        "inventory-warning";
-
-
-                    item.innerHTML = `
-
-                        <div class="warning-icon">
-                            !
-                        </div>
-
-                        <div class="warning-info">
-
-                            <strong>
-                                ${product.name}
-                            </strong>
-
-                            <span>
-                                Tồn: ${product.quantity}
-                                / Tối thiểu:
-                                ${product.minimum}
-                            </span>
-
-                        </div>
-
-                    `;
-
-
-                    container.appendChild(item);
-
-                }
-            );
-
-        }
-
+        const loadDashboardFromApi = window.initDashboardFromAPI;
 
         /*
          * ==========================================
@@ -4091,6 +3841,24 @@
             item.addEventListener(
             "click",
             function () {
+                const requiredPermissions =
+                    (
+                        this.dataset.permissionAny ||
+                        this.dataset.permission ||
+                        ""
+                    )
+                    .split(",")
+                    .map(key => key.trim())
+                    .filter(Boolean);
+
+                if (
+                    requiredPermissions.length > 0 &&
+                    typeof requireAnyPermission === "function" &&
+                    !requireAnyPermission(requiredPermissions)
+                ) {
+                    return;
+                }
+
                 menuItems.forEach(menu => {
                     menu.classList.remove(
                         "active"
@@ -4161,6 +3929,16 @@
                     return;
                 }
 
+                if (page === "ai-revenue") {
+                    showAIRevenuePage();
+                    return;
+                }
+
+                if (page === "ai-qa") {
+                    showAIQAPage();
+                    return;
+                }
+
 
                 // =========================
                 // CÁC MODULE CHƯA LÀM
@@ -4204,14 +3982,14 @@
          */
 
         function initDashboard() {
-            loadDashboardStats();
-            loadRevenueChart();
-            loadTopProducts();
-            loadRecentInvoices();
-            loadInventoryWarnings();
+            if (
+                localStorage.getItem("sales_management_access_token") &&
+                typeof loadDashboardFromApi === "function"
+            ) {
+                loadDashboardFromApi();
+            }
             loadSystemStatus();
             setupMenu();
-            setupLogout();
             setupProductModal();
         }
 
@@ -4375,6 +4153,13 @@ function showDashboardPage() {
         !aiProductPage
     ) {
         return;
+    }
+
+    if (
+        localStorage.getItem("sales_management_access_token") &&
+        typeof window.initDashboardFromAPI === "function"
+    ) {
+        window.initDashboardFromAPI();
     }
 
     productsPage.classList.remove("active");

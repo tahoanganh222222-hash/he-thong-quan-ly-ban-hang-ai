@@ -1,4 +1,4 @@
-from sqlalchemy import String
+from sqlalchemy import Unicode
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base
@@ -13,13 +13,13 @@ class Category(Base):
     )
 
     name: Mapped[str] = mapped_column(
-        String(100),
+        Unicode(100),
         unique=True,
         nullable=False
     )
 
     description: Mapped[str | None] = mapped_column(
-        String(255),
+        Unicode(255),
         nullable=True
     )
 

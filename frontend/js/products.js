@@ -5,165 +5,13 @@
 
 /*
  * ============================================================
- * MOCK DATA
+ * DATA LOADED FROM REST API
  * ============================================================
  *
- * Tạm thời chưa lấy dữ liệu từ SQL Server.
- * Sẽ thay bằng API thật ở giai đoạn tích hợp database.
+ * Danh sách được tải khi mở trang sản phẩm.
  */
 
-let products = [
-    {
-        id: 1,
-        code: "SP001",
-        name: "Nước suối Aquafina 500ml",
-        category: "Đồ uống",
-        purchasePrice: 4000,
-        sellingPrice: 6000,
-        unit: "Chai",
-        isActive: true
-    },
-    {
-        id: 2,
-        code: "SP002",
-        name: "Nước ngọt Coca Cola",
-        category: "Đồ uống",
-        purchasePrice: 7500,
-        sellingPrice: 10000,
-        unit: "Lon",
-        isActive: true
-    },
-    {
-        id: 3,
-        code: "SP003",
-        name: "Bột giặt OMO 3kg",
-        category: "Hàng gia dụng",
-        purchasePrice: 85000,
-        sellingPrice: 105000,
-        unit: "Túi",
-        isActive: true
-    },
-    {
-        id: 4,
-        code: "SP004",
-        name: "Nước rửa chén Sunlight",
-        category: "Hàng gia dụng",
-        purchasePrice: 28000,
-        sellingPrice: 35000,
-        unit: "Chai",
-        isActive: true
-    },
-    {
-        id: 5,
-        code: "SP005",
-        name: "Giấy vệ sinh Pulppy",
-        category: "Hàng gia dụng",
-        purchasePrice: 45000,
-        sellingPrice: 55000,
-        unit: "Bịch",
-        isActive: true
-    },
-    {
-        id: 6,
-        code: "SP006",
-        name: "Quạt điện Senko",
-        category: "Thiết bị điện",
-        purchasePrice: 380000,
-        sellingPrice: 490000,
-        unit: "Cái",
-        isActive: true
-    },
-    {
-        id: 7,
-        code: "SP007",
-        name: "Nồi cơm điện Sharp",
-        category: "Thiết bị điện",
-        purchasePrice: 650000,
-        sellingPrice: 790000,
-        unit: "Cái",
-        isActive: true
-    },
-    {
-        id: 8,
-        code: "SP008",
-        name: "Máy sấy tóc Panasonic",
-        category: "Thiết bị điện",
-        purchasePrice: 420000,
-        sellingPrice: 520000,
-        unit: "Cái",
-        isActive: true
-    },
-    {
-        id: 9,
-        code: "SP009",
-        name: "Bóng đèn LED 12W",
-        category: "Vật tư",
-        purchasePrice: 35000,
-        sellingPrice: 50000,
-        unit: "Cái",
-        isActive: true
-    },
-    {
-        id: 10,
-        code: "SP010",
-        name: "Ổ cắm điện 3 lỗ",
-        category: "Vật tư",
-        purchasePrice: 45000,
-        sellingPrice: 65000,
-        unit: "Cái",
-        isActive: true
-    },
-    {
-        id: 11,
-        code: "SP011",
-        name: "Nước giặt Ariel 2.4kg",
-        category: "Hàng gia dụng",
-        purchasePrice: 90000,
-        sellingPrice: 115000,
-        unit: "Túi",
-        isActive: true
-    },
-    {
-        id: 12,
-        code: "SP012",
-        name: "Mì Hảo Hảo tôm chua cay",
-        category: "Thực phẩm",
-        purchasePrice: 3500,
-        sellingPrice: 5000,
-        unit: "Gói",
-        isActive: true
-    },
-    {
-        id: 13,
-        code: "SP013",
-        name: "Dầu ăn Neptune 1L",
-        category: "Thực phẩm",
-        purchasePrice: 38000,
-        sellingPrice: 45000,
-        unit: "Chai",
-        isActive: true
-    },
-    {
-        id: 14,
-        code: "SP014",
-        name: "Ấm siêu tốc Sunhouse",
-        category: "Thiết bị điện",
-        purchasePrice: 250000,
-        sellingPrice: 320000,
-        unit: "Cái",
-        isActive: true
-    },
-    {
-        id: 15,
-        code: "SP015",
-        name: "Dây điện đôi 2x1.5",
-        category: "Vật tư",
-        purchasePrice: 12000,
-        sellingPrice: 18000,
-        unit: "Mét",
-        isActive: true
-    }
-];
+let products = [];
 
 
 /*
@@ -177,6 +25,22 @@ let currentProductPage = 1;
 const productsPerPage = 8;
 
 let editingProductId = null;
+let productFiltersInitialized = false;
+
+async function loadProductsFromAPI() {
+
+    try {
+        products = (
+            await window.salesApi.products.list()
+        ).sort(function (a, b) {
+            return Number(b.id) - Number(a.id);
+        });
+    } catch (error) {
+        products = [];
+        console.error("Không thể tải danh sách sản phẩm:", error);
+        alert("Không thể tải dữ liệu sản phẩm từ máy chủ.");
+    }
+}
 
 
 /*
@@ -905,7 +769,7 @@ function closeProductModal() {
  * ============================================================
  */
 
-function saveProduct(event) {
+async function saveProduct(event) {
 
     event.preventDefault();
 
@@ -1025,30 +889,22 @@ function saveProduct(event) {
         }
 
 
-        const newId =
-            products.length > 0
-                ? Math.max(
-                    ...products.map(
-                        product =>
-                            product.id
-                    )
-                ) + 1
-                : 1;
-
-
-        products.push({
-            id: newId,
-            code: code,
-            name: name,
-            category: category,
-            purchasePrice:
+        try {
+            const createdProduct = await window.salesApi.products.create({
+                code,
+                name,
+                category,
                 purchasePrice,
-            sellingPrice:
                 sellingPrice,
-            unit: unit,
-            isActive: true
-
-        });
+                unit,
+                isActive: true
+            });
+            products.unshift(createdProduct);
+            currentProductPage = 1;
+        } catch (error) {
+            alert(error.message || "Không thể thêm sản phẩm.");
+            return;
+        }
         addHistory({
             action: "Thêm",
             actionType: "add",
@@ -1068,17 +924,21 @@ function saveProduct(event) {
             );
 
 
-        if (product) {
-            product.name =
-                name;
-            product.category =
-                category;
-            product.purchasePrice =
-                purchasePrice;
-            product.sellingPrice =
-                sellingPrice;
-            product.unit =
-                unit;
+        if (!product) {
+            return;
+        }
+
+        try {
+            const updatedProduct = await window.salesApi.products.update(
+                editingProductId,
+                { code, name, category, purchasePrice, sellingPrice, unit }
+            );
+            products = products.map(item =>
+                item.id === editingProductId ? updatedProduct : item
+            );
+        } catch (error) {
+            alert(error.message || "Không thể cập nhật sản phẩm.");
+            return;
         }
         addHistory({
             action: "Sửa",
@@ -1100,7 +960,7 @@ function saveProduct(event) {
  * ============================================================
  */
 
-function toggleProductStatus(id) {
+async function toggleProductStatus(id) {
 
     if (
         typeof requirePermission === "function" &&
@@ -1136,7 +996,19 @@ function toggleProductStatus(id) {
     }
 
 
-    product.isActive = !product.isActive;
+    try {
+        const updatedProduct = await window.salesApi.products.update(
+            id,
+            { isActive: !product.isActive }
+        );
+        Object.assign(product, updatedProduct);
+        products = products.map(item =>
+            item.id === id ? updatedProduct : item
+        );
+    } catch (error) {
+        alert(error.message || "Không thể cập nhật trạng thái sản phẩm.");
+        return;
+    }
     addHistory({
     action: product.isActive
         ? "Kích hoạt"
@@ -1238,7 +1110,7 @@ function setupProductFilters() {
  * ============================================================
  */
 
-function initProductManagement() {
+async function initProductManagement() {
 
     if (
         typeof requirePermission === "function" &&
@@ -1247,9 +1119,14 @@ function initProductManagement() {
         return;
     }
 
+    await loadProductsFromAPI();
+
     loadProductCategories();
 
-    setupProductFilters();
+    if (!productFiltersInitialized) {
+        setupProductFilters();
+        productFiltersInitialized = true;
+    }
 
     renderProducts();
 

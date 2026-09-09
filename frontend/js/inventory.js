@@ -2,64 +2,20 @@
    INVENTORY MANAGEMENT
    ========================================================= */
 
-const inventoryData = [
-    {
-        code: "SP001",
-        name: "Nước suối Aquafina 500ml",
-        category: "Đồ uống",
-        unit: "Chai",
-        quantity: 8,
-        minimum: 20
-    },
-    {
-        code: "SP002",
-        name: "Nước ngọt Coca Cola",
-        category: "Đồ uống",
-        unit: "Lon",
-        quantity: 98,
-        minimum: 20
-    },
-    {
-        code: "SP003",
-        name: "Bột giặt OMO 3kg",
-        category: "Hàng gia dụng",
-        unit: "Gói",
-        quantity: 5,
-        minimum: 15
-    },
-    {
-        code: "SP004",
-        name: "Quạt điện Senko",
-        category: "Thiết bị điện",
-        unit: "Cái",
-        quantity: 3,
-        minimum: 10
-    },
-    {
-        code: "SP005",
-        name: "Nồi cơm điện Sharp",
-        category: "Thiết bị điện",
-        unit: "Cái",
-        quantity: 31,
-        minimum: 10
-    },
-    {
-        code: "SP006",
-        name: "Giấy vệ sinh Pulppy",
-        category: "Hàng gia dụng",
-        unit: "Cuộn",
-        quantity: 7,
-        minimum: 20
-    },
-    {
-        code: "SP007",
-        name: "Mì Hảo Hảo",
-        category: "Thực phẩm",
-        unit: "Gói",
-        quantity: 120,
-        minimum: 30
+let inventoryData = [];
+
+let inventoryEventsInitialized = false;
+
+async function loadInventoryFromAPI() {
+
+    try {
+        inventoryData = await window.salesApi.inventory.list();
+    } catch (error) {
+        inventoryData = [];
+        console.error("Không thể tải dữ liệu tồn kho:", error);
+        alert("Không thể tải dữ liệu tồn kho từ máy chủ.");
     }
-];
+}
 
 
 /* =========================================================
@@ -368,7 +324,7 @@ function loadInventoryTable() {
    INIT
    ========================================================= */
 
-function initInventoryManagement() {
+async function initInventoryManagement() {
 
     if (
         typeof requirePermission === "function" &&
@@ -377,6 +333,8 @@ function initInventoryManagement() {
         return;
     }
 
+    await loadInventoryFromAPI();
+
     loadInventoryCategories();
 
     loadInventorySummary(
@@ -384,6 +342,11 @@ function initInventoryManagement() {
     );
 
     loadInventoryTable();
+
+    if (inventoryEventsInitialized) {
+        return;
+    }
+    inventoryEventsInitialized = true;
 
 
     const searchInput =
@@ -441,13 +404,17 @@ function initInventoryManagement() {
 
         refreshButton.addEventListener(
             "click",
-            () => {
+            async () => {
+
+                await loadInventoryFromAPI();
 
                 searchInput.value = "";
 
                 statusFilter.value = "all";
 
                 categoryFilter.value = "all";
+
+                loadInventoryCategories();
 
                 loadInventorySummary(
                     inventoryData

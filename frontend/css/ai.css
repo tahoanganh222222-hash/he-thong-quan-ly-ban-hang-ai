@@ -362,3 +362,152 @@
         white-space: normal;
     }
 }
+
+.ai-advice-button,
+.ai-reset-button {
+    position: relative;
+    z-index: 10;
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+.ai-reset-button {
+    width: 100%;
+    margin-top: 10px;
+    padding: 10px 16px;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    background: #ffffff;
+    color: #475569;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.ai-reset-button:hover {
+    background: #f8fafc;
+    border-color: #94a3b8;
+}
+
+.ai-select-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 11px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #172033;
+    font: inherit;
+    outline: none;
+}
+
+.ai-select-input:focus {
+    border-color: #2563eb;
+}
+
+.ai-quick-questions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 10px;
+}
+
+.ai-quick-questions button {
+    padding: 6px 9px;
+    border: 1px solid #bfdbfe;
+    border-radius: 999px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.ai-quick-questions button:hover {
+    background: #dbeafe;
+}
+
+.ai-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.ai-summary-item {
+    padding: 14px;
+    border: 1px solid #dbeafe;
+    border-radius: 8px;
+    background: #f8fbff;
+}
+
+.ai-summary-item span,
+.ai-question-card span,
+.ai-answer-card span {
+    display: block;
+    margin-bottom: 6px;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.ai-summary-item strong {
+    color: #1d4ed8;
+    font-size: 17px;
+}
+
+.ai-analysis-block {
+    margin-top: 14px;
+    padding: 15px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    color: #475569;
+    line-height: 1.65;
+}
+
+.ai-analysis-block h4 {
+    margin: 0 0 8px;
+    color: #172033;
+}
+
+.ai-analysis-block p {
+    margin: 6px 0;
+}
+
+.ai-analysis-block ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.ai-analysis-block li + li {
+    margin-top: 6px;
+}
+
+.ai-question-card,
+.ai-answer-card {
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.ai-question-card {
+    margin-bottom: 12px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+.ai-answer-card {
+    border-left: 4px solid #2563eb;
+    background: #eff6ff;
+}
+
+.ai-question-card p,
+.ai-answer-card p {
+    margin: 0;
+    color: #334155;
+    line-height: 1.65;
+}
+
+@media (max-width: 720px) {
+    .ai-summary-grid {
+        grid-template-columns: 1fr;
+    }
+}

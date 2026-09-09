@@ -1,7 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import DateTime, ForeignKey, Numeric, String
+from sqlalchemy import DateTime, ForeignKey, Numeric, String, Unicode
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base
@@ -27,7 +27,7 @@ class PurchaseReceipt(Base):
     )
 
     supplier_name: Mapped[str | None] = mapped_column(
-        String(150),
+        Unicode(150),
         nullable=True
     )
 

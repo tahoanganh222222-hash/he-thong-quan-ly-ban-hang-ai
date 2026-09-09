@@ -5,117 +5,31 @@
 let invoiceItems = [];
 
 /*
- * Mock products.
- * Các sản phẩm này được dùng cho prototype.
- * Khi tích hợp backend sẽ lấy từ API Products + Inventory.
+ * Products loaded from API Products + Inventory.
  */
-const invoiceProducts = [
-    {
-        id: 1,
-        code: "SP001",
-        name: "Nước suối Aquafina 500ml",
-        sellingPrice: 6000,
-        stock: 120
-    },
-    {
-        id: 2,
-        code: "SP002",
-        name: "Nước ngọt Coca Cola 330ml",
-        sellingPrice: 10000,
-        stock: 85
-    },
-    {
-        id: 3,
-        code: "SP003",
-        name: "Mì Hảo Hảo tôm chua cay",
-        sellingPrice: 5000,
-        stock: 150
-    },
-    {
-        id: 4,
-        code: "SP004",
-        name: "Nước giặt OMO 3.6kg",
-        sellingPrice: 125000,
-        stock: 30
-    },
-    {
-        id: 5,
-        code: "SP005",
-        name: "Quạt điện Senko",
-        sellingPrice: 520000,
-        stock: 12
-    },
-    {
-        id: 6,
-        code: "SP006",
-        name: "Máy sấy tóc Philips",
-        sellingPrice: 350000,
-        stock: 8
-    },
-    {
-        id: 7,
-        code: "SP007",
-        name: "Bóng đèn LED 12W",
-        sellingPrice: 45000,
-        stock: 45
-    },
-    {
-        id: 8,
-        code: "SP008",
-        name: "Giấy A4 Double A",
-        sellingPrice: 78000,
-        stock: 40
-    }
-];
+let invoiceProducts = [];
 
 /*
- * Mock customers.
- * Đồng bộ với dữ liệu khách hàng của Phần 7.
+ * Customers loaded from API.
  */
-const invoiceCustomers = [
-    {
-        id: 1,
-        code: "KH001",
-        name: "Nguyễn Văn An",
-        phone: "0912345678",
-        isActive: true
-    },
-    {
-        id: 2,
-        code: "KH002",
-        name: "Trần Thị Bình",
-        phone: "0987654321",
-        isActive: true
-    },
-    {
-        id: 3,
-        code: "KH003",
-        name: "Lê Văn Cường",
-        phone: "0905123456",
-        isActive: true
-    },
-    {
-        id: 4,
-        code: "KH004",
-        name: "Phạm Thị Dung",
-        phone: "0978123456",
-        isActive: true
-    },
-    {
-        id: 6,
-        code: "KH006",
-        name: "Đỗ Thị Hà",
-        phone: "0934567890",
-        isActive: true
-    },
-    {
-        id: 7,
-        code: "KH007",
-        name: "Nguyễn Minh Hoàng",
-        phone: "0923456789",
-        isActive: true
+let invoiceCustomers = [];
+
+async function loadInvoiceReferenceData() {
+
+    try {
+        const [productData, customerData] = await Promise.all([
+            window.salesApi.products.list(),
+            window.salesApi.customers.list()
+        ]);
+        invoiceProducts = productData.filter(product => product.isActive);
+        invoiceCustomers = customerData.filter(customer => customer.isActive);
+    } catch (error) {
+        invoiceProducts = [];
+        invoiceCustomers = [];
+        console.error("Không thể tải dữ liệu lập hóa đơn:", error);
+        alert("Không thể tải sản phẩm và khách hàng từ máy chủ.");
     }
-];
+}
 
 /* ================================
    FORMAT
@@ -568,7 +482,7 @@ function updateInvoiceSummary() {
    CREATE INVOICE
    ================================ */
 
-function createSalesInvoice() {
+async function createSalesInvoice() {
 
     if (
         typeof requirePermission === "function" &&
@@ -663,14 +577,25 @@ function createSalesInvoice() {
         return;
     }
 
-    /*
-     * Prototype:
-     * mô phỏng lập hóa đơn thành công.
-     *
-     * Khi tích hợp backend:
-     * POST /api/invoices
-     * đồng thời cập nhật tồn kho.
-     */
+    try {
+        await window.salesApi.invoices.create({
+            invoiceCode,
+            customerId: customerId ? Number(customerId) : null,
+            discount,
+            paymentMethod: paymentMethod.value,
+            items: invoiceItems.map(item => ({
+                productId: item.productId,
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+                discount: 0
+            }))
+        });
+        await loadInvoiceReferenceData();
+        document.dispatchEvent(new CustomEvent("sales:invoice-created"));
+    } catch (error) {
+        alert(error.message || "Không thể lập hóa đơn.");
+        return;
+    }
 
     alert(
         `Lập hóa đơn ${invoiceCode} thành công.`
@@ -749,7 +674,7 @@ function resetSalesInvoice() {
    INIT
    ================================ */
 
-function initSalesInvoice() {
+async function initSalesInvoice() {
 
     if (
         typeof requirePermission === "function" &&
@@ -759,6 +684,8 @@ function initSalesInvoice() {
     }
 
     invoiceItems = [];
+
+    await loadInvoiceReferenceData();
 
     loadInvoiceCustomers();
     loadInvoiceProducts();
@@ -856,88 +783,10 @@ document.addEventListener(
     "use strict";
 
     /* =========================================================
-       34.1. DỮ LIỆU HÓA ĐƠN MOCK
+       34.1. DỮ LIỆU HÓA ĐƠN TỪ API
        ========================================================= */
 
-    const invoiceSearchData = [
-        {
-            id: 1,
-            code: "HD20260901-1001",
-            customerCode: "KH001",
-            customerName: "Nguyễn Văn An",
-            customerPhone: "0912345678",
-            date: "2026-09-01",
-            totalAmount: 156000,
-            paymentMethod: "cash",
-            status: "completed"
-        },
-        {
-            id: 2,
-            code: "HD20260901-1002",
-            customerCode: "KH002",
-            customerName: "Trần Thị Bình",
-            customerPhone: "0987654321",
-            date: "2026-09-01",
-            totalAmount: 520000,
-            paymentMethod: "transfer",
-            status: "completed"
-        },
-        {
-            id: 3,
-            code: "HD20260902-1003",
-            customerCode: "KH003",
-            customerName: "Lê Văn Cường",
-            customerPhone: "0905123456",
-            date: "2026-09-02",
-            totalAmount: 350000,
-            paymentMethod: "cash",
-            status: "completed"
-        },
-        {
-            id: 4,
-            code: "HD20260903-1004",
-            customerCode: "KH004",
-            customerName: "Phạm Thị Dung",
-            customerPhone: "0978123456",
-            date: "2026-09-03",
-            totalAmount: 125000,
-            paymentMethod: "transfer",
-            status: "completed"
-        },
-        {
-            id: 5,
-            code: "HD20260904-1005",
-            customerCode: "KH006",
-            customerName: "Đỗ Thị Hà",
-            customerPhone: "0934567890",
-            date: "2026-09-04",
-            totalAmount: 78000,
-            paymentMethod: "cash",
-            status: "completed"
-        },
-        {
-            id: 6,
-            code: "HD20260905-1006",
-            customerCode: "KH007",
-            customerName: "Nguyễn Minh Hoàng",
-            customerPhone: "0923456789",
-            date: "2026-09-05",
-            totalAmount: 600000,
-            paymentMethod: "transfer",
-            status: "completed"
-        },
-        {
-            id: 7,
-            code: "HD20260906-1007",
-            customerCode: "",
-            customerName: "Khách lẻ",
-            customerPhone: "",
-            date: "2026-09-06",
-            totalAmount: 45000,
-            paymentMethod: "cash",
-            status: "completed"
-        }
-    ];
+    let invoiceSearchData = [];
 
 
     /* =========================================================
@@ -945,6 +794,20 @@ document.addEventListener(
        ========================================================= */
 
     let filteredInvoiceSearchData = invoiceSearchData.slice();
+
+    async function reloadInvoiceSearchData() {
+
+        try {
+            invoiceSearchData = await window.salesApi.invoices.list();
+            filteredInvoiceSearchData = invoiceSearchData.slice();
+            renderInvoiceSearchResults();
+        } catch (error) {
+            invoiceSearchData = [];
+            filteredInvoiceSearchData = [];
+            console.error("Không thể tải danh sách hóa đơn:", error);
+            renderInvoiceSearchResults();
+        }
+    }
 
 
     /* =========================================================
@@ -2080,7 +1943,7 @@ if (header) {
        34.16. KHỞI TẠO
        ========================================================= */
 
-    function initInvoiceSearchFeature() {
+    async function initInvoiceSearchFeature() {
 
         /*
             Đồng bộ user hiện tại nếu hệ thống có hàm.
@@ -2100,11 +1963,11 @@ if (header) {
         */
 
         if (
-            typeof window.loadPermissionsFromStorage ===
+            typeof window.loadPermissionsFromAPI ===
             "function"
         ) {
 
-            window.loadPermissionsFromStorage();
+            await window.loadPermissionsFromAPI();
         }
 
 
@@ -2140,6 +2003,8 @@ if (header) {
 
             return;
         }
+
+        await reloadInvoiceSearchData();
 
 
         /*
@@ -2329,6 +2194,11 @@ if (header) {
         initInvoiceSearchFeature();
 
     }
+
+    document.addEventListener(
+        "sales:invoice-created",
+        reloadInvoiceSearchData
+    );
 
 
     console.log(
