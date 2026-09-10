@@ -3,6 +3,18 @@ from typing import Optional
 from pydantic import BaseModel, Field
 
 
+class CategoryCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=100)
+    description: Optional[str] = Field(default=None, max_length=255)
+    isActive: bool = True
+
+
+class CategoryUpdate(BaseModel):
+    name: Optional[str] = Field(default=None, min_length=1, max_length=100)
+    description: Optional[str] = Field(default=None, max_length=255)
+    isActive: Optional[bool] = None
+
+
 class ProductCreate(BaseModel):
     code: str = Field(min_length=1, max_length=50)
     name: str = Field(min_length=1, max_length=150)

@@ -19,6 +19,9 @@ class UserResponse(BaseModel):
     id: int
     username: str
     full_name: str
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    avatar_data: Optional[str] = None
     role: str
     is_active: bool
 
@@ -48,3 +51,15 @@ class UserUpdate(BaseModel):
     email: Optional[str] = Field(default=None, max_length=100)
     role: Optional[str] = Field(default=None, pattern="^(admin|owner|staff|customer)$")
     isActive: Optional[bool] = None
+
+
+class ProfileUpdate(BaseModel):
+    fullName: str = Field(min_length=1, max_length=100)
+    phone: Optional[str] = Field(default=None, max_length=20)
+    email: Optional[str] = Field(default=None, max_length=100)
+    avatarData: Optional[str] = Field(default=None, max_length=700_000)
+
+
+class PasswordChange(BaseModel):
+    currentPassword: str = Field(min_length=1, max_length=72)
+    newPassword: str = Field(min_length=6, max_length=72)

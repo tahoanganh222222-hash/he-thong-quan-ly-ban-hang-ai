@@ -1,0 +1,166 @@
+/* Độ tương phản viền dùng chung cho toàn bộ khu vực quản trị. */
+:root {
+    --sm-border-frame: #aab4c2;
+    --sm-border-divider: #7f8b9d;
+    --sm-border-heading: #667085;
+}
+
+/* Khung ngoài chỉ nhấn nhẹ để form và thẻ vẫn thanh thoát. */
+.main-content :is(
+    .stat-card,
+    .dashboard-card,
+    .product-toolbar,
+    .product-table-card,
+    .category-toolbar,
+    .category-table-card,
+    .customer-toolbar,
+    .customer-table-card,
+    .sales-invoice-card,
+    .purchase-card,
+    .inventory-toolbar,
+    .inventory-table-card,
+    .inventory-stat-card,
+    .history-view-tabs,
+    .history-summary-card,
+    .history-toolbar,
+    .history-table-card,
+    .ai-log-summary-card,
+    .ai-logs-toolbar,
+    .ai-logs-table-card,
+    .statistics-filter,
+    .statistics-kpi-card,
+    .statistics-card,
+    .reports-filter,
+    .reports-summary-card,
+    .reports-card,
+    .users-toolbar,
+    .users-card,
+    .permission-content > div,
+    .account-panel,
+    .account-section-card
+) {
+    border-width: 1px !important;
+    border-color: var(--sm-border-frame) !important;
+    box-shadow:
+        0 1px 2px rgba(15, 23, 42, 0.05),
+        0 9px 24px rgba(15, 23, 42, 0.09) !important;
+}
+
+.main-content .stat-card {
+    border-top-width: 3px !important;
+}
+
+.main-content .stat-card:nth-child(1) { border-top-color: #6366f1 !important; }
+.main-content .stat-card:nth-child(2) { border-top-color: #0891b2 !important; }
+.main-content .stat-card:nth-child(3) { border-top-color: #059669 !important; }
+.main-content .stat-card:nth-child(4) { border-top-color: #d97706 !important; }
+
+/* Đường phân cách tiêu đề và chân bảng. */
+.main-content :is(
+    .card-header,
+    .sales-invoice-card-header,
+    .statistics-card-header,
+    .reports-card-header,
+    .users-card-header,
+    .ai-logs-table-heading
+) {
+    border-bottom-color: var(--sm-border-divider) !important;
+}
+
+.main-content .history-table-card::before {
+    border-bottom-color: var(--sm-border-divider) !important;
+}
+
+.main-content :is(
+    .history-table-footer,
+    .ai-logs-footer,
+    .product-table-footer,
+    .category-table-footer,
+    .customer-table-footer,
+    .inventory-table-footer
+) {
+    border-top-color: var(--sm-border-divider) !important;
+}
+
+/* Bảng dữ liệu: tập trung độ đậm vào đường chia hàng và cột bên trong. */
+.main-content table {
+    border-color: var(--sm-border-divider) !important;
+}
+
+.main-content table th,
+.main-content table td {
+    border-color: var(--sm-border-divider) !important;
+}
+
+.main-content table thead th {
+    border-bottom: 1.5px solid var(--sm-border-heading) !important;
+}
+
+.main-content table th + th,
+.main-content table td + td {
+    border-left: 1px solid var(--sm-border-divider) !important;
+}
+
+/* Bộ lọc và trường nhập vẫn tách bạch với nền thẻ. */
+.main-content input:not([type="radio"]):not([type="checkbox"]),
+.main-content select,
+.main-content textarea {
+    border-color: var(--sm-border-frame) !important;
+}
+
+.main-content input:not([type="radio"]):not([type="checkbox"]):hover,
+.main-content select:hover,
+.main-content textarea:hover {
+    border-color: #4f5b6d !important;
+}
+
+/* Dashboard và thống kê: làm rõ khung số liệu, trục và đường lưới biểu đồ. */
+.revenue-card .revenue-summary,
+.statistics-insight,
+.statistics-product-item {
+    border-width: 1px !important;
+    border-color: var(--sm-border-frame) !important;
+}
+
+.dashboard-chart-grid span {
+    border-top-color: #8f9bad !important;
+}
+
+.statistics-chart-grid-line {
+    stroke: #8f9bad !important;
+    stroke-width: 1.2 !important;
+}
+
+.dashboard-chart-y-axis,
+.dashboard-chart-date,
+.statistics-chart-y-label,
+.statistics-chart-label {
+    color: #465267;
+}
+
+.statistics-chart-y-label,
+.statistics-chart-label {
+    fill: #465267 !important;
+}
+
+/* Thanh cuộn biểu đồ dễ nhận biết hơn. */
+.dashboard-chart-scroll,
+.statistics-chart-scroll,
+.history-table-wrapper,
+.ai-logs-table-wrapper {
+    scrollbar-color: #6f7c90 #e5e9f0;
+}
+
+html[data-app-theme="dark"] {
+    --sm-border-frame: #526075;
+    --sm-border-divider: #718096;
+    --sm-border-heading: #94a3b8;
+}
+
+html[data-app-theme="dark"] .dashboard-chart-grid span {
+    border-top-color: #64748b !important;
+}
+
+html[data-app-theme="dark"] .statistics-chart-grid-line {
+    stroke: #64748b !important;
+}

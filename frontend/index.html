@@ -17,35 +17,35 @@
 >
 <link
     rel="stylesheet"
-    href="./css/products.css"
+    href="./css/products.css?v=20260909-5"
 >
 <link
     rel="stylesheet"
-    href="./css/categories.css"
+    href="./css/categories.css?v=20260909-5"
 >
 <link 
     rel="stylesheet" 
-    href="./css/customers.css"
+    href="./css/customers.css?v=20260910-1"
 >
 <link 
     rel="stylesheet" 
-    href="./css/invoices.css"
+    href="./css/invoices.css?v=20260910-2"
 >
 <link 
     rel="stylesheet" 
     href="./css/purchases.css"
 >
-<link 
-    rel="stylesheet" 
-    href="./css/inventory.css"
->
-<link 
-    rel="stylesheet" 
-    href="./css/history.css"
+<link
+    rel="stylesheet"
+    href="./css/inventory.css?v=20260910-1"
 >
 <link
     rel="stylesheet"
-    href="./css/statistics.css"
+    href="./css/history.css?v=20260910-3"
+>
+<link
+    rel="stylesheet"
+    href="./css/statistics.css?v=20260910-1"
 >
 <link
     rel="stylesheet"
@@ -69,7 +69,23 @@
 >
 <link
     rel="stylesheet"
-    href="css/theme.css"
+    href="css/theme.css?v=20260910-6"
+>
+<link
+    rel="stylesheet"
+    href="css/ai-premium.css?v=20260909-1"
+>
+<link
+    rel="stylesheet"
+    href="css/ai-logs.css?v=20260910-1"
+>
+<link
+    rel="stylesheet"
+    href="css/account.css?v=20260910-2"
+>
+<link
+    rel="stylesheet"
+    href="css/contrast.css?v=20260910-2"
 >
 
 
@@ -181,7 +197,7 @@
 
                 <button class="menu-item"
                 data-page="history"
-                data-permission="history_view">
+                data-permission-any="history_view,ai_log_view">
                     <span class="menu-icon">◷</span>
                     <span>Lịch sử</span>
                 </button>
@@ -295,31 +311,59 @@
             <!-- HEADER -->
             <header class="topbar">
 
-                <div>
-                    <h1>Dashboard</h1>
+                <div class="topbar-title-block">
+                    <span class="topbar-eyebrow">
+                        <i aria-hidden="true"></i>
+                        HỆ THỐNG QUẢN LÝ BÁN HÀNG
+                    </span>
+
+                    <div class="topbar-title-row">
+                        <h1>Dashboard</h1>
+                    </div>
 
                     <p>
                         Tổng quan hoạt động kinh doanh
                     </p>
                 </div>
 
-
-                <div class="user-info">
-
-                    <div class="user-avatar" id="current-user-avatar">
-                        A
-                    </div>
-
-                    <div class="user-detail">
-                        <strong id="current-user-name" data-current-username>
-                            admin
-                        </strong>
-
-                        <span id="current-user-role" data-current-role>
-                            Admin
+                <div class="topbar-actions">
+                    <div class="topbar-date-card" aria-label="Ngày giờ hiện tại">
+                        <span class="topbar-calendar-icon" aria-hidden="true">▣</span>
+                        <span class="topbar-date-content">
+                            <small id="topbar-current-weekday">Hôm nay</small>
+                            <strong id="topbar-current-date">--/--/----</strong>
                         </span>
+                        <time id="topbar-current-time">--:--</time>
                     </div>
 
+                    <button
+                        type="button"
+                        class="user-info"
+                        id="account-menu-button"
+                        aria-label="Mở thông tin tài khoản"
+                        aria-haspopup="dialog"
+                    >
+
+                        <span class="user-avatar-shell">
+                            <span class="user-avatar" id="current-user-avatar">
+                                A
+                            </span>
+                            <i class="user-online-dot" title="Đang hoạt động"></i>
+                        </span>
+
+                        <span class="user-detail">
+                            <strong id="current-user-name" data-current-username>
+                                admin
+                            </strong>
+
+                            <span id="current-user-role" data-current-role>
+                                Admin
+                            </span>
+                        </span>
+
+                        <span class="account-menu-arrow" aria-hidden="true">⌄</span>
+
+                    </button>
                 </div>
 
             </header>
@@ -334,7 +378,14 @@
                 <!-- KPI CARDS -->
                 <div class="stats-grid">
 
-                    <div class="stat-card" data-permission="revenue_statistics">
+                    <div
+                        class="stat-card dashboard-shortcut"
+                        data-permission="revenue_statistics"
+                        data-dashboard-target="statistics"
+                        role="button"
+                        tabindex="0"
+                        aria-label="Mở thống kê doanh thu"
+                    >
 
                         <div class="stat-card-header">
                             <span>
@@ -360,7 +411,14 @@
                     </div>
 
 
-                    <div class="stat-card" data-permission-any="invoice_search,revenue_statistics">
+                    <div
+                        class="stat-card dashboard-shortcut"
+                        data-permission-any="invoice_search,revenue_statistics"
+                        data-dashboard-target="invoice-list"
+                        role="button"
+                        tabindex="0"
+                        aria-label="Mở danh sách hóa đơn"
+                    >
 
                         <div class="stat-card-header">
                             <span>
@@ -383,7 +441,14 @@
                     </div>
 
 
-                    <div class="stat-card" data-permission-any="product_manage,invoice_create,purchase_track,inventory_view,top_products,ai_product_advice">
+                    <div
+                        class="stat-card dashboard-shortcut"
+                        data-permission-any="product_manage,invoice_create,purchase_track,inventory_view,top_products,ai_product_advice"
+                        data-dashboard-target="products"
+                        role="button"
+                        tabindex="0"
+                        aria-label="Mở danh sách sản phẩm"
+                    >
 
                         <div class="stat-card-header">
                             <span>
@@ -406,7 +471,14 @@
                     </div>
 
 
-                    <div class="stat-card" data-permission="customer_manage">
+                    <div
+                        class="stat-card dashboard-shortcut"
+                        data-permission="customer_manage"
+                        data-dashboard-target="customers"
+                        role="button"
+                        tabindex="0"
+                        aria-label="Mở danh sách khách hàng"
+                    >
 
                         <div class="stat-card-header">
                             <span>
@@ -447,13 +519,14 @@
                                     Doanh thu
                                 </h3>
 
-                                <p>
-                                    Tổng quan doanh thu trong tuần
+                                <p id="revenue-period-description">
+                                    Tổng quan doanh thu trong 7 ngày gần nhất
                                 </p>
                             </div>
 
                             <select id="revenue-period">
-                                <option value="7"> 7 ngày</option>
+                                <option value="1">Hôm nay</option>
+                                <option value="7" selected>7 ngày</option>
                                 <option value="30">30 ngày</option>
                                 <option value="365">1 năm</option>
                                 <option value="all">Toàn bộ</option>
@@ -889,18 +962,36 @@
     class="ai-page"
     id="ai-revenue-page"
 >
-    <div class="ai-page-header">
-        <h2>AI báo cáo doanh thu</h2>
-        <p>Tổng hợp số liệu và tạo nhận xét kinh doanh tự động</p>
+    <div class="ai-page-header ai-hero">
+        <div class="ai-hero-copy">
+            <span class="ai-eyebrow"><span class="ai-live-dot"></span> Gemini đang sẵn sàng</span>
+            <h2>Biến số liệu thành <span>quyết định sáng suốt</span></h2>
+            <p>Gemini đọc dữ liệu bán hàng thực tế, phát hiện xu hướng và đề xuất hành động phù hợp cho cửa hàng.</p>
+            <div class="ai-hero-tags">
+                <span>✦ Gemini 3.6 Flash</span>
+                <span>↗ Phân tích thời gian thực</span>
+                <span>⌁ Dữ liệu SQL Server</span>
+            </div>
+        </div>
+        <div class="ai-hero-visual" aria-hidden="true">
+            <div class="ai-orbit ai-orbit-one"></div>
+            <div class="ai-orbit ai-orbit-two"></div>
+            <div class="ai-core"><span>↗</span></div>
+            <span class="ai-spark ai-spark-one">✦</span>
+            <span class="ai-spark ai-spark-two">✦</span>
+        </div>
     </div>
 
     <div class="ai-advice-layout">
         <div class="ai-input-card">
-            <h3>Phạm vi báo cáo</h3>
-            <p class="ai-input-description">
-                Chọn khoảng thời gian cần phân tích. Báo cáo sử dụng dữ liệu
-                doanh thu, hóa đơn và sản phẩm của hệ thống.
-            </p>
+            <div class="ai-card-heading">
+                <span class="ai-card-icon">⌁</span>
+                <div>
+                    <span class="ai-card-kicker">Thiết lập phân tích</span>
+                    <h3>Phạm vi báo cáo</h3>
+                </div>
+            </div>
+            <p class="ai-input-description">Chọn khoảng thời gian để Gemini phân tích doanh thu, hóa đơn và sản phẩm của hệ thống.</p>
 
             <label class="ai-input-label" for="ai-revenue-period">
                 Khoảng thời gian
@@ -916,20 +1007,20 @@
                 class="ai-advice-button"
                 id="ai-revenue-generate-button"
             >
-                Tạo báo cáo AI
+                <span class="ai-button-icon">✦</span> Tạo báo cáo với Gemini
             </button>
             <button
                 type="button"
                 class="ai-reset-button"
                 id="ai-revenue-reset-button"
             >
-                Làm mới
+                <span>↻</span> Làm mới phân tích
             </button>
         </div>
 
         <div class="ai-result-card">
             <div class="ai-result-header">
-                <h3>Kết quả phân tích</h3>
+                <div class="ai-result-title"><span>◈</span><h3>Kết quả phân tích</h3></div>
                 <span class="ai-result-count" id="ai-revenue-status">
                     Chưa tạo báo cáo
                 </span>
@@ -949,14 +1040,35 @@
     class="ai-page"
     id="ai-qa-page"
 >
-    <div class="ai-page-header">
-        <h2>AI hỏi đáp dữ liệu</h2>
-        <p>Đặt câu hỏi bằng tiếng Việt về doanh thu, hóa đơn và tồn kho</p>
+    <div class="ai-page-header ai-hero">
+        <div class="ai-hero-copy">
+            <span class="ai-eyebrow"><span class="ai-live-dot"></span> Trợ lý dữ liệu thông minh</span>
+            <h2>Hỏi dữ liệu bằng <span>ngôn ngữ tự nhiên</span></h2>
+            <p>Đặt câu hỏi bằng tiếng Việt và nhận câu trả lời từ chính doanh thu, hóa đơn, sản phẩm và tồn kho của bạn.</p>
+            <div class="ai-hero-tags">
+                <span>✦ Gemini 3.6 Flash</span>
+                <span>◌ Hiểu tiếng Việt</span>
+                <span>⌁ Số liệu chính xác</span>
+            </div>
+        </div>
+        <div class="ai-hero-visual" aria-hidden="true">
+            <div class="ai-orbit ai-orbit-one"></div>
+            <div class="ai-orbit ai-orbit-two"></div>
+            <div class="ai-core"><span>?</span></div>
+            <span class="ai-spark ai-spark-one">✦</span>
+            <span class="ai-spark ai-spark-two">✦</span>
+        </div>
     </div>
 
     <div class="ai-advice-layout">
         <div class="ai-input-card">
-            <h3>Câu hỏi của bạn</h3>
+            <div class="ai-card-heading">
+                <span class="ai-card-icon">?</span>
+                <div>
+                    <span class="ai-card-kicker">Trò chuyện với dữ liệu</span>
+                    <h3>Câu hỏi của bạn</h3>
+                </div>
+            </div>
             <p class="ai-input-description">
                 Hệ thống sẽ phân tích câu hỏi và trả lời bằng dữ liệu bán hàng
                 đang có.
@@ -987,20 +1099,20 @@
                 class="ai-advice-button"
                 id="ai-qa-submit-button"
             >
-                Hỏi dữ liệu
+                <span class="ai-button-icon">✦</span> Hỏi Gemini
             </button>
             <button
                 type="button"
                 class="ai-reset-button"
                 id="ai-qa-reset-button"
             >
-                Làm mới
+                <span>↻</span> Cuộc trò chuyện mới
             </button>
         </div>
 
         <div class="ai-result-card">
             <div class="ai-result-header">
-                <h3>Câu trả lời</h3>
+                <div class="ai-result-title"><span>◈</span><h3>Câu trả lời</h3></div>
                 <span class="ai-result-count" id="ai-qa-status">
                     Sẵn sàng
                 </span>
@@ -1014,6 +1126,102 @@
         </div>
     </div>
 </section>
+
+<!-- AI LOGS - lịch sử sử dụng các chức năng Gemini -->
+<section class="ai-logs-page" id="ai-logs-page">
+    <div class="ai-logs-hero">
+        <div>
+            <span class="ai-logs-eyebrow"><i></i> THEO DÕI HOẠT ĐỘNG AI</span>
+            <h2>Nhật ký AI</h2>
+            <p>Tra cứu câu hỏi, phản hồi và lượng token đã dùng trên toàn hệ thống.</p>
+        </div>
+        <button type="button" class="ai-logs-refresh" id="ai-logs-refresh-button">
+            <span aria-hidden="true">↻</span> Làm mới dữ liệu
+        </button>
+    </div>
+
+    <div class="ai-logs-summary" aria-label="Tổng quan nhật ký AI">
+        <article class="ai-log-summary-card requests">
+            <span class="ai-log-summary-icon">✦</span>
+            <div><small>Tổng yêu cầu</small><strong id="ai-logs-total">0</strong></div>
+        </article>
+        <article class="ai-log-summary-card tokens">
+            <span class="ai-log-summary-icon">◎</span>
+            <div><small>Token đã dùng</small><strong id="ai-logs-tokens">0</strong></div>
+        </article>
+        <article class="ai-log-summary-card users">
+            <span class="ai-log-summary-icon">♙</span>
+            <div><small>Người sử dụng</small><strong id="ai-logs-users">0</strong></div>
+        </article>
+    </div>
+
+    <div class="ai-logs-toolbar" data-permission="ai_log_view">
+        <label class="ai-logs-search">
+            <span aria-hidden="true">⌕</span>
+            <input id="ai-logs-search-input" type="search" placeholder="Tìm người dùng, câu hỏi hoặc phản hồi...">
+        </label>
+        <select id="ai-logs-feature-filter" class="ai-logs-filter" aria-label="Lọc theo tính năng">
+            <option value="all">Tất cả tính năng AI</option>
+            <option value="product_advice">Tư vấn sản phẩm</option>
+            <option value="revenue_analysis">Báo cáo doanh thu</option>
+            <option value="sales_qa">Hỏi đáp dữ liệu</option>
+        </select>
+        <input id="ai-logs-date-filter" class="ai-logs-filter ai-logs-date" type="date" aria-label="Lọc theo ngày">
+        <button type="button" id="ai-logs-clear-filter" class="ai-logs-clear-filter">Xóa bộ lọc</button>
+    </div>
+
+    <div class="ai-logs-table-card">
+        <div class="ai-logs-table-heading">
+            <div>
+                <h3>Lịch sử yêu cầu</h3>
+                <p>Dữ liệu mới nhất được hiển thị trước</p>
+            </div>
+            <span class="ai-logs-live"><i></i> SQL Server</span>
+        </div>
+        <div class="ai-logs-table-wrapper">
+            <table class="ai-logs-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Người dùng</th>
+                        <th>Tính năng</th>
+                        <th>Câu hỏi</th>
+                        <th>Phản hồi AI</th>
+                        <th>Token</th>
+                        <th>Ngày yêu cầu</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="ai-logs-table-body"></tbody>
+            </table>
+        </div>
+        <div class="ai-logs-footer">
+            <span id="ai-logs-count">Không có yêu cầu AI</span>
+            <div id="ai-logs-pagination" class="ai-logs-pagination" aria-label="Phân trang nhật ký AI"></div>
+        </div>
+    </div>
+</section>
+
+<div class="ai-log-detail-modal" id="ai-log-detail-modal" aria-hidden="true">
+    <div class="ai-log-detail-dialog" role="dialog" aria-modal="true" aria-labelledby="ai-log-detail-title">
+        <div class="ai-log-detail-header">
+            <div>
+                <span>CHI TIẾT YÊU CẦU</span>
+                <h3 id="ai-log-detail-title">Nhật ký AI</h3>
+            </div>
+            <button type="button" id="ai-log-detail-close" aria-label="Đóng">×</button>
+        </div>
+        <div class="ai-log-detail-meta" id="ai-log-detail-meta"></div>
+        <div class="ai-log-detail-section question">
+            <h4>Câu hỏi / dữ liệu đầu vào</h4>
+            <p id="ai-log-detail-question"></p>
+        </div>
+        <div class="ai-log-detail-section answer">
+            <h4>Phản hồi của AI</h4>
+            <p id="ai-log-detail-answer"></p>
+        </div>
+    </div>
+</div>
 
 
 <!-- =========================================================
@@ -1622,6 +1830,31 @@
 
         </form>
 
+    </div>
+</div>
+
+<!-- CUSTOMER PURCHASE HISTORY -->
+<div
+    class="customer-modal customer-history-modal"
+    id="customer-history-modal"
+>
+    <div class="customer-modal-content customer-history-modal-content">
+        <div class="customer-modal-header customer-history-modal-header">
+            <div>
+                <span class="customer-history-eyebrow">LỊCH SỬ MUA HÀNG</span>
+                <h3 id="customer-history-title">Khách hàng</h3>
+                <p id="customer-history-subtitle"></p>
+            </div>
+            <button
+                type="button"
+                class="customer-modal-close"
+                id="customer-history-modal-close"
+                aria-label="Đóng lịch sử mua hàng"
+            >
+                ×
+            </button>
+        </div>
+        <div class="customer-history-content" id="customer-history-content"></div>
     </div>
 </div>
 
@@ -2344,28 +2577,49 @@
 >
 
     <div class="history-page-header">
-
-        <div>
-            <h2>
-                Lịch sử hoạt động
-            </h2>
-
-            <p>
-                Theo dõi các hoạt động phát sinh trong hệ thống
-            </p>
+        <div class="history-hero-copy">
+            <span class="history-hero-eyebrow"><i></i> TRUNG TÂM GIÁM SÁT HỆ THỐNG</span>
+            <h2 id="history-hero-title">Lịch sử hoạt động</h2>
+            <p id="history-hero-description">Theo dõi các thao tác và sự kiện phát sinh trong hệ thống.</p>
         </div>
-
         <button
             type="button"
             class="history-refresh-button"
             id="history-refresh-button"
-            onclick="refreshHistory()"
         >
-            ↻ Làm mới
+            <span aria-hidden="true">↻</span> Làm mới dữ liệu
         </button>
-
     </div>
 
+
+    <div class="history-view-tabs" role="tablist" aria-label="Loại lịch sử">
+        <button type="button" class="history-view-tab active" id="history-activity-tab"
+            data-history-tab="activity" data-permission="history_view" role="tab" aria-selected="true">
+            <span class="history-tab-icon">◷</span>
+            <span><strong>Lịch sử hoạt động</strong><small>Thao tác và đăng nhập hệ thống</small></span>
+        </button>
+        <button type="button" class="history-view-tab" id="history-ai-tab"
+            data-history-tab="ai" data-permission="ai_log_view" role="tab" aria-selected="false">
+            <span class="history-tab-icon">✦</span>
+            <span><strong>Nhật ký AI</strong><small>Câu hỏi, phản hồi và token</small></span>
+        </button>
+    </div>
+
+    <div class="history-tab-panel active" id="history-activity-panel" role="tabpanel">
+        <div class="history-summary-grid">
+            <article class="history-summary-card total">
+                <span class="history-summary-icon">≋</span>
+                <div><small>Tổng hoạt động</small><strong id="history-total-count">0</strong></div>
+            </article>
+            <article class="history-summary-card today">
+                <span class="history-summary-icon">◷</span>
+                <div><small>Hoạt động hôm nay</small><strong id="history-today-count">0</strong></div>
+            </article>
+            <article class="history-summary-card users">
+                <span class="history-summary-icon">♙</span>
+                <div><small>Người thực hiện</small><strong id="history-user-count">0</strong></div>
+            </article>
+        </div>
 
     <!-- =========================
          TOOLBAR
@@ -2421,6 +2675,14 @@
                 Xuất báo cáo
             </option>
 
+            <option value="login">
+                Đăng nhập
+            </option>
+
+            <option value="logout">
+                Đăng xuất
+            </option>
+
         </select>
 
 
@@ -2461,7 +2723,15 @@
                 Báo cáo
             </option>
 
+            <option value="Hệ thống">
+                Hệ thống
+            </option>
+
         </select>
+
+        <input type="date" class="history-filter history-date-filter" id="history-date-filter" aria-label="Lọc theo ngày">
+
+        <button type="button" class="history-clear-filter" id="history-clear-filter">Xóa bộ lọc</button>
 
     </div>
 
@@ -2509,9 +2779,19 @@
                 Hiển thị 0 hoạt động
             </span>
 
+            <div
+                class="history-pagination-buttons"
+                id="history-pagination-buttons"
+                aria-label="Phân trang lịch sử"
+            ></div>
+
         </div>
 
     </div>
+
+    </div>
+
+    <div class="history-tab-panel history-ai-panel" id="history-ai-panel" role="tabpanel"></div>
 
 </section>
 
@@ -2620,7 +2900,10 @@
             >
                 0 ₫
             </div>
-            <div class="statistics-kpi-note">
+            <div
+                class="statistics-kpi-note"
+                id="statistics-highest-revenue-note"
+            >
                 Doanh thu trong ngày cao nhất
             </div>
         </div>
@@ -3614,16 +3897,24 @@
     id="ai-product-page"
 >
 
-    <div class="ai-page-header">
-
-        <h2>
-            AI tư vấn sản phẩm
-        </h2>
-
-        <p>
-            Phân tích nhu cầu và đề xuất sản phẩm phù hợp
-        </p>
-
+    <div class="ai-page-header ai-hero">
+        <div class="ai-hero-copy">
+            <span class="ai-eyebrow"><span class="ai-live-dot"></span> Chuyên gia sản phẩm AI</span>
+            <h2>Tìm đúng sản phẩm cho <span>mọi nhu cầu</span></h2>
+            <p>Gemini kết hợp nhu cầu, ngân sách và tồn kho thực tế để đưa ra lựa chọn phù hợp nhất cho khách hàng.</p>
+            <div class="ai-hero-tags">
+                <span>✦ Gemini 3.6 Flash</span>
+                <span>◈ Tư vấn theo ngân sách</span>
+                <span>✓ Kiểm tra tồn kho</span>
+            </div>
+        </div>
+        <div class="ai-hero-visual" aria-hidden="true">
+            <div class="ai-orbit ai-orbit-one"></div>
+            <div class="ai-orbit ai-orbit-two"></div>
+            <div class="ai-core"><span>✦</span></div>
+            <span class="ai-spark ai-spark-one">✦</span>
+            <span class="ai-spark ai-spark-two">✦</span>
+        </div>
     </div>
 
 
@@ -3635,10 +3926,13 @@
         ========================== -->
 
         <div class="ai-input-card">
-
-            <h3>
-                Nhu cầu khách hàng
-            </h3>
+            <div class="ai-card-heading">
+                <span class="ai-card-icon">✦</span>
+                <div>
+                    <span class="ai-card-kicker">Bắt đầu tư vấn</span>
+                    <h3>Nhu cầu khách hàng</h3>
+                </div>
+            </div>
 
             <p class="ai-input-description">
                 Nhập nhu cầu của khách hàng để hệ thống
@@ -3674,7 +3968,7 @@
                 class="ai-advice-button"
                 id="ai-advice-button"
             >
-                🤖 Tư vấn sản phẩm
+                <span class="ai-button-icon">✦</span> Tư vấn với Gemini
             </button>
 
 
@@ -3684,7 +3978,7 @@
                 id="ai-reset-button"
                 style="width: 100%; margin-top: 10px;"
             >
-                Làm mới
+                <span>↻</span> Làm mới tư vấn
             </button>
 
         </div>
@@ -3697,10 +3991,7 @@
         <div class="ai-result-card">
 
             <div class="ai-result-header">
-
-                <h3>
-                    Kết quả tư vấn
-                </h3>
+                <div class="ai-result-title"><span>◈</span><h3>Kết quả tư vấn</h3></div>
 
                 <span
                     class="ai-result-count"
@@ -3738,24 +4029,223 @@
     </div>
 
 
+    <!-- ACCOUNT -->
+    <div class="account-modal" id="account-modal" aria-hidden="true">
+        <section
+            class="account-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="account-dialog-title"
+        >
+            <header class="account-dialog-header">
+                <div class="account-dialog-heading">
+                    <span class="account-dialog-icon" aria-hidden="true">♙</span>
+                    <div>
+                        <h2 id="account-dialog-title">Tài khoản của tôi</h2>
+                        <p>Quản lý hồ sơ, bảo mật và giao diện cá nhân</p>
+                    </div>
+                </div>
+                <button
+                    type="button"
+                    class="account-close"
+                    id="account-modal-close"
+                    aria-label="Đóng"
+                >×</button>
+            </header>
+
+            <div class="account-layout">
+                <aside class="account-sidebar">
+                    <div class="account-identity">
+                        <div class="account-avatar-preview" id="account-avatar-preview">A</div>
+                        <strong id="account-display-name">Tài khoản</strong>
+                        <span id="account-display-username">@username</span>
+                    </div>
+
+                    <nav class="account-tabs" role="tablist" aria-label="Cài đặt tài khoản">
+                        <button type="button" class="account-tab active" data-account-tab="profile" role="tab">
+                            <span class="account-tab-icon">♙</span>
+                            Hồ sơ
+                        </button>
+                        <button type="button" class="account-tab" data-account-tab="security" role="tab">
+                            <span class="account-tab-icon">⚿</span>
+                            Bảo mật
+                        </button>
+                        <button type="button" class="account-tab" data-account-tab="appearance" role="tab">
+                            <span class="account-tab-icon">◐</span>
+                            Giao diện
+                        </button>
+                    </nav>
+                </aside>
+
+                <div class="account-main">
+                    <section class="account-pane active" data-account-pane="profile">
+                        <div class="account-section-heading">
+                            <h3>Hồ sơ cá nhân</h3>
+                            <p>Xem và cập nhật thông tin hiển thị của tài khoản.</p>
+                        </div>
+
+                        <form id="account-profile-form">
+                            <div class="account-avatar-editor">
+                                <div class="account-avatar-preview" id="account-avatar-form-preview">A</div>
+                                <div class="account-avatar-actions">
+                                    <strong>Ảnh đại diện</strong>
+                                    <small>PNG, JPG hoặc WebP · Tối đa 5MB</small>
+                                    <div class="account-inline-actions">
+                                        <label class="account-secondary-button" for="account-avatar-input">Chọn ảnh</label>
+                                        <input id="account-avatar-input" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+                                        <button type="button" class="account-primary-button" id="account-avatar-save" disabled>Lưu ảnh</button>
+                                        <button type="button" class="account-danger-button" id="account-avatar-remove">Gỡ ảnh</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="account-form-grid">
+                                <div class="account-field">
+                                    <label for="account-username">Tên đăng nhập</label>
+                                    <input id="account-username" type="text" disabled>
+                                </div>
+                                <div class="account-field">
+                                    <label for="account-full-name">Họ và tên *</label>
+                                    <input id="account-full-name" type="text" maxlength="100" required>
+                                </div>
+                                <div class="account-field">
+                                    <label for="account-phone">Số điện thoại</label>
+                                    <input id="account-phone" type="tel" maxlength="11" inputmode="numeric" placeholder="Nhập số điện thoại">
+                                </div>
+                                <div class="account-field">
+                                    <label for="account-email">Email</label>
+                                    <input id="account-email" type="email" maxlength="100" placeholder="Nhập email">
+                                </div>
+                            </div>
+
+                            <div class="account-info-card">
+                                <h4>Thông tin tài khoản</h4>
+                                <div class="account-info-row">
+                                    <span>Vai trò</span>
+                                    <strong id="account-role-value">-</strong>
+                                </div>
+                                <div class="account-info-row">
+                                    <span>Trạng thái</span>
+                                    <strong class="account-status-value active" id="account-status-value">Đang hoạt động</strong>
+                                </div>
+                            </div>
+
+                            <div class="account-form-footer">
+                                <p class="account-message" id="account-profile-message" aria-live="polite"></p>
+                                <button type="submit" class="account-primary-button">Lưu thay đổi</button>
+                            </div>
+                        </form>
+                    </section>
+
+                    <section class="account-pane" data-account-pane="security">
+                        <div class="account-section-heading">
+                            <h3>Đổi mật khẩu</h3>
+                            <p>Cập nhật mật khẩu đăng nhập cho tài khoản hiện tại.</p>
+                        </div>
+
+                        <div class="account-security-note">
+                            <span aria-hidden="true">⚿</span>
+                            <span>Bạn phải nhập đúng mật khẩu hiện tại trước khi đặt mật khẩu mới.</span>
+                        </div>
+
+                        <form id="account-password-form">
+                            <div class="account-form-grid">
+                                <div class="account-field full-width">
+                                    <label for="account-current-password">Mật khẩu hiện tại *</label>
+                                    <div class="account-password-wrap">
+                                        <input id="account-current-password" type="password" autocomplete="current-password" required>
+                                        <button type="button" class="account-password-toggle" data-target="account-current-password">Hiện</button>
+                                    </div>
+                                </div>
+                                <div class="account-field">
+                                    <label for="account-new-password">Mật khẩu mới *</label>
+                                    <div class="account-password-wrap">
+                                        <input id="account-new-password" type="password" minlength="6" maxlength="72" autocomplete="new-password" required>
+                                        <button type="button" class="account-password-toggle" data-target="account-new-password">Hiện</button>
+                                    </div>
+                                    <div class="account-password-strength">
+                                        <span class="account-password-strength-track"><span id="account-password-strength-bar" data-score="0"></span></span>
+                                        <span id="account-password-strength-label">Chưa nhập</span>
+                                    </div>
+                                </div>
+                                <div class="account-field">
+                                    <label for="account-confirm-password">Xác nhận mật khẩu mới *</label>
+                                    <div class="account-password-wrap">
+                                        <input id="account-confirm-password" type="password" minlength="6" maxlength="72" autocomplete="new-password" required>
+                                        <button type="button" class="account-password-toggle" data-target="account-confirm-password">Hiện</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="account-form-footer">
+                                <p class="account-message" id="account-password-message" aria-live="polite"></p>
+                                <button type="submit" class="account-primary-button">Đổi mật khẩu</button>
+                            </div>
+                        </form>
+                    </section>
+
+                    <section class="account-pane" data-account-pane="appearance">
+                        <div class="account-section-heading">
+                            <h3>Giao diện cá nhân</h3>
+                            <p>Thiết lập được lưu riêng cho tài khoản đang đăng nhập.</p>
+                        </div>
+
+                        <div class="account-appearance-group">
+                            <label>Chế độ hiển thị</label>
+                            <div class="account-theme-options">
+                                <label class="account-theme-option">
+                                    <input type="radio" name="account-theme" value="light">
+                                    <span><i class="account-theme-preview light">☀</i>Sáng</span>
+                                </label>
+                                <label class="account-theme-option">
+                                    <input type="radio" name="account-theme" value="dark">
+                                    <span><i class="account-theme-preview dark">☾</i>Tối</span>
+                                </label>
+                                <label class="account-theme-option">
+                                    <input type="radio" name="account-theme" value="system">
+                                    <span><i class="account-theme-preview system">◐</i>Theo hệ thống</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="account-appearance-group">
+                            <label>Màu chủ đạo</label>
+                            <div class="account-color-options" aria-label="Chọn màu chủ đạo">
+                                <button type="button" class="account-color-option" data-color="indigo" style="--swatch:#4f46e5" aria-label="Tím chàm"></button>
+                                <button type="button" class="account-color-option" data-color="blue" style="--swatch:#2563eb" aria-label="Xanh dương"></button>
+                                <button type="button" class="account-color-option" data-color="emerald" style="--swatch:#059669" aria-label="Xanh ngọc"></button>
+                                <button type="button" class="account-color-option" data-color="rose" style="--swatch:#e11d48" aria-label="Đỏ hồng"></button>
+                                <button type="button" class="account-color-option" data-color="amber" style="--swatch:#d97706" aria-label="Vàng cam"></button>
+                            </div>
+                        </div>
+
+                        <p class="account-message" id="account-appearance-message" aria-live="polite"></p>
+                    </section>
+                </div>
+            </div>
+        </section>
+    </div>
+
     <!-- JS -->
-    <script src="./js/api.js"></script>
-    <script src="./js/data-api.js?v=20260909-3"></script>
-    <script src="js/dashboard.js"></script>
-    <script src="./js/products.js"></script>
-    <script src="./js/categories.js"></script>
-    <script src="./js/customers.js"></script>
-    <script src="./js/invoices.js"></script>
-    <script src="./js/purchases.js"></script>
-    <script src="./js/inventory.js"></script>
-    <script src="./js/history.js?v=20260909-3"></script>
-    <script src="./js/statistics.js?v=20260909-3"></script>
+    <script src="./js/api.js?v=20260909-6"></script>
+    <script src="./js/data-api.js?v=20260910-3"></script>
+    <script src="js/dashboard.js?v=20260911-1"></script>
+    <script src="./js/products.js?v=20260909-6"></script>
+    <script src="./js/categories.js?v=20260909-6"></script>
+    <script src="./js/customers.js?v=20260910-1"></script>
+    <script src="./js/invoices.js?v=20260910-4"></script>
+    <script src="./js/purchases.js?v=20260909-6"></script>
+    <script src="./js/inventory.js?v=20260910-1"></script>
+    <script src="./js/history.js?v=20260910-3"></script>
+    <script src="./js/statistics.js?v=20260910-2"></script>
     <script src="./js/reports.js?v=20260909-2"></script>
     <script src="./js/users.js"></script>
     <script src="./js/permissions.js"></script>
-    <script src="./js/auth.js"></script>
-    <script src="js/ai-product.js?v=20260909-3"></script>
-    <script src="./js/ai-assistant.js?v=20260909-3"></script>
+    <script src="./js/auth.js?v=20260910-3"></script>
+    <script src="./js/account.js?v=20260910-3"></script>
+    <script src="js/ai-product.js?v=20260909-7"></script>
+    <script src="./js/ai-assistant.js?v=20260909-7"></script>
+    <script src="./js/ai-logs.js?v=20260910-2"></script>
 
     <script>
 
@@ -3938,7 +4428,6 @@
                     showAIQAPage();
                     return;
                 }
-
 
                 // =========================
                 // CÁC MODULE CHƯA LÀM
@@ -4401,7 +4890,7 @@ function showCustomerPage() {
 /* ============================================================
    SALES INVOICE PAGE
    ============================================================ */
-function showSalesInvoicePage() {
+function showSalesInvoicePage(mode = "create") {
     const dashboard =
         document.querySelector(".dashboard-content");
     const productsPage =
@@ -4447,11 +4936,17 @@ function showSalesInvoicePage() {
         return;
     }
 
+    const listOnly = mode === "list";
+
     dashboard.style.display = "none";
     productsPage.classList.remove("active");
     categoriesPage.classList.remove("active");
     customersPage.classList.remove("active");
     invoicePage.classList.add("active");
+    invoicePage.classList.toggle(
+        "invoice-list-mode",
+        listOnly
+    );
     if (purchasePage) {
         purchasePage.classList.remove("active");
     }
@@ -4481,15 +4976,75 @@ function showSalesInvoicePage() {
         document.querySelector(".topbar h1");
     const description =
         document.querySelector(".topbar p");
+
+    const invoicePageTitle =
+        invoicePage.querySelector(
+            ".sales-invoice-page-header h2"
+        );
+
+    const invoicePageDescription =
+        invoicePage.querySelector(
+            ".sales-invoice-page-header p"
+        );
+
     if (title) {
         title.textContent =
-            "Lập hóa đơn bán hàng";
+            listOnly
+                ? "Danh sách hóa đơn"
+                : "Lập hóa đơn bán hàng";
     }
     if (description) {
         description.textContent =
-            "Tạo hóa đơn và ghi nhận thanh toán";
+            listOnly
+                ? "Tra cứu và theo dõi các giao dịch bán hàng"
+                : "Tạo hóa đơn và ghi nhận thanh toán";
     }
+
+    if (invoicePageTitle) {
+        invoicePageTitle.textContent =
+            listOnly
+                ? "Danh sách hóa đơn"
+                : "Lập hóa đơn bán hàng";
+    }
+
+    if (invoicePageDescription) {
+        invoicePageDescription.textContent =
+            listOnly
+                ? "Tìm kiếm, lọc và xem các hóa đơn đã phát sinh"
+                : "Tạo hóa đơn và ghi nhận thanh toán cho khách hàng";
+    }
+
+    if (listOnly) {
+        if (
+            typeof window.initInvoiceSearchFeature ===
+            "function"
+        ) {
+            window.initInvoiceSearchFeature();
+        } else if (
+            typeof window.refreshInvoiceSearchData ===
+            "function"
+        ) {
+            window.refreshInvoiceSearchData();
+        }
+        invoicePage.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+        return;
+    }
+
     initSalesInvoice();
+}
+
+function showInvoiceListPage() {
+    if (
+        typeof requirePermission === "function" &&
+        !requirePermission("invoice_search")
+    ) {
+        return;
+    }
+
+    showSalesInvoicePage("list");
 }
 
 /* ============================================================

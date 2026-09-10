@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, String, Unicode
+from sqlalchemy import Boolean, String, Unicode, UnicodeText
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base
@@ -32,6 +32,11 @@ class User(Base):
 
     email: Mapped[str | None] = mapped_column(
         Unicode(100),
+        nullable=True
+    )
+
+    avatar_data: Mapped[str | None] = mapped_column(
+        UnicodeText,
         nullable=True
     )
 

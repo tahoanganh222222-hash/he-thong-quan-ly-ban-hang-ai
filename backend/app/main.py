@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.database import SessionLocal, engine, test_database_connection
 from app.models import Base
 from app.routers.auth import router as auth_router
+from app.routers.ai import router as ai_router
 from app.routers.sales import router as sales_router
 from app.services.migrations import migrate_unicode_columns
 from app.services.seed import seed_initial_data
@@ -45,6 +46,7 @@ app.add_middleware(
 # Authentication
 app.include_router(auth_router)
 app.include_router(sales_router)
+app.include_router(ai_router)
 
 
 @app.get("/")

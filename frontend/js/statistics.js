@@ -10,6 +10,14 @@ let currentRevenueStatisticsData = [];
     let statisticsInvoices = [];
     let statisticsProductMap = new Map();
     const money = value => Number(value || 0).toLocaleString("vi-VN") + " ₫";
+    const compactMoney = value => {
+        const amount = Number(value || 0);
+        const format = number => Number(number.toFixed(1)).toLocaleString("vi-VN");
+        if (Math.abs(amount) >= 1_000_000_000) return `${format(amount / 1_000_000_000)} tỷ`;
+        if (Math.abs(amount) >= 1_000_000) return `${format(amount / 1_000_000)} tr`;
+        if (Math.abs(amount) >= 1_000) return `${format(amount / 1_000)} nghìn`;
+        return amount.toLocaleString("vi-VN");
+    };
     const displayDate = iso => {
         const [year, month, day] = String(iso || "").slice(0, 10).split("-");
         return year && month && day ? `${day}/${month}/${year}` : "";
@@ -18,6 +26,22 @@ let currentRevenueStatisticsData = [];
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
         .replaceAll(">", "&gt;");
+
+    function createChartScale(maxValue, tickCount = 4) {
+        if (maxValue <= 0) {
+            return { max: 1, ticks: [1, 0.75, 0.5, 0.25, 0] };
+        }
+        const rawStep = maxValue / tickCount;
+        const power = 10 ** Math.floor(Math.log10(rawStep));
+        const fraction = rawStep / power;
+        const niceFraction = fraction <= 1 ? 1 : fraction <= 2 ? 2 : fraction <= 5 ? 5 : 10;
+        const step = niceFraction * power;
+        const max = step * tickCount;
+        return {
+            max,
+            ticks: Array.from({ length: tickCount + 1 }, (_, index) => max - index * step)
+        };
+    }
 
     async function loadRealStatistics() {
         const [invoices, products] = await Promise.all([
@@ -114,6 +138,12 @@ let currentRevenueStatisticsData = [];
         document.getElementById("statistics-average-revenue").textContent = money(result.averageRevenue);
         document.getElementById("statistics-highest-revenue").textContent =
             money(result.highestDay?.revenue || 0);
+        const highestNote = document.getElementById("statistics-highest-revenue-note");
+        if (highestNote) {
+            highestNote.textContent = result.highestDay
+                ? `${result.highestDay.date} · ${result.highestDay.invoices} hóa đơn`
+                : "Chưa có dữ liệu trong kỳ";
+        }
     }
 
     function renderChart() {
@@ -122,35 +152,118 @@ let currentRevenueStatisticsData = [];
             chart.innerHTML = '<div class="statistics-empty">Không có dữ liệu doanh thu trong khoảng thời gian đã chọn.</div>';
             return;
         }
-        const width = 700;
-        const height = 260;
-        const left = 45;
-        const top = 20;
-        const chartWidth = width - left - 20;
-        const chartHeight = height - top - 40;
-        const max = Math.max(...currentRevenueStatisticsData.map(item => item.revenue), 1);
+        const width = Math.max(720, currentRevenueStatisticsData.length * 90);
+        const height = 340;
+        const left = 78;
+        const right = 48;
+        const top = 58;
+        const bottom = 54;
+        const chartWidth = width - left - right;
+        const chartHeight = height - top - bottom;
+        const maxRevenue = Math.max(
+            ...currentRevenueStatisticsData.map(item => Number(item.revenue) || 0),
+            1
+        );
+        const scale = createChartScale(maxRevenue);
         const points = currentRevenueStatisticsData.map((item, index) => ({
             item,
-            x: left + (index / Math.max(1, currentRevenueStatisticsData.length - 1)) * chartWidth,
-            y: top + chartHeight - (item.revenue / max) * chartHeight
+            x: currentRevenueStatisticsData.length === 1
+                ? left + chartWidth / 2
+                : left + (index / (currentRevenueStatisticsData.length - 1)) * chartWidth,
+            y: top + chartHeight - (Number(item.revenue || 0) / scale.max) * chartHeight
         }));
         const path = points.map((point, index) =>
             `${index ? "L" : "M"} ${point.x} ${point.y}`
         ).join(" ");
+        const baseY = top + chartHeight;
+        const areaPath = `${path} L ${points[points.length - 1].x} ${baseY} L ${points[0].x} ${baseY} Z`;
+        const total = currentRevenueStatisticsData.reduce(
+            (sum, item) => sum + Number(item.revenue || 0),
+            0
+        );
+        const firstRevenue = Number(currentRevenueStatisticsData[0]?.revenue || 0);
+        const lastRevenue = Number(currentRevenueStatisticsData.at(-1)?.revenue || 0);
+        const growth = firstRevenue > 0
+            ? ((lastRevenue - firstRevenue) / firstRevenue) * 100
+            : lastRevenue > 0 ? 100 : 0;
+        const trendClass = growth > 0 ? "positive" : growth < 0 ? "negative" : "neutral";
+        const formattedGrowth = Math.abs(growth).toLocaleString("vi-VN", {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1
+        });
+        const trendText = growth > 0
+            ? `Tăng ${formattedGrowth}%`
+            : growth < 0
+                ? `Giảm ${formattedGrowth}%`
+                : "Không đổi";
+
         chart.innerHTML = `
-            <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">
-                <line x1="${left}" y1="${top}" x2="${left}" y2="${height - 40}" stroke="#dfe4ea"/>
-                <line x1="${left}" y1="${height - 40}" x2="${width - 20}" y2="${height - 40}" stroke="#dfe4ea"/>
-                <path d="${path}" class="statistics-chart-line"/>
-                ${points.map(point => `
-                    <circle class="statistics-chart-point" cx="${point.x}" cy="${point.y}" r="4">
-                        <title>${escapeHTML(point.item.date)}: ${money(point.item.revenue)}</title>
-                    </circle>
-                    <text class="statistics-chart-label" x="${point.x}" y="${height - 12}" text-anchor="middle">
-                        ${point.item.date.substring(0, 5)}
-                    </text>
-                `).join("")}
-            </svg>`;
+            <div class="statistics-chart-insights">
+                <span class="statistics-insight ${trendClass}">
+                    <small>Xu hướng đầu kỳ → cuối kỳ</small>
+                    <strong>${trendText}</strong>
+                </span>
+                <span class="statistics-insight">
+                    <small>Bình quân mỗi ngày có doanh thu</small>
+                    <strong>${money(total / currentRevenueStatisticsData.length)}</strong>
+                </span>
+                <span class="statistics-insight">
+                    <small>Số ngày phát sinh doanh thu</small>
+                    <strong>${currentRevenueStatisticsData.length} ngày</strong>
+                </span>
+            </div>
+
+            <div class="statistics-chart-scroll">
+                <svg
+                    viewBox="0 0 ${width} ${height}"
+                    preserveAspectRatio="xMinYMin meet"
+                    style="min-width: ${width}px"
+                    role="img"
+                    aria-label="Biểu đồ doanh thu theo ngày"
+                >
+                    <defs>
+                        <linearGradient id="statisticsRevenueArea" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#4f46e5" stop-opacity="0.28"/>
+                            <stop offset="100%" stop-color="#4f46e5" stop-opacity="0.02"/>
+                        </linearGradient>
+                    </defs>
+
+                    <text class="statistics-chart-axis-title" x="${left}" y="22">Doanh thu</text>
+                    <text class="statistics-chart-axis-title" x="${width - right}" y="${height - 8}" text-anchor="end">Ngày</text>
+
+                    ${scale.ticks.map((value, index) => {
+                        const y = top + (index / (scale.ticks.length - 1)) * chartHeight;
+                        return `
+                            <line class="statistics-chart-grid-line" x1="${left}" y1="${y}" x2="${width - right}" y2="${y}"/>
+                            <text class="statistics-chart-y-label" x="${left - 12}" y="${y + 4}" text-anchor="end">
+                                ${compactMoney(value)}
+                            </text>
+                        `;
+                    }).join("")}
+
+                    <path d="${areaPath}" class="statistics-chart-area"/>
+                    <path d="${path}" class="statistics-chart-line"/>
+
+                    ${points.map(point => `
+                        <g class="statistics-chart-data-point">
+                            <text
+                                class="statistics-chart-value"
+                                x="${point.x}"
+                                y="${Math.max(38, point.y - 13)}"
+                                text-anchor="middle"
+                            >${compactMoney(point.item.revenue)}</text>
+                            <circle class="statistics-chart-point" cx="${point.x}" cy="${point.y}" r="5"/>
+                            <circle class="statistics-chart-hit-area" cx="${point.x}" cy="${point.y}" r="18">
+                                <title>${escapeHTML(point.item.date)} · ${point.item.invoices} hóa đơn · ${money(point.item.revenue)}</title>
+                            </circle>
+                            <text class="statistics-chart-label" x="${point.x}" y="${height - 28}" text-anchor="middle">
+                                ${point.item.date.substring(0, 5)}
+                            </text>
+                        </g>
+                    `).join("")}
+                </svg>
+            </div>
+        `;
     }
 
     function renderTopProducts() {
@@ -159,11 +272,19 @@ let currentRevenueStatisticsData = [];
             container.innerHTML = '<div class="statistics-empty">Chưa có dữ liệu sản phẩm đã bán.</div>';
             return;
         }
-        container.innerHTML = topRevenueProducts.map(product => `
+        const highestRevenue = Math.max(
+            ...topRevenueProducts.map(product => Number(product.revenue) || 0),
+            1
+        );
+        container.innerHTML = topRevenueProducts.map((product, index) => `
             <div class="statistics-product-item">
+                <span class="statistics-product-rank">${index + 1}</span>
                 <div class="statistics-product-info">
                     <div class="statistics-product-name">${escapeHTML(product.name)}</div>
                     <div class="statistics-product-code">${escapeHTML(product.code)} · ${product.sold.toLocaleString("vi-VN")} sản phẩm</div>
+                    <div class="statistics-product-progress">
+                        <span style="width: ${(Number(product.revenue || 0) / highestRevenue) * 100}%"></span>
+                    </div>
                 </div>
                 <div class="statistics-product-revenue">${money(product.revenue)}</div>
             </div>

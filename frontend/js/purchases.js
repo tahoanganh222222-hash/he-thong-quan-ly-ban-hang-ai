@@ -11,6 +11,7 @@ async function fetchPurchaseProducts() {
     } catch (error) {
         purchaseProducts = [];
         console.error("Không thể tải sản phẩm nhập hàng:", error);
+        if (error.status === 401) return;
         alert("Không thể tải dữ liệu sản phẩm từ máy chủ.");
     }
 }

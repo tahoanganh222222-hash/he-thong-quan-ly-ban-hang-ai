@@ -14,6 +14,7 @@ PERMISSION_KEYS = {
     "report_export",
     "sales_data_qa",
     "ai_product_advice",
+    "ai_log_view",
     "history_view",
 }
 
@@ -38,6 +39,7 @@ DEFAULT_ROLE_PERMISSIONS = {
         "report_export": True,
         "sales_data_qa": True,
         "ai_product_advice": True,
+        "ai_log_view": True,
         "history_view": True,
     },
     "customer": {

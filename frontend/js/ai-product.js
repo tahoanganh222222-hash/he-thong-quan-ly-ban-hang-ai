@@ -63,6 +63,21 @@
     }
 
 
+    function escapeAIHtml(value) {
+        return String(value ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+
+    function formatAIText(value) {
+        return escapeAIHtml(value).replace(/\r?\n/g, "<br>");
+    }
+
+
     /* =========================================================
        NORMALIZE TEXT
        ========================================================= */
@@ -575,7 +590,9 @@
 
     function renderRecommendations(
         recommendations,
-        need
+        need,
+        geminiAnswer = "",
+        geminiError = ""
     ) {
 
         const result =
@@ -595,8 +612,29 @@
 
         if (count) {
 
-            count.textContent =
-                `${recommendations.length} sản phẩm`;
+            count.textContent = geminiAnswer
+                ? `${recommendations.length} sản phẩm • Gemini`
+                : `${recommendations.length} sản phẩm`;
+        }
+
+
+        result.innerHTML = "";
+
+
+        if (geminiAnswer) {
+            result.insertAdjacentHTML("beforeend", `
+                <div class="ai-analysis-block">
+                    <h4>Nhận xét từ Gemini</h4>
+                    <p>${formatAIText(geminiAnswer)}</p>
+                </div>
+            `);
+        } else if (geminiError) {
+            result.innerHTML = `
+                <div class="ai-analysis-block">
+                    <h4>Đề xuất từ dữ liệu nội bộ</h4>
+                    <p>Gemini chưa phản hồi: ${escapeAIHtml(geminiError)}</p>
+                </div>
+            `;
         }
 
 
@@ -604,7 +642,7 @@
             recommendations.length === 0
         ) {
 
-            result.innerHTML = `
+            result.insertAdjacentHTML("beforeend", `
 
                 <div class="ai-no-product">
 
@@ -618,14 +656,10 @@
                     </p>
 
                 </div>
-            `;
+            `);
 
             return;
         }
-
-
-        result.innerHTML = "";
-
 
         const list =
             document.createElement("div");
@@ -850,9 +884,20 @@
                 getRecommendations(
                     need
                 );
+            let geminiAnswer = "";
+            let geminiError = "";
+            try {
+                const response = await window.salesApi.ai.productAdvice(need);
+                geminiAnswer = response.answer || "";
+            } catch (error) {
+                if (error.status === 401) return;
+                geminiError = error.message || "Không thể kết nối Gemini.";
+            }
             renderRecommendations(
                 recommendations,
-                need
+                need,
+                geminiAnswer,
+                geminiError
             );
         } catch (error) {
             const result = getElement("ai-results");

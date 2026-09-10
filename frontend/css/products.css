@@ -290,8 +290,14 @@
     color: #2563eb;
 }
 
+.product-action-button.toggle {
+    color: #92400e;
+}
+
 .product-action-button.delete {
     color: #dc2626;
+    border-color: #fecaca;
+    background: #fff1f2;
 }
 
 

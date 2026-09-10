@@ -171,6 +171,15 @@
             fullName:
                 user.fullName,
 
+            phone:
+                user.phone || "",
+
+            email:
+                user.email || "",
+
+            avatarData:
+                user.avatarData || "",
+
             role:
                 user.role,
 
@@ -196,6 +205,20 @@
        LOAD CURRENT USER
        ========================================================= */
 
+    function isAccessTokenExpired(token) {
+        try {
+            const encodedPayload = token.split(".")[1];
+            if (!encodedPayload) return true;
+            const normalized = encodedPayload.replace(/-/g, "+").replace(/_/g, "/");
+            const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "=");
+            const payload = JSON.parse(atob(padded));
+            return !payload.exp || Number(payload.exp) <= Math.floor(Date.now() / 1000) + 5;
+        } catch (error) {
+            return true;
+        }
+    }
+
+
     function loadCurrentUser() {
 
         try {
@@ -204,8 +227,9 @@
                 "sales_management_access_token"
             );
 
-            if (!accessToken) {
+            if (!accessToken || isAccessTokenExpired(accessToken)) {
                 currentUser = null;
+                localStorage.removeItem("sales_management_access_token");
                 localStorage.removeItem(CURRENT_USER_STORAGE_KEY);
                 return null;
             }
@@ -318,6 +342,15 @@
 
                 fullName:
                     latestUser.fullName,
+
+                phone:
+                    latestUser.phone || "",
+
+                email:
+                    latestUser.email || "",
+
+                avatarData:
+                    latestUser.avatarData || "",
 
                 role:
                     latestUser.role,
@@ -541,6 +574,9 @@
                 id: response.user.id,
                 username: response.user.username,
                 fullName: response.user.full_name,
+                phone: response.user.phone || "",
+                email: response.user.email || "",
+                avatarData: response.user.avatar_data || "",
                 role: response.user.role,
                 isActive: response.user.is_active
             };
@@ -723,6 +759,35 @@
                 }
             )
         );
+
+        /*
+         * Chờ các vùng dữ liệu chính khởi tạo xong trong lần đăng
+         * nhập đầu tiên. Nhờ đó Dashboard và danh sách hóa đơn
+         * không cần người dùng tải lại trang mới hiển thị.
+         */
+        const initializationTasks = [];
+
+        if (
+            typeof window.initDashboardFromAPI ===
+            "function"
+        ) {
+            initializationTasks.push(
+                window.initDashboardFromAPI()
+            );
+        }
+
+        if (
+            typeof window.initInvoiceSearchFeature ===
+            "function"
+        ) {
+            initializationTasks.push(
+                window.initInvoiceSearchFeature()
+            );
+        }
+
+        await Promise.allSettled(
+            initializationTasks
+        );
     }
 
 
@@ -730,7 +795,24 @@
        LOGOUT
        ========================================================= */
 
-    function logout() {
+    async function logout() {
+
+        const hadAccessToken = Boolean(
+            localStorage.getItem("sales_management_access_token")
+        );
+
+        if (hadAccessToken) {
+            try {
+                if (window.salesApi?.account?.logout) {
+                    await window.salesApi.account.logout();
+                } else {
+                    await apiRequest("/api/auth/logout", { method: "POST" });
+                }
+            } catch (error) {
+                // Vẫn kết thúc phiên cục bộ nếu backend tạm thời không phản hồi.
+                console.error("Không thể ghi nhật ký đăng xuất:", error);
+            }
+        }
 
         currentUser = null;
 
@@ -932,11 +1014,19 @@
                     )
                     : "U";
 
-            avatar.textContent =
-                String(avatarSource)
-                    .trim()
-                    .charAt(0)
-                    .toUpperCase() || "U";
+            if (user && user.avatarData) {
+                avatar.innerHTML = "";
+                const image = document.createElement("img");
+                image.src = user.avatarData;
+                image.alt = `Ảnh đại diện của ${user.fullName || user.username}`;
+                avatar.appendChild(image);
+            } else {
+                avatar.textContent =
+                    String(avatarSource)
+                        .trim()
+                        .charAt(0)
+                        .toUpperCase() || "U";
+            }
         }
 
         if (document.body) {

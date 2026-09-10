@@ -38,6 +38,7 @@ async function loadProductsFromAPI() {
     } catch (error) {
         products = [];
         console.error("Không thể tải danh sách sản phẩm:", error);
+        if (error.status === 401) return;
         alert("Không thể tải dữ liệu sản phẩm từ máy chủ.");
     }
 }
@@ -394,7 +395,7 @@ function renderProducts() {
                     </button>
 
                     <button
-                        class="product-action-button delete"
+                        class="product-action-button toggle"
                         onclick="toggleProductStatus(${product.id})"
                     >
                         ${
@@ -402,6 +403,13 @@ function renderProducts() {
                                 ? "Ngừng"
                                 : "Kích hoạt"
                         }
+                    </button>
+
+                    <button
+                        class="product-action-button delete"
+                        onclick="deleteProduct(${product.id})"
+                    >
+                        Xóa
                     </button>
 
                 </div>
@@ -1027,6 +1035,52 @@ async function toggleProductStatus(id) {
 
 }
 
+async function loadProductCategoryOptions() {
+    const select = document.getElementById("product-category");
+    if (!select || !window.salesApi?.categories) return;
+    const currentValue = select.value;
+    try {
+        const categoryItems = await window.salesApi.categories.list();
+        select.innerHTML = '<option value="">Chọn danh mục</option>';
+        categoryItems.forEach(category => {
+            const option = document.createElement("option");
+            option.value = category.name;
+            option.textContent = category.name + (category.isActive ? "" : " (Ngừng hoạt động)");
+            select.appendChild(option);
+        });
+        if ([...select.options].some(option => option.value === currentValue)) {
+            select.value = currentValue;
+        }
+    } catch (error) {
+        console.error("Không thể tải danh mục cho biểu mẫu sản phẩm:", error);
+    }
+}
+
+
+async function deleteProduct(id) {
+    if (
+        typeof requirePermission === "function" &&
+        !requirePermission("product_manage")
+    ) {
+        return;
+    }
+    const product = products.find(item => item.id === id);
+    if (!product) return;
+    const confirmed = confirm(
+        `Xóa vĩnh viễn sản phẩm "${product.name}"? Sản phẩm đã có giao dịch sẽ không thể xóa.`
+    );
+    if (!confirmed) return;
+    try {
+        await window.salesApi.products.remove(id);
+        products = products.filter(item => item.id !== id);
+        loadProductCategories();
+        renderProducts();
+        alert("Đã xóa sản phẩm.");
+    } catch (error) {
+        alert(error.message || "Không thể xóa sản phẩm.");
+    }
+}
+
 
 /*
  * ============================================================
@@ -1120,6 +1174,8 @@ async function initProductManagement() {
     }
 
     await loadProductsFromAPI();
+
+    await loadProductCategoryOptions();
 
     loadProductCategories();
 

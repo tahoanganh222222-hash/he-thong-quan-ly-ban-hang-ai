@@ -173,6 +173,12 @@ const permissionDefinitions = [
     },
 
     {
+        key: "ai_log_view",
+        name: "Xem nhật ký AI",
+        description: "Tra cứu câu hỏi, phản hồi, số token và người đã sử dụng AI."
+    },
+
+    {
         key: "history_view",
         name: "Xem lịch sử",
         description: "Xem lịch sử hoạt động."
@@ -211,6 +217,8 @@ const defaultRolePermissions = {
         sales_data_qa: true,
         ai_product_advice: true,
 
+        ai_log_view: true,
+
         history_view: true
     },
 
@@ -238,6 +246,8 @@ const defaultRolePermissions = {
 
         sales_data_qa: false,
         ai_product_advice: false,
+
+        ai_log_view: false,
 
         history_view: true
     },
@@ -267,6 +277,8 @@ const defaultRolePermissions = {
         sales_data_qa: true,
         ai_product_advice: true,
 
+        ai_log_view: true,
+
         history_view: true
     },
 
@@ -294,6 +306,8 @@ const defaultRolePermissions = {
 
         sales_data_qa: false,
         ai_product_advice: true,
+
+        ai_log_view: false,
 
         history_view: false
     }

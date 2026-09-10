@@ -27,6 +27,11 @@ def migrate_unicode_columns(engine: Engine) -> None:
                     ALTER TABLE dbo.Users ADD phone NVARCHAR(20) NULL;
                 IF COL_LENGTH('dbo.Users', 'email') IS NULL
                     ALTER TABLE dbo.Users ADD email NVARCHAR(100) NULL;
+                IF COL_LENGTH('dbo.Users', 'avatar_data') IS NULL
+                    ALTER TABLE dbo.Users ADD avatar_data NVARCHAR(MAX) NULL;
+                IF COL_LENGTH('dbo.AILogs', 'token_usage') IS NULL
+                    ALTER TABLE dbo.AILogs ADD token_usage INT NOT NULL
+                        CONSTRAINT DF_AILogs_token_usage DEFAULT 0;
                 """
             )
         )

@@ -1,4 +1,9 @@
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
 
 class Settings(BaseSettings):
@@ -18,9 +23,11 @@ class Settings(BaseSettings):
 
     # AI - sử dụng ở các phần sau
     GEMINI_API_KEY: str = ""
+    GEMINI_MODEL: str = "gemini-3.6-flash"
+    GEMINI_TIMEOUT_SECONDS: int = 30
 
     model_config = SettingsConfigDict(
-        env_file="../.env",
+        env_file=str(PROJECT_ROOT / ".env"),
         env_file_encoding="utf-8",
         extra="ignore",
     )

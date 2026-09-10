@@ -217,15 +217,41 @@
 
 .inventory-pagination-buttons {
     display: flex;
+    flex-wrap: wrap;
     gap: 6px;
 }
 
 .inventory-pagination-buttons button {
+    min-width: 36px;
+    height: 36px;
     border: 1px solid #d1d5db;
     background: white;
-    border-radius: 6px;
-    padding: 6px 10px;
+    color: #334155;
+    border-radius: 9px;
+    padding: 0 10px;
+    font-weight: 700;
     cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.inventory-pagination-buttons button:hover:not(:disabled),
+.inventory-pagination-buttons button.active {
+    border-color: #4f46e5;
+    background: linear-gradient(135deg, #4f46e5, #2563eb);
+    color: #ffffff;
+    box-shadow: 0 6px 14px rgba(79, 70, 229, 0.22);
+    transform: translateY(-1px);
+}
+
+.inventory-pagination-buttons button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.inventory-empty {
+    padding: 32px !important;
+    color: #64748b;
+    text-align: center !important;
 }
 
 
@@ -253,6 +279,12 @@
         flex-direction: column;
         align-items: flex-start;
         gap: 15px;
+    }
+
+    .inventory-pagination {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 12px;
     }
 
 }

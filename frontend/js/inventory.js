@@ -6,13 +6,20 @@ let inventoryData = [];
 
 let inventoryEventsInitialized = false;
 
+const inventoryItemsPerPage = 5;
+
+let currentInventoryPage = 1;
+
 async function loadInventoryFromAPI() {
 
     try {
         inventoryData = await window.salesApi.inventory.list();
+        currentInventoryPage = 1;
     } catch (error) {
         inventoryData = [];
+        currentInventoryPage = 1;
         console.error("Không thể tải dữ liệu tồn kho:", error);
+        if (error.status === 401) return;
         alert("Không thể tải dữ liệu tồn kho từ máy chủ.");
     }
 }
@@ -228,10 +235,41 @@ function loadInventoryTable() {
         });
 
 
+    const totalItems = filteredData.length;
+
+    const totalPages = Math.max(
+        1,
+        Math.ceil(totalItems / inventoryItemsPerPage)
+    );
+
+    currentInventoryPage = Math.min(
+        Math.max(currentInventoryPage, 1),
+        totalPages
+    );
+
+    const startIndex =
+        (currentInventoryPage - 1) *
+        inventoryItemsPerPage;
+
+    const pageData = filteredData.slice(
+        startIndex,
+        startIndex + inventoryItemsPerPage
+    );
+
     tbody.innerHTML = "";
 
+    if (totalItems === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8" class="inventory-empty">
+                    Không tìm thấy sản phẩm tồn kho phù hợp.
+                </td>
+            </tr>
+        `;
+    }
 
-    filteredData.forEach(
+
+    pageData.forEach(
         (item, index) => {
 
             const statusInfo =
@@ -244,7 +282,7 @@ function loadInventoryTable() {
             row.innerHTML = `
 
                 <td>
-                    ${index + 1}
+                    ${startIndex + index + 1}
                 </td>
 
                 <td>
@@ -304,19 +342,128 @@ function loadInventoryTable() {
     }
 
 
-    const info =
-        document.getElementById(
-            "inventory-pagination-info"
+    renderInventoryPagination(
+        totalItems,
+        totalPages
+    );
+}
+
+
+/* =========================================================
+   PAGINATION
+   ========================================================= */
+
+function renderInventoryPagination(
+    totalItems,
+    totalPages
+) {
+
+    const info = document.getElementById(
+        "inventory-pagination-info"
+    );
+
+    const buttons = document.getElementById(
+        "inventory-pagination-buttons"
+    );
+
+    if (!info || !buttons) {
+        return;
+    }
+
+    if (totalItems === 0) {
+        info.textContent = "Không có sản phẩm";
+        buttons.innerHTML = "";
+        return;
+    }
+
+    const start =
+        (currentInventoryPage - 1) *
+        inventoryItemsPerPage + 1;
+
+    const end = Math.min(
+        currentInventoryPage * inventoryItemsPerPage,
+        totalItems
+    );
+
+    info.textContent =
+        `Hiển thị ${start}-${end} / ${totalItems} sản phẩm`;
+
+    buttons.innerHTML = "";
+
+    const createButton = function (
+        label,
+        targetPage,
+        options = {}
+    ) {
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = label;
+        button.disabled = Boolean(options.disabled);
+        button.setAttribute(
+            "aria-label",
+            options.ariaLabel || `Trang ${targetPage}`
         );
 
-    if (info) {
+        if (options.active) {
+            button.classList.add("active");
+            button.setAttribute("aria-current", "page");
+        }
 
-        info.textContent =
-            filteredData.length > 0
-                ? `Hiển thị ${filteredData.length} sản phẩm`
-                : "Không có sản phẩm";
+        button.addEventListener("click", function () {
+            if (
+                button.disabled ||
+                targetPage === currentInventoryPage
+            ) {
+                return;
+            }
 
+            currentInventoryPage = targetPage;
+            loadInventoryTable();
+        });
+
+        return button;
+    };
+
+    buttons.appendChild(
+        createButton(
+            "‹",
+            currentInventoryPage - 1,
+            {
+                disabled: currentInventoryPage === 1,
+                ariaLabel: "Trang tồn kho trước"
+            }
+        )
+    );
+
+    for (let page = 1; page <= totalPages; page++) {
+        buttons.appendChild(
+            createButton(
+                String(page),
+                page,
+                {
+                    active: page === currentInventoryPage
+                }
+            )
+        );
     }
+
+    buttons.appendChild(
+        createButton(
+            "›",
+            currentInventoryPage + 1,
+            {
+                disabled: currentInventoryPage === totalPages,
+                ariaLabel: "Trang tồn kho tiếp theo"
+            }
+        )
+    );
+}
+
+
+function resetInventoryPageAndLoad() {
+    currentInventoryPage = 1;
+    loadInventoryTable();
 }
 
 
@@ -374,7 +521,7 @@ async function initInventoryManagement() {
 
         searchInput.addEventListener(
             "input",
-            loadInventoryTable
+            resetInventoryPageAndLoad
         );
 
     }
@@ -384,7 +531,7 @@ async function initInventoryManagement() {
 
         statusFilter.addEventListener(
             "change",
-            loadInventoryTable
+            resetInventoryPageAndLoad
         );
 
     }
@@ -394,7 +541,7 @@ async function initInventoryManagement() {
 
         categoryFilter.addEventListener(
             "change",
-            loadInventoryTable
+            resetInventoryPageAndLoad
         );
 
     }
@@ -420,6 +567,7 @@ async function initInventoryManagement() {
                     inventoryData
                 );
 
+                currentInventoryPage = 1;
                 loadInventoryTable();
 
             }

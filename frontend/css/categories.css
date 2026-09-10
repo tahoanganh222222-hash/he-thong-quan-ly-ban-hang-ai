@@ -226,6 +226,16 @@
     color: #555;
 }
 
+.category-action-button.delete {
+    color: #dc2626;
+    border-color: #fecaca;
+    background: #fff1f2;
+}
+
+.category-action-button.delete:hover {
+    background: #ffe4e6;
+}
+
 
 /* ============================================================
    EMPTY STATE

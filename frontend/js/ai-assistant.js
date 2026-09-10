@@ -115,6 +115,10 @@
             .replace(/'/g, "&#039;");
     }
 
+    function formatAIText(value) {
+        return escapeHtml(value).replace(/\r?\n/g, "<br>");
+    }
+
     function getDailyRevenue() {
         return realSalesData.daily.map(item => ({ ...item }));
     }
@@ -322,7 +326,7 @@
             return;
         }
 
-        window.setTimeout(() => {
+        window.setTimeout(async () => {
             const snapshot = getSalesSnapshot();
             const period = getElement("ai-revenue-period")?.value || "7";
             const requestedDays = period === "all" ? Number.NaN : Number(period);
@@ -402,8 +406,25 @@
                     <ul>${recommendations.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
                 </div>
             `;
-            if (status) {
-                status.textContent = `${daily.length} ngày dữ liệu`;
+            if (status) status.textContent = "Đang hỏi Gemini";
+            try {
+                const aiResponse = await window.salesApi.ai.revenueAnalysis(period);
+                result.insertAdjacentHTML("beforeend", `
+                    <div class="ai-analysis-block">
+                        <h4>Phân tích từ Gemini</h4>
+                        <p>${formatAIText(aiResponse.answer)}</p>
+                    </div>
+                `);
+                if (status) status.textContent = `Gemini • ${daily.length} ngày dữ liệu`;
+            } catch (error) {
+                if (error.status === 401) return;
+                result.insertAdjacentHTML("beforeend", `
+                    <div class="ai-analysis-block">
+                        <h4>Gemini chưa phản hồi</h4>
+                        <p>${escapeHtml(error.message || "Đang dùng kết quả phân tích nội bộ.")}</p>
+                    </div>
+                `);
+                if (status) status.textContent = `${daily.length} ngày • nội bộ`;
             }
         }, 350);
     }
@@ -532,19 +553,29 @@
             return;
         }
 
-        const answer = buildDataAnswer(question, getSalesSnapshot());
+        const snapshot = getSalesSnapshot();
+        let answer = "";
+        let answerSource = "Gemini";
+        try {
+            const aiResponse = await window.salesApi.ai.salesQA(question);
+            answer = aiResponse.answer || "";
+        } catch (error) {
+            if (error.status === 401) return;
+            answer = buildDataAnswer(question, snapshot);
+            answerSource = "phân tích nội bộ";
+        }
         result.innerHTML = `
             <div class="ai-question-card">
                 <span>Câu hỏi</span>
                 <p>${escapeHtml(question)}</p>
             </div>
             <div class="ai-answer-card">
-                <span>Trả lời từ dữ liệu hệ thống</span>
-                <p>${escapeHtml(answer)}</p>
+                <span>Trả lời từ ${answerSource}</span>
+                <p>${formatAIText(answer)}</p>
             </div>
         `;
         if (status) {
-            status.textContent = "Đã trả lời";
+            status.textContent = answerSource === "Gemini" ? "Gemini đã trả lời" : "Trả lời nội bộ";
         }
     }
 

@@ -1,4 +1,25 @@
 const API_BASE_URL = "http://127.0.0.1:8000";
+let unauthorizedSessionHandled = false;
+
+function handleUnauthorizedSession(endpoint) {
+    if (endpoint === "/api/auth/login" || unauthorizedSessionHandled) return;
+    unauthorizedSessionHandled = true;
+    localStorage.removeItem("sales_management_access_token");
+    localStorage.removeItem("sales_management_current_user");
+    window.setTimeout(function () {
+        if (typeof window.logout === "function") {
+            window.logout();
+        } else {
+            document.getElementById("app")?.style.setProperty("display", "none");
+            document.getElementById("login-page")?.style.removeProperty("display");
+        }
+        const message = document.getElementById("login-message");
+        if (message) {
+            message.textContent = "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.";
+            message.className = "auth-message auth-message-error";
+        }
+    }, 0);
+}
 
 
 /**
@@ -62,12 +83,17 @@ async function apiRequest(endpoint, options = {}) {
 
         if (!response.ok) {
 
+            if (response.status === 401) {
+                handleUnauthorizedSession(endpoint);
+            }
+
             const requestError = new Error(
                 data.detail ||
                 "Có lỗi xảy ra khi gọi API."
             );
 
             requestError.status = response.status;
+            requestError.authenticationExpired = response.status === 401;
 
             throw requestError;
 

@@ -22,6 +22,8 @@ from app.models import (
     User,
 )
 from app.schemas.sales import (
+    CategoryCreate,
+    CategoryUpdate,
     CustomerCreate,
     CustomerUpdate,
     HistoryCreate,
@@ -37,6 +39,18 @@ from app.schemas.sales import (
 
 
 router = APIRouter(prefix="/api", tags=["Sales Management"])
+
+PRODUCT_READ_PERMISSIONS = (
+    "product_manage",
+    "invoice_create",
+    "purchase_track",
+    "inventory_view",
+    "top_products",
+    "ai_product_advice",
+    "report_export",
+    "revenue_statistics",
+    "sales_data_qa",
+)
 
 
 def _not_found(name: str) -> HTTPException:
@@ -129,6 +143,94 @@ def _get_or_create_category(db: Session, name: str) -> Category:
         db.add(category)
         db.flush()
     return category
+
+
+def _category_dict(category: Category) -> dict:
+    return {
+        "id": category.id,
+        "name": category.name,
+        "description": category.description or "",
+        "isActive": category.is_active,
+    }
+
+
+@router.get("/categories")
+def list_categories(
+    db: Session = Depends(get_db),
+    _current_user: User = Depends(require_any_permission(*PRODUCT_READ_PERMISSIONS)),
+):
+    return [_category_dict(item) for item in db.query(Category).order_by(Category.id).all()]
+
+
+@router.post("/categories", status_code=status.HTTP_201_CREATED)
+def create_category(
+    data: CategoryCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_permission("product_manage")),
+):
+    category = Category(
+        name=data.name.strip(),
+        description=(data.description or "").strip() or None,
+        is_active=data.isActive,
+    )
+    db.add(category)
+    _record_activity(
+        db, current_user, "Thêm", "add", "Danh mục", "",
+        f"Thêm danh mục mới: {category.name}",
+    )
+    _commit(db, "Tên danh mục đã tồn tại")
+    db.refresh(category)
+    return _category_dict(category)
+
+
+@router.put("/categories/{category_id}")
+def update_category(
+    category_id: int,
+    data: CategoryUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_permission("product_manage")),
+):
+    category = db.get(Category, category_id)
+    if category is None:
+        raise _not_found("danh mục")
+    changes = data.model_dump(exclude_unset=True)
+    field_map = {"isActive": "is_active"}
+    for key, value in changes.items():
+        target = field_map.get(key, key)
+        if isinstance(value, str):
+            value = value.strip() or None
+        setattr(category, target, value)
+    _record_activity(
+        db, current_user, "Cập nhật", "update", "Danh mục", "",
+        f"Cập nhật danh mục: {category.name}",
+    )
+    _commit(db, "Tên danh mục đã tồn tại")
+    db.refresh(category)
+    return _category_dict(category)
+
+
+@router.delete("/categories/{category_id}")
+def delete_category(
+    category_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_permission("product_manage")),
+):
+    category = db.get(Category, category_id)
+    if category is None:
+        raise _not_found("danh mục")
+    if db.query(Product.id).filter(Product.category_id == category_id).first():
+        raise HTTPException(
+            status_code=409,
+            detail="Không thể xóa danh mục đang có sản phẩm. Hãy chuyển sản phẩm sang danh mục khác trước.",
+        )
+    category_name = category.name
+    db.delete(category)
+    _record_activity(
+        db, current_user, "Xóa", "delete", "Danh mục", "",
+        f"Xóa danh mục: {category_name}",
+    )
+    db.commit()
+    return {"message": "Đã xóa danh mục", "id": category_id}
 
 
 def _product_dict(db: Session, product: Product) -> dict:
@@ -255,19 +357,6 @@ def _purchase_dict(db: Session, receipt: PurchaseReceipt, include_items: bool = 
     return payload
 
 
-PRODUCT_READ_PERMISSIONS = (
-    "product_manage",
-    "invoice_create",
-    "purchase_track",
-    "inventory_view",
-    "top_products",
-    "ai_product_advice",
-    "report_export",
-    "revenue_statistics",
-    "sales_data_qa",
-)
-
-
 @router.get("/products")
 def list_products(
     db: Session = Depends(get_db),
@@ -365,13 +454,32 @@ def delete_product(
     product = db.get(Product, product_id)
     if product is None:
         raise _not_found("sản phẩm")
-    product.is_active = False
+    has_invoice = db.query(InvoiceDetail.id).filter(
+        InvoiceDetail.product_id == product_id
+    ).first()
+    has_purchase = db.query(PurchaseReceiptDetail.id).filter(
+        PurchaseReceiptDetail.product_id == product_id
+    ).first()
+    if has_invoice or has_purchase:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Không thể xóa sản phẩm đã có trong hóa đơn hoặc phiếu nhập. "
+                "Bạn có thể dùng nút Ngừng để giữ nguyên lịch sử dữ liệu."
+            ),
+        )
+    product_code = product.code
+    product_name = product.name
+    db.query(Inventory).filter(Inventory.product_id == product_id).delete(
+        synchronize_session=False
+    )
+    db.delete(product)
     _record_activity(
-        db, current_user, "Ngừng", "delete", "Sản phẩm", product.code,
-        f"Ngừng kinh doanh sản phẩm: {product.name}",
+        db, current_user, "Xóa", "delete", "Sản phẩm", product_code,
+        f"Xóa sản phẩm: {product_name}",
     )
     db.commit()
-    return {"message": "Đã ngừng kinh doanh sản phẩm", "id": product_id}
+    return {"message": "Đã xóa sản phẩm", "id": product_id}
 
 
 @router.get("/customers")
@@ -400,6 +508,44 @@ def get_customer(
     if customer is None:
         raise _not_found("khách hàng")
     return _customer_dict(customer)
+
+
+@router.get("/customers/{customer_id}/purchase-history")
+def get_customer_purchase_history(
+    customer_id: int,
+    db: Session = Depends(get_db),
+    _current_user: User = Depends(require_permission("customer_manage")),
+):
+    customer = db.get(Customer, customer_id)
+    if customer is None:
+        raise _not_found("khách hàng")
+
+    invoices = (
+        db.query(Invoice)
+        .filter(Invoice.customer_id == customer_id)
+        .order_by(Invoice.created_at.desc(), Invoice.id.desc())
+        .all()
+    )
+    invoice_payloads = [_invoice_dict(db, invoice) for invoice in invoices]
+
+    return {
+        "customer": _customer_dict(customer),
+        "summary": {
+            "invoiceCount": len(invoice_payloads),
+            "totalSpent": sum(
+                float(invoice.final_amount or 0) for invoice in invoices
+            ),
+            "totalItems": sum(
+                int(item.get("quantity", 0))
+                for invoice in invoice_payloads
+                for item in invoice.get("items", [])
+            ),
+            "lastPurchaseAt": (
+                invoices[0].created_at.isoformat() if invoices else None
+            ),
+        },
+        "invoices": invoice_payloads,
+    }
 
 
 @router.post("/customers", status_code=status.HTTP_201_CREATED)
@@ -462,13 +608,23 @@ def delete_customer(
     customer = db.get(Customer, customer_id)
     if customer is None:
         raise _not_found("khách hàng")
-    customer.is_active = False
+    if db.query(Invoice.id).filter(Invoice.customer_id == customer_id).first():
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Không thể xóa khách hàng đã có hóa đơn. "
+                "Bạn có thể dùng nút Khóa để giữ nguyên lịch sử dữ liệu."
+            ),
+        )
+    customer_code = customer.code
+    customer_name = customer.name
+    db.delete(customer)
     _record_activity(
-        db, current_user, "Khóa", "delete", "Khách hàng", customer.code,
-        f"Khóa khách hàng: {customer.name}",
+        db, current_user, "Xóa", "delete", "Khách hàng", customer_code,
+        f"Xóa khách hàng: {customer_name}",
     )
     db.commit()
-    return {"message": "Đã khóa khách hàng", "id": customer_id}
+    return {"message": "Đã xóa khách hàng", "id": customer_id}
 
 
 INVENTORY_READ_PERMISSIONS = (

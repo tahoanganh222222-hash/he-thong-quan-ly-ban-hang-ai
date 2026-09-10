@@ -371,3 +371,11 @@
         width: 100%;
     }
 }
+
+.sales-invoice-page.invoice-list-mode .sales-invoice-layout {
+    display: none;
+}
+
+.sales-invoice-page.invoice-list-mode #invoice-search-filter-container {
+    margin-bottom: 0;
+}

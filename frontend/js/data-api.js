@@ -11,7 +11,7 @@
 
         if (
             method !== "GET" &&
-            /^\/api\/(products|customers|inventory|invoices|purchases)(\/|$)/.test(path)
+            /^\/api\/(categories|products|customers|inventory|invoices|purchases)(\/|$)/.test(path)
         ) {
             document.dispatchEvent(
                 new CustomEvent("sales:data-changed", {
@@ -24,6 +24,32 @@
     }
 
     window.salesApi = {
+        account: {
+            get: () => request("/api/auth/me"),
+            update: data => request("/api/auth/me", "PUT", data),
+            changePassword: data => request("/api/auth/me/password", "PUT", data),
+            logout: () => request("/api/auth/logout", "POST")
+        },
+        ai: {
+            productAdvice: need => request(
+                "/api/ai/product-advice", "POST", { need }
+            ),
+            revenueAnalysis: period => request(
+                "/api/ai/revenue-analysis", "POST", { period }
+            ),
+            salesQA: question => request(
+                "/api/ai/sales-qa", "POST", { question }
+            ),
+            logs: feature => request(
+                `/api/ai/logs${feature && feature !== "all" ? `?feature=${encodeURIComponent(feature)}` : ""}`
+            )
+        },
+        categories: {
+            list: () => request("/api/categories"),
+            create: data => request("/api/categories", "POST", data),
+            update: (id, data) => request(`/api/categories/${id}`, "PUT", data),
+            remove: id => request(`/api/categories/${id}`, "DELETE")
+        },
         products: {
             list: () => request("/api/products"),
             get: id => request(`/api/products/${id}`),
@@ -34,6 +60,7 @@
         customers: {
             list: () => request("/api/customers"),
             get: id => request(`/api/customers/${id}`),
+            purchaseHistory: id => request(`/api/customers/${id}/purchase-history`),
             create: data => request("/api/customers", "POST", data),
             update: (id, data) => request(`/api/customers/${id}`, "PUT", data),
             remove: id => request(`/api/customers/${id}`, "DELETE")

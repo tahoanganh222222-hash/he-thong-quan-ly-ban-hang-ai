@@ -27,6 +27,7 @@ async function loadInvoiceReferenceData() {
         invoiceProducts = [];
         invoiceCustomers = [];
         console.error("Không thể tải dữ liệu lập hóa đơn:", error);
+        if (error.status === 401) return;
         alert("Không thể tải sản phẩm và khách hàng từ máy chủ.");
     }
 }
@@ -788,6 +789,9 @@ document.addEventListener(
 
     let invoiceSearchData = [];
 
+    let invoiceSearchEventsInitialized = false;
+    let invoiceSearchInitializationPromise = null;
+
 
     /* =========================================================
        34.2. BIẾN DỮ LIỆU LỌC
@@ -795,15 +799,20 @@ document.addEventListener(
 
     let filteredInvoiceSearchData = invoiceSearchData.slice();
 
+    const invoicesPerPage = 5;
+    let currentInvoiceSearchPage = 1;
+
     async function reloadInvoiceSearchData() {
 
         try {
             invoiceSearchData = await window.salesApi.invoices.list();
             filteredInvoiceSearchData = invoiceSearchData.slice();
+            currentInvoiceSearchPage = 1;
             renderInvoiceSearchResults();
         } catch (error) {
             invoiceSearchData = [];
             filteredInvoiceSearchData = [];
+            currentInvoiceSearchPage = 1;
             console.error("Không thể tải danh sách hóa đơn:", error);
             renderInvoiceSearchResults();
         }
@@ -1110,6 +1119,21 @@ document.addEventListener(
 
                 </div>
 
+                <div class="invoice-search-pagination">
+                    <span
+                        class="invoice-search-pagination-info"
+                        id="invoice-search-pagination-info"
+                    >
+                        Không có hóa đơn
+                    </span>
+
+                    <div
+                        class="invoice-search-pagination-buttons"
+                        id="invoice-search-pagination-buttons"
+                        aria-label="Phân trang hóa đơn"
+                    ></div>
+                </div>
+
             </div>
         `;
 
@@ -1401,7 +1425,7 @@ if (header) {
                 }
             );
 
-
+        currentInvoiceSearchPage = 1;
         renderInvoiceSearchResults();
     }
 
@@ -1437,9 +1461,22 @@ if (header) {
                 " hóa đơn";
         }
 
+        const totalItems =
+            filteredInvoiceSearchData.length;
+
+        const totalPages = Math.max(
+            1,
+            Math.ceil(totalItems / invoicesPerPage)
+        );
+
+        currentInvoiceSearchPage = Math.min(
+            Math.max(currentInvoiceSearchPage, 1),
+            totalPages
+        );
+
 
         if (
-            filteredInvoiceSearchData.length === 0
+            totalItems === 0
         ) {
 
             tableBody.innerHTML = `
@@ -1453,12 +1490,28 @@ if (header) {
                 </tr>
             `;
 
+            renderInvoiceSearchPagination(
+                totalItems,
+                totalPages
+            );
+
             return;
         }
 
 
+        const startIndex =
+            (currentInvoiceSearchPage - 1) *
+            invoicesPerPage;
+
+        const pageInvoices =
+            filteredInvoiceSearchData.slice(
+                startIndex,
+                startIndex + invoicesPerPage
+            );
+
+
         tableBody.innerHTML =
-            filteredInvoiceSearchData
+            pageInvoices
                 .map(
                     function (invoice, index) {
 
@@ -1466,7 +1519,7 @@ if (header) {
                             <tr>
 
                                 <td>
-                                    ${index + 1}
+                                    ${startIndex + index + 1}
                                 </td>
 
                                 <td>
@@ -1545,6 +1598,12 @@ if (header) {
                 .join("");
 
 
+        renderInvoiceSearchPagination(
+            totalItems,
+            totalPages
+        );
+
+
         /*
             Gắn sự kiện nút Xem.
         */
@@ -1575,6 +1634,122 @@ if (header) {
                     }
                 );
             }
+        );
+    }
+
+
+    /* =========================================================
+       34.11.1. PHÂN TRANG KẾT QUẢ
+       ========================================================= */
+
+    function renderInvoiceSearchPagination(
+        totalItems,
+        totalPages
+    ) {
+
+        const info = document.getElementById(
+            "invoice-search-pagination-info"
+        );
+
+        const buttons = document.getElementById(
+            "invoice-search-pagination-buttons"
+        );
+
+        if (!info || !buttons) {
+            return;
+        }
+
+        if (totalItems === 0) {
+            info.textContent = "Không có hóa đơn";
+            buttons.innerHTML = "";
+            return;
+        }
+
+        const start =
+            (currentInvoiceSearchPage - 1) *
+            invoicesPerPage + 1;
+
+        const end = Math.min(
+            currentInvoiceSearchPage * invoicesPerPage,
+            totalItems
+        );
+
+        info.textContent =
+            `Hiển thị ${start}-${end} / ${totalItems} hóa đơn`;
+
+        buttons.innerHTML = "";
+
+        const createPageButton = function (
+            label,
+            targetPage,
+            options = {}
+        ) {
+
+            const button = document.createElement("button");
+
+            button.type = "button";
+            button.className = "invoice-search-page-button";
+            button.textContent = label;
+            button.disabled = Boolean(options.disabled);
+            button.setAttribute(
+                "aria-label",
+                options.ariaLabel || `Trang ${targetPage}`
+            );
+
+            if (options.active) {
+                button.classList.add("active");
+                button.setAttribute("aria-current", "page");
+            }
+
+            button.addEventListener("click", function () {
+                if (
+                    button.disabled ||
+                    targetPage === currentInvoiceSearchPage
+                ) {
+                    return;
+                }
+
+                currentInvoiceSearchPage = targetPage;
+                renderInvoiceSearchResults();
+            });
+
+            return button;
+        };
+
+        buttons.appendChild(
+            createPageButton(
+                "‹",
+                currentInvoiceSearchPage - 1,
+                {
+                    disabled: currentInvoiceSearchPage === 1,
+                    ariaLabel: "Trang hóa đơn trước"
+                }
+            )
+        );
+
+        for (let page = 1; page <= totalPages; page++) {
+            buttons.appendChild(
+                createPageButton(
+                    String(page),
+                    page,
+                    {
+                        active:
+                            page === currentInvoiceSearchPage
+                    }
+                )
+            );
+        }
+
+        buttons.appendChild(
+            createPageButton(
+                "›",
+                currentInvoiceSearchPage + 1,
+                {
+                    disabled:
+                        currentInvoiceSearchPage === totalPages,
+                    ariaLabel: "Trang hóa đơn tiếp theo"
+                }
+            )
         );
     }
 
@@ -1723,7 +1898,7 @@ if (header) {
         filteredInvoiceSearchData =
             invoiceSearchData.slice();
 
-
+        currentInvoiceSearchPage = 1;
         renderInvoiceSearchResults();
     }
 
@@ -1918,6 +2093,68 @@ if (header) {
                 color: #6b7280;
             }
 
+            .invoice-search-pagination {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 16px;
+                padding-top: 16px;
+            }
+
+            .invoice-search-pagination-info {
+                color: #64748b;
+                font-size: 13px;
+                font-weight: 600;
+            }
+
+            .invoice-search-pagination-buttons {
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+
+            .invoice-search-page-button {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 36px;
+                height: 36px;
+                padding: 0 10px;
+                border: 1px solid #cbd5e1;
+                border-radius: 9px;
+                background: #ffffff;
+                color: #334155;
+                font-weight: 700;
+                cursor: pointer;
+                transition:
+                    color 0.2s ease,
+                    border-color 0.2s ease,
+                    background 0.2s ease,
+                    transform 0.2s ease,
+                    box-shadow 0.2s ease;
+            }
+
+            .invoice-search-page-button:hover:not(:disabled) {
+                color: #ffffff;
+                border-color: #4f46e5;
+                background: #4f46e5;
+                box-shadow: 0 6px 14px rgba(79, 70, 229, 0.2);
+                transform: translateY(-1px);
+            }
+
+            .invoice-search-page-button.active {
+                color: #ffffff;
+                border-color: #4f46e5;
+                background: linear-gradient(135deg, #4f46e5, #2563eb);
+                box-shadow: 0 6px 14px rgba(79, 70, 229, 0.24);
+            }
+
+            .invoice-search-page-button:disabled {
+                opacity: 0.45;
+                cursor: not-allowed;
+            }
+
             @media (max-width: 768px) {
 
                 .invoice-search-title {
@@ -1927,6 +2164,11 @@ if (header) {
 
                 .invoice-search-actions {
                     align-items: stretch;
+                    flex-direction: column;
+                }
+
+                .invoice-search-pagination {
+                    align-items: flex-start;
                     flex-direction: column;
                 }
 
@@ -1943,7 +2185,23 @@ if (header) {
        34.16. KHỞI TẠO
        ========================================================= */
 
-    async function initInvoiceSearchFeature() {
+    function initInvoiceSearchFeature() {
+
+        if (invoiceSearchInitializationPromise) {
+            return invoiceSearchInitializationPromise;
+        }
+
+        invoiceSearchInitializationPromise =
+            initializeInvoiceSearchFeature()
+                .finally(function () {
+                    invoiceSearchInitializationPromise = null;
+                });
+
+        return invoiceSearchInitializationPromise;
+    }
+
+
+    async function initializeInvoiceSearchFeature() {
 
         /*
             Đồng bộ user hiện tại nếu hệ thống có hàm.
@@ -2005,6 +2263,12 @@ if (header) {
         }
 
         await reloadInvoiceSearchData();
+
+        if (invoiceSearchEventsInitialized) {
+            return;
+        }
+
+        invoiceSearchEventsInitialized = true;
 
 
         /*
@@ -2199,6 +2463,17 @@ if (header) {
         "sales:invoice-created",
         reloadInvoiceSearchData
     );
+
+    window.addEventListener(
+        "auth:login",
+        initInvoiceSearchFeature
+    );
+
+    window.refreshInvoiceSearchData =
+        reloadInvoiceSearchData;
+
+    window.initInvoiceSearchFeature =
+        initInvoiceSearchFeature;
 
 
     console.log(

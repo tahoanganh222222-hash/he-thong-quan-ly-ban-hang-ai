@@ -10,6 +10,7 @@ let currentCustomerPage = 1;
 const customerPageSize = 7;
 let editingCustomerId = null;
 let customerEventsInitialized = false;
+let customerHistoryRequestId = 0;
 
 async function loadCustomersFromAPI() {
 
@@ -18,6 +19,7 @@ async function loadCustomersFromAPI() {
     } catch (error) {
         customers = [];
         console.error("Không thể tải danh sách khách hàng:", error);
+        if (error.status === 401) return;
         alert("Không thể tải dữ liệu khách hàng từ máy chủ.");
     }
 }
@@ -162,9 +164,14 @@ function renderCustomers() {
                 </td>
 
                 <td>
-                    <span class="customer-name">
+                    <button
+                        type="button"
+                        class="customer-name customer-name-button"
+                        onclick="openCustomerPurchaseHistory(${customer.id})"
+                        title="Xem hóa đơn của khách hàng"
+                    >
                         ${escapeCustomerHtml(customer.name)}
-                    </span>
+                    </button>
                 </td>
 
                 <td class="customer-phone">
@@ -205,6 +212,13 @@ function renderCustomers() {
                     <div class="customer-actions">
 
                         <button
+                            class="customer-action-button customer-history-button"
+                            onclick="openCustomerPurchaseHistory(${customer.id})"
+                        >
+                            Lịch sử mua
+                        </button>
+
+                        <button
                             class="customer-action-button customer-edit-button"
                             onclick="editCustomer(${customer.id})"
                         >
@@ -220,6 +234,13 @@ function renderCustomers() {
                                     ? "Khóa"
                                     : "Mở khóa"
                             }
+                        </button>
+
+                        <button
+                            class="customer-action-button customer-delete-button"
+                            onclick="deleteCustomer(${customer.id})"
+                        >
+                            Xóa
                         </button>
 
                     </div>
@@ -453,6 +474,165 @@ function closeCustomerModal() {
     editingCustomerId = null;
 }
 
+
+function formatCustomerHistoryMoney(value) {
+    return `${Number(value || 0).toLocaleString("vi-VN")} ₫`;
+}
+
+
+function formatCustomerHistoryDate(value) {
+    if (!value) return "-";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return escapeCustomerHtml(value);
+    return date.toLocaleString("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+    });
+}
+
+
+function formatCustomerPaymentMethod(value) {
+    const methods = {
+        cash: "Tiền mặt",
+        transfer: "Chuyển khoản",
+        bank_transfer: "Chuyển khoản",
+        card: "Thẻ ngân hàng"
+    };
+    return methods[value] || value || "Chưa ghi nhận";
+}
+
+
+function renderCustomerPurchaseHistory(data) {
+    const content = document.getElementById("customer-history-content");
+    if (!content) return;
+
+    const summary = data?.summary || {};
+    const invoices = Array.isArray(data?.invoices) ? data.invoices : [];
+
+    content.innerHTML = `
+        <div class="customer-history-summary">
+            <article>
+                <span>Hóa đơn</span>
+                <strong>${Number(summary.invoiceCount || 0).toLocaleString("vi-VN")}</strong>
+            </article>
+            <article>
+                <span>Tổng chi tiêu</span>
+                <strong>${formatCustomerHistoryMoney(summary.totalSpent)}</strong>
+            </article>
+            <article>
+                <span>Sản phẩm đã mua</span>
+                <strong>${Number(summary.totalItems || 0).toLocaleString("vi-VN")}</strong>
+            </article>
+            <article>
+                <span>Lần mua gần nhất</span>
+                <strong>${summary.lastPurchaseAt ? formatCustomerHistoryDate(summary.lastPurchaseAt) : "Chưa có"}</strong>
+            </article>
+        </div>
+
+        ${invoices.length ? `
+            <div class="customer-history-list">
+                ${invoices.map((invoice, index) => `
+                    <details class="customer-history-invoice" ${index === 0 ? "open" : ""}>
+                        <summary>
+                            <span class="customer-history-invoice-main">
+                                <strong>${escapeCustomerHtml(invoice.invoiceCode || invoice.code)}</strong>
+                                <small>${formatCustomerHistoryDate(invoice.createdAt || invoice.date)}</small>
+                            </span>
+                            <span class="customer-history-invoice-meta">
+                                <small>${(invoice.items || []).length} mặt hàng</small>
+                                <strong>${formatCustomerHistoryMoney(invoice.finalAmount)}</strong>
+                            </span>
+                        </summary>
+                        <div class="customer-history-invoice-body">
+                            <div class="customer-history-payment">
+                                <span>Thanh toán: <strong>${escapeCustomerHtml(formatCustomerPaymentMethod(invoice.paymentMethod))}</strong></span>
+                                <span>Giảm giá: <strong>${formatCustomerHistoryMoney(invoice.discount)}</strong></span>
+                            </div>
+                            <div class="customer-history-items-wrap">
+                                <table class="customer-history-items">
+                                    <thead>
+                                        <tr>
+                                            <th>Sản phẩm</th>
+                                            <th>Số lượng</th>
+                                            <th>Đơn giá</th>
+                                            <th>Thành tiền</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${(invoice.items || []).map(item => `
+                                            <tr>
+                                                <td>${escapeCustomerHtml(item.productName || "Sản phẩm")}</td>
+                                                <td>${Number(item.quantity || 0).toLocaleString("vi-VN")}</td>
+                                                <td>${formatCustomerHistoryMoney(item.unitPrice)}</td>
+                                                <td>${formatCustomerHistoryMoney(item.amount)}</td>
+                                            </tr>
+                                        `).join("") || `
+                                            <tr>
+                                                <td colspan="4" class="customer-history-no-items">Hóa đơn chưa có chi tiết sản phẩm.</td>
+                                            </tr>
+                                        `}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </details>
+                `).join("")}
+            </div>
+        ` : `
+            <div class="customer-history-empty">
+                <span>⌁</span>
+                <strong>Khách hàng chưa có hóa đơn</strong>
+                <p>Các sản phẩm đã mua sẽ xuất hiện tại đây sau khi lập hóa đơn cho khách hàng.</p>
+            </div>
+        `}
+    `;
+}
+
+
+async function openCustomerPurchaseHistory(id) {
+    const customer = customers.find(item => item.id === id);
+    const modal = document.getElementById("customer-history-modal");
+    const title = document.getElementById("customer-history-title");
+    const subtitle = document.getElementById("customer-history-subtitle");
+    const content = document.getElementById("customer-history-content");
+    if (!customer || !modal || !title || !subtitle || !content) return;
+
+    const requestId = ++customerHistoryRequestId;
+    title.textContent = customer.name;
+    subtitle.textContent = `${customer.code} · ${customer.phone || "Chưa có số điện thoại"}`;
+    content.innerHTML = `
+        <div class="customer-history-loading">
+            <span></span>
+            <p>Đang tải lịch sử mua hàng...</p>
+        </div>
+    `;
+    modal.classList.add("active");
+
+    try {
+        const history = await window.salesApi.customers.purchaseHistory(id);
+        if (requestId !== customerHistoryRequestId) return;
+        renderCustomerPurchaseHistory(history);
+    } catch (error) {
+        if (requestId !== customerHistoryRequestId) return;
+        content.innerHTML = `
+            <div class="customer-history-error">
+                <strong>Không thể tải lịch sử mua hàng</strong>
+                <p>${escapeCustomerHtml(error.message || "Vui lòng thử lại sau.")}</p>
+                <button type="button" onclick="openCustomerPurchaseHistory(${id})">Thử lại</button>
+            </div>
+        `;
+    }
+}
+
+
+function closeCustomerPurchaseHistory() {
+    customerHistoryRequestId += 1;
+    document.getElementById("customer-history-modal")?.classList.remove("active");
+}
+
 function generateCustomerCode() {
 
     let maxNumber = 0;
@@ -672,6 +852,30 @@ async function toggleCustomerStatus(id) {
 }
 
 
+async function deleteCustomer(id) {
+    if (
+        typeof requirePermission === "function" &&
+        !requirePermission("customer_manage")
+    ) {
+        return;
+    }
+    const customer = customers.find(item => item.id === id);
+    if (!customer) return;
+    const confirmed = confirm(
+        `Xóa vĩnh viễn khách hàng "${customer.name}"? Khách hàng đã có hóa đơn sẽ không thể xóa.`
+    );
+    if (!confirmed) return;
+    try {
+        await window.salesApi.customers.remove(id);
+        customers = customers.filter(item => item.id !== id);
+        renderCustomers();
+        alert("Đã xóa khách hàng.");
+    } catch (error) {
+        alert(error.message || "Không thể xóa khách hàng.");
+    }
+}
+
+
 /* ================================
 
    FILTER EVENTS
@@ -744,6 +948,14 @@ function setupCustomerModal() {
         "customer-modal"
     );
 
+    const historyModal = document.getElementById(
+        "customer-history-modal"
+    );
+
+    const historyCloseButton = document.getElementById(
+        "customer-history-modal-close"
+    );
+
     if (addButton) {
 
         addButton.addEventListener(
@@ -784,6 +996,24 @@ function setupCustomerModal() {
 
                 if (event.target === modal) {
                     closeCustomerModal();
+                }
+            }
+        );
+    }
+
+    if (historyCloseButton) {
+        historyCloseButton.addEventListener(
+            "click",
+            closeCustomerPurchaseHistory
+        );
+    }
+
+    if (historyModal) {
+        historyModal.addEventListener(
+            "click",
+            function (event) {
+                if (event.target === historyModal) {
+                    closeCustomerPurchaseHistory();
                 }
             }
         );

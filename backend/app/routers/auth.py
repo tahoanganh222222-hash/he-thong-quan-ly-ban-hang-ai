@@ -1,3 +1,7 @@
+import base64
+import binascii
+import re
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -11,10 +15,13 @@ from app.core.security import (
 )
 from app.dependencies.auth import get_current_user, require_permission
 from app.models.role_permission import RolePermission
+from app.models.activity_log import ActivityLog
 from app.models.user import User
 from app.schemas.auth import (
     LoginRequest,
     LoginResponse,
+    PasswordChange,
+    ProfileUpdate,
     UserCreate,
     UserUpdate,
     UserResponse
@@ -25,6 +32,24 @@ router = APIRouter(
     prefix="/api/auth",
     tags=["Authentication"]
 )
+
+
+AVATAR_DATA_PATTERN = re.compile(
+    r"^data:image/(?:png|jpeg|webp);base64,([A-Za-z0-9+/=\r\n]+)$"
+)
+
+
+def _user_response(user: User) -> UserResponse:
+    return UserResponse(
+        id=user.id,
+        username=user.username,
+        full_name=user.full_name,
+        phone=user.phone,
+        email=user.email,
+        avatar_data=user.avatar_data,
+        role=user.role,
+        is_active=user.is_active,
+    )
 
 
 def _management_user_dict(user: User) -> dict:
@@ -50,6 +75,17 @@ def _commit_user(db: Session) -> None:
 def _ensure_manageable(target: User, current_user: User) -> None:
     if target.role == "admin" and current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Chỉ quản trị viên được sửa tài khoản admin")
+
+
+def _record_auth_activity(db: Session, user: User, action: str, action_type: str) -> None:
+    db.add(ActivityLog(
+        user_id=user.id,
+        action=action,
+        action_type=action_type,
+        object_type="Hệ thống",
+        object_code=user.username,
+        detail=f"{action} tài khoản {user.username}",
+    ))
 
 
 @router.post(
@@ -114,18 +150,25 @@ def login(
         role=user.role
     )
 
+    _record_auth_activity(db, user, "Đăng nhập", "login")
+    db.commit()
+
     return LoginResponse(
         message="Đăng nhập thành công",
         access_token=access_token,
         token_type="bearer",
-        user=UserResponse(
-            id=user.id,
-            username=user.username,
-            full_name=user.full_name,
-            role=user.role,
-            is_active=user.is_active
-        )
+        user=_user_response(user)
     )
+
+
+@router.post("/logout")
+def logout(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    _record_auth_activity(db, current_user, "Đăng xuất", "logout")
+    db.commit()
+    return {"message": "Đăng xuất thành công"}
 
 
 @router.get(
@@ -139,13 +182,75 @@ def get_me(
     Lấy thông tin tài khoản đang đăng nhập.
     """
 
-    return UserResponse(
-        id=current_user.id,
-        username=current_user.username,
-        full_name=current_user.full_name,
-        role=current_user.role,
-        is_active=current_user.is_active
-    )
+    return _user_response(current_user)
+
+
+@router.put(
+    "/me",
+    response_model=UserResponse,
+)
+def update_me(
+    data: ProfileUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    full_name = data.fullName.strip()
+    phone = data.phone.strip() if data.phone else None
+    email = data.email.strip() if data.email else None
+    avatar_data = data.avatarData.strip() if data.avatarData else None
+
+    if not full_name:
+        raise HTTPException(status_code=400, detail="Họ tên không được để trống")
+    if phone and not re.fullmatch(r"[0-9]{9,11}", phone):
+        raise HTTPException(
+            status_code=400,
+            detail="Số điện thoại phải gồm từ 9 đến 11 chữ số",
+        )
+    if email and ("@" not in email or "." not in email.rsplit("@", 1)[-1]):
+        raise HTTPException(status_code=400, detail="Email không hợp lệ")
+    if avatar_data:
+        match = AVATAR_DATA_PATTERN.fullmatch(avatar_data)
+        if match is None:
+            raise HTTPException(
+                status_code=400,
+                detail="Ảnh đại diện phải có định dạng PNG, JPG hoặc WebP",
+            )
+        try:
+            base64.b64decode(match.group(1), validate=True)
+        except (binascii.Error, ValueError) as exc:
+            raise HTTPException(
+                status_code=400,
+                detail="Dữ liệu ảnh đại diện không hợp lệ",
+            ) from exc
+
+    current_user.full_name = full_name
+    current_user.phone = phone
+    current_user.email = email
+    current_user.avatar_data = avatar_data
+    db.commit()
+    db.refresh(current_user)
+    return _user_response(current_user)
+
+
+@router.put("/me/password")
+def change_my_password(
+    data: PasswordChange,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if not verify_password(data.currentPassword, current_user.password_hash):
+        raise HTTPException(status_code=400, detail="Mật khẩu hiện tại không đúng")
+    if data.currentPassword == data.newPassword:
+        raise HTTPException(
+            status_code=400,
+            detail="Mật khẩu mới phải khác mật khẩu hiện tại",
+        )
+    try:
+        current_user.password_hash = hash_password(data.newPassword)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    db.commit()
+    return {"message": "Đổi mật khẩu thành công"}
 
 
 @router.get("/users")
