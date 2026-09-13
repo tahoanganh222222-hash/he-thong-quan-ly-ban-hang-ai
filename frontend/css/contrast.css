@@ -114,6 +114,16 @@
     border-color: #4f5b6d !important;
 }
 
+.main-content input:not([type="radio"]):not([type="checkbox"]):focus,
+.main-content select:focus,
+.main-content textarea:focus {
+    border-color: var(--sm-primary, #4f46e5) !important;
+}
+
+.main-content #ai-qa-page .ai-need-input.is-invalid {
+    border-color: #dc2626 !important;
+}
+
 /* Dashboard và thống kê: làm rõ khung số liệu, trục và đường lưới biểu đồ. */
 .revenue-card .revenue-summary,
 .statistics-insight,

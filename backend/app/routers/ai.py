@@ -62,6 +62,9 @@ def _product_context(db: Session) -> list[dict]:
 def _sales_snapshot(db: Session) -> dict:
     invoices = db.query(Invoice).order_by(Invoice.created_at).all()
     products = {item.id: item for item in db.query(Product).all()}
+    details_by_invoice = defaultdict(list)
+    for detail in db.query(InvoiceDetail).all():
+        details_by_invoice[detail.invoice_id].append(detail)
     daily: dict[str, dict] = {}
     product_sales = defaultdict(lambda: {"quantity": 0, "revenue": 0.0})
 
@@ -72,8 +75,7 @@ def _sales_snapshot(db: Session) -> dict:
         row["revenue"] += float(invoice.final_amount)
         total_amount = float(invoice.total_amount)
         discount_factor = float(invoice.final_amount) / total_amount if total_amount > 0 else 1
-        details = db.query(InvoiceDetail).filter(InvoiceDetail.invoice_id == invoice.id).all()
-        for detail in details:
+        for detail in details_by_invoice[invoice.id]:
             product = products.get(detail.product_id)
             if not product:
                 continue
@@ -194,8 +196,13 @@ async def sales_qa(
 ):
     snapshot = _sales_snapshot(db)
     prompt = (
-        "Trả lời chính xác câu hỏi dựa trên dữ liệu tổng hợp. Nếu câu hỏi nằm ngoài "
-        "dữ liệu bán hàng được cung cấp, hãy nói phạm vi bạn có thể trả lời.\n\n"
+        "Hãy trả lời như một trợ lý phân tích bán hàng chuyên nghiệp. Trả lời trực tiếp "
+        "ý chính ở câu đầu, sau đó giải thích ngắn gọn bằng số liệu, ngày tháng hoặc tên "
+        "sản phẩm có trong dữ liệu. Định dạng tiền theo đồng Việt Nam. Khi cần liệt kê, "
+        "dùng các gạch đầu dòng ngắn. Không nhắc đến JSON hay cấu trúc dữ liệu nội bộ. "
+        "Không suy đoán số liệu không được cung cấp. Nếu câu hỏi mơ hồ, hãy nêu điều đã "
+        "hiểu và đề nghị một câu hỏi cụ thể hơn. Nếu câu hỏi nằm ngoài phạm vi bán hàng, "
+        "hãy nói rõ những nội dung có thể hỗ trợ.\n\n"
         f"Câu hỏi: {data.question}\n\n"
         f"Dữ liệu thực tế: {json.dumps(snapshot, ensure_ascii=False)}"
     )

@@ -73,7 +73,7 @@
 >
 <link
     rel="stylesheet"
-    href="css/ai-premium.css?v=20260909-1"
+    href="css/ai-premium.css?v=20260911-1"
 >
 <link
     rel="stylesheet"
@@ -81,11 +81,11 @@
 >
 <link
     rel="stylesheet"
-    href="css/account.css?v=20260910-2"
+    href="css/account.css?v=20260911-1"
 >
 <link
     rel="stylesheet"
-    href="css/contrast.css?v=20260910-2"
+    href="css/contrast.css?v=20260911-1"
 >
 
 
@@ -1080,8 +1080,14 @@
             <textarea
                 id="ai-data-question"
                 class="ai-need-input"
+                rows="4"
+                maxlength="500"
                 placeholder="Ví dụ: Sản phẩm nào bán chạy nhất?"
             ></textarea>
+            <div class="ai-qa-input-meta">
+                <span>Nhấn Enter để gửi · Shift + Enter để xuống dòng</span>
+                <span id="ai-qa-character-count">0/500</span>
+            </div>
             <div class="ai-quick-questions" aria-label="Câu hỏi gợi ý">
                 <button type="button" data-ai-question="Doanh thu 7 ngày là bao nhiêu?">
                     Doanh thu 7 ngày
@@ -1091,6 +1097,12 @@
                 </button>
                 <button type="button" data-ai-question="Sản phẩm nào sắp hết hàng?">
                     Cảnh báo tồn kho
+                </button>
+                <button type="button" data-ai-question="Hôm nay có bao nhiêu hóa đơn?">
+                    Hóa đơn hôm nay
+                </button>
+                <button type="button" data-ai-question="Hệ thống đang có bao nhiêu khách hàng?">
+                    Tổng khách hàng
                 </button>
             </div>
 
@@ -4244,7 +4256,7 @@
     <script src="./js/auth.js?v=20260910-3"></script>
     <script src="./js/account.js?v=20260910-3"></script>
     <script src="js/ai-product.js?v=20260909-7"></script>
-    <script src="./js/ai-assistant.js?v=20260909-7"></script>
+    <script src="./js/ai-assistant.js?v=20260911-1"></script>
     <script src="./js/ai-logs.js?v=20260910-2"></script>
 
     <script>

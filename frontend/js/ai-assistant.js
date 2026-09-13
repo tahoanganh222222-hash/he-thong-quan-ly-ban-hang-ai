@@ -15,6 +15,10 @@
         todayRevenue: 0,
         todayInvoices: 0
     };
+    let hasRealSalesData = false;
+    let qaConversation = [];
+    let qaRequestSequence = 0;
+    let qaIsBusy = false;
 
     function localISODate() {
         const now = new Date();
@@ -87,6 +91,7 @@
             todayRevenue: Number(today?.revenue || 0),
             todayInvoices: Number(today?.invoices || 0)
         };
+        hasRealSalesData = true;
         return realSalesData;
     }
 
@@ -116,7 +121,11 @@
     }
 
     function formatAIText(value) {
-        return escapeHtml(value).replace(/\r?\n/g, "<br>");
+        return escapeHtml(value)
+            .replace(/\*\*([^*\n]+)\*\*/g, "<strong>$1</strong>")
+            .replace(/`([^`\n]+)`/g, "<code>$1</code>")
+            .replace(/\r?\n/g, "<br>")
+            .replace(/(^|<br>)\s*[-*•]\s+/g, '$1<span class="ai-inline-bullet">•</span> ');
     }
 
     function getDailyRevenue() {
@@ -244,14 +253,24 @@
             "Tra cứu nhanh số liệu bán hàng bằng tiếng Việt",
             "sales_data_qa"
         );
-        renderQAEmpty();
+        if (qaConversation.length) {
+            renderQAConversation(false);
+        } else {
+            renderQAEmpty();
+        }
         const status = getElement("ai-qa-status");
-        if (status) status.textContent = "Đang đồng bộ";
+        if (status && !qaConversation.length) status.textContent = "Đang đồng bộ";
         try {
             await refreshAIData();
-            if (status) status.textContent = "Dữ liệu thực";
+            if (status && !qaIsBusy) {
+                status.textContent = qaConversation.length
+                    ? `${qaConversation.length} câu hỏi trong phiên`
+                    : "Dữ liệu thực";
+            }
         } catch (error) {
-            if (status) status.textContent = "Lỗi tải dữ liệu";
+            if (status && !qaIsBusy && !qaConversation.length) {
+                status.textContent = "Chưa đồng bộ dữ liệu";
+            }
             console.error("Không thể tải dữ liệu AI hỏi đáp:", error);
         }
     }
@@ -448,6 +467,76 @@
         }
     }
 
+    function setQABusy(busy) {
+        qaIsBusy = busy;
+        const button = getElement("ai-qa-submit-button");
+        if (button) {
+            button.disabled = busy;
+            button.classList.toggle("is-loading", busy);
+            button.innerHTML = busy
+                ? '<span class="ai-button-spinner" aria-hidden="true"></span> Đang phân tích...'
+                : '<span class="ai-button-icon">✦</span> Hỏi Gemini';
+        }
+        document.querySelectorAll("[data-ai-question]").forEach(item => {
+            item.disabled = busy;
+        });
+    }
+
+    function updateQuestionInput() {
+        const input = getElement("ai-data-question");
+        const counter = getElement("ai-qa-character-count");
+        if (!input) return;
+        input.style.height = "auto";
+        input.style.height = `${Math.min(Math.max(input.scrollHeight, 112), 190)}px`;
+        if (counter) counter.textContent = `${input.value.length}/500`;
+        input.classList.remove("is-invalid");
+    }
+
+    function renderQAConversation(scrollToLatest = true) {
+        const result = getElement("ai-qa-results");
+        if (!result) return;
+        if (!qaConversation.length) {
+            renderQAEmpty();
+            return;
+        }
+
+        result.innerHTML = `
+            <div class="ai-chat-thread" role="log" aria-live="polite">
+                ${qaConversation.map((entry, index) => `
+                    <article class="ai-chat-exchange${index === qaConversation.length - 1 ? " latest" : ""}">
+                        <div class="ai-chat-row question">
+                            <span class="ai-chat-avatar user" aria-hidden="true">B</span>
+                            <div class="ai-question-card">
+                                <span>Bạn hỏi</span>
+                                <p>${escapeHtml(entry.question)}</p>
+                            </div>
+                        </div>
+                        <div class="ai-chat-row answer">
+                            <span class="ai-chat-avatar assistant" aria-hidden="true">✦</span>
+                            <div class="ai-answer-card${entry.error ? " error" : ""}">
+                                <span>${escapeHtml(entry.source || "Gemini đang phân tích")}</span>
+                                ${entry.pending ? `
+                                    <div class="ai-typing" aria-label="AI đang soạn câu trả lời">
+                                        <i></i><i></i><i></i>
+                                    </div>
+                                ` : `<p>${formatAIText(entry.answer)}</p>`}
+                            </div>
+                        </div>
+                    </article>
+                `).join("")}
+            </div>
+        `;
+
+        if (scrollToLatest) {
+            requestAnimationFrame(() => {
+                result.querySelector(".ai-chat-exchange.latest")?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "nearest"
+                });
+            });
+        }
+    }
+
     function buildDataAnswer(question, snapshot) {
         const normalized = normalizeText(question);
 
@@ -523,60 +612,88 @@
             return;
         }
 
+        if (qaIsBusy) {
+            return;
+        }
+
         const input = getElement("ai-data-question");
-        const result = getElement("ai-qa-results");
         const status = getElement("ai-qa-status");
-        if (!input || !result) {
+        if (!input) {
             return;
         }
 
         const question = input.value.trim();
         if (!question) {
-            alert("Vui lòng nhập câu hỏi cần tra cứu.");
+            input.classList.add("is-invalid");
+            if (status) status.textContent = "Hãy nhập câu hỏi";
             input.focus();
             return;
         }
 
-        if (status) {
-            status.textContent = "Đang đồng bộ";
-        }
-        try {
-            await refreshAIData();
-        } catch (error) {
-            result.innerHTML = `
-                <div class="ai-no-product">
-                    <h4>Không thể tải dữ liệu bán hàng</h4>
-                    <p>${escapeHtml(error.message || "Vui lòng kiểm tra kết nối backend.")}</p>
-                </div>
-            `;
-            if (status) status.textContent = "Lỗi tải dữ liệu";
-            return;
-        }
+        const requestId = ++qaRequestSequence;
+        const entry = {
+            id: requestId,
+            question,
+            answer: "",
+            source: "Gemini đang phân tích",
+            pending: true,
+            error: false
+        };
+        qaConversation.push(entry);
+        input.value = "";
+        updateQuestionInput();
+        setQABusy(true);
+        if (status) status.textContent = "Đang đọc dữ liệu";
+        renderQAConversation();
 
-        const snapshot = getSalesSnapshot();
         let answer = "";
-        let answerSource = "Gemini";
+        let answerSource = "Trả lời từ Gemini";
+        let answerError = false;
         try {
             const aiResponse = await window.salesApi.ai.salesQA(question);
             answer = aiResponse.answer || "";
+            if (!answer.trim()) {
+                throw new Error("Gemini chưa trả về nội dung.");
+            }
         } catch (error) {
-            if (error.status === 401) return;
-            answer = buildDataAnswer(question, snapshot);
-            answerSource = "phân tích nội bộ";
+            if (error.status === 401) {
+                if (requestId === qaRequestSequence) {
+                    qaConversation = qaConversation.filter(item => item.id !== requestId);
+                    setQABusy(false);
+                    renderQAConversation(false);
+                }
+                return;
+            }
+            if (status) status.textContent = "Đang dùng dữ liệu dự phòng";
+            try {
+                if (!hasRealSalesData) {
+                    await refreshAIData();
+                }
+                answer = buildDataAnswer(question, getSalesSnapshot());
+                answerSource = "Trả lời từ dữ liệu nội bộ";
+            } catch (fallbackError) {
+                answer = fallbackError.message || error.message || "Không thể xử lý câu hỏi lúc này.";
+                answerSource = "Không thể kết nối dữ liệu";
+                answerError = true;
+            }
         }
-        result.innerHTML = `
-            <div class="ai-question-card">
-                <span>Câu hỏi</span>
-                <p>${escapeHtml(question)}</p>
-            </div>
-            <div class="ai-answer-card">
-                <span>Trả lời từ ${answerSource}</span>
-                <p>${formatAIText(answer)}</p>
-            </div>
-        `;
+
+        if (requestId !== qaRequestSequence) {
+            return;
+        }
+
+        entry.answer = answer;
+        entry.source = answerSource;
+        entry.pending = false;
+        entry.error = answerError;
+        renderQAConversation();
+        setQABusy(false);
         if (status) {
-            status.textContent = answerSource === "Gemini" ? "Gemini đã trả lời" : "Trả lời nội bộ";
+            status.textContent = answerError
+                ? "Có lỗi kết nối"
+                : `${qaConversation.length} câu hỏi trong phiên`;
         }
+        input.focus();
     }
 
     function resetRevenueReport() {
@@ -588,9 +705,14 @@
     }
 
     function resetSalesQA() {
+        qaRequestSequence += 1;
+        qaConversation = [];
+        setQABusy(false);
         const input = getElement("ai-data-question");
         if (input) {
             input.value = "";
+            updateQuestionInput();
+            input.focus();
         }
         renderQAEmpty();
     }
@@ -615,18 +737,25 @@
             qaReset.addEventListener("click", resetSalesQA);
         }
         if (questionInput) {
+            questionInput.addEventListener("input", updateQuestionInput);
             questionInput.addEventListener("keydown", event => {
-                if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+                if (
+                    event.key === "Enter" &&
+                    !event.shiftKey &&
+                    !event.isComposing
+                ) {
                     event.preventDefault();
                     askSalesData();
                 }
             });
+            updateQuestionInput();
         }
 
         document.querySelectorAll("[data-ai-question]").forEach(button => {
             button.addEventListener("click", () => {
                 if (questionInput) {
                     questionInput.value = button.dataset.aiQuestion || "";
+                    updateQuestionInput();
                 }
                 askSalesData();
             });
