@@ -92,6 +92,7 @@
         },
         purchases: {
             list: () => request("/api/purchases"),
+            items: () => request("/api/purchases/items"),
             get: id => request(`/api/purchases/${id}`),
             create: data => request("/api/purchases", "POST", data),
             update: (id, data) => request(`/api/purchases/${id}`, "PUT", data),

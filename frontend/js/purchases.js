@@ -2,6 +2,12 @@ let purchaseItems = [];
 
 let purchaseProducts = [];
 
+let purchaseHistoryRows = [];
+
+let currentPurchaseHistoryPage = 1;
+
+const PURCHASE_HISTORY_PAGE_SIZE = 6;
+
 async function fetchPurchaseProducts() {
 
     try {
@@ -18,6 +24,238 @@ async function fetchPurchaseProducts() {
 
 function formatPurchaseMoney(value) {
     return Number(value || 0).toLocaleString("vi-VN") + " ₫";
+}
+
+function escapePurchaseHTML(value) {
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+function normalizePurchaseText(value) {
+    return String(value || "")
+        .toLocaleLowerCase("vi")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/đ/g, "d");
+}
+
+function localPurchaseDate() {
+    const date = new Date();
+    return [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, "0"),
+        String(date.getDate()).padStart(2, "0")
+    ].join("-");
+}
+
+function displayPurchaseDate(value) {
+    const [year, month, day] = String(value || "").slice(0, 10).split("-");
+    return year && month && day ? `${day}/${month}/${year}` : "—";
+}
+
+async function fetchPurchaseHistory() {
+    const body = document.getElementById("purchase-history-table-body");
+    if (body) {
+        body.innerHTML = '<tr><td colspan="9" class="purchase-history-empty">Đang tải lịch sử hàng nhập...</td></tr>';
+    }
+    try {
+        purchaseHistoryRows = await window.salesApi.purchases.items();
+    } catch (error) {
+        purchaseHistoryRows = [];
+        console.error("Không thể tải lịch sử hàng nhập:", error);
+        renderPurchaseHistorySummary([]);
+        const count = document.getElementById("purchase-history-count");
+        if (count) count.textContent = "Không thể tải dữ liệu";
+        if (body) body.innerHTML = `<tr><td colspan="9" class="purchase-history-empty">${escapePurchaseHTML(error.status === 401 ? "Phiên đăng nhập đã hết hạn." : error.message || "Không thể tải dữ liệu.")}</td></tr>`;
+        renderPurchaseHistoryPagination(1, 0);
+        return;
+    }
+    currentPurchaseHistoryPage = 1;
+    renderPurchaseHistory();
+}
+
+function getFilteredPurchaseHistory() {
+    const search = normalizePurchaseText(
+        document.getElementById("purchase-history-search")?.value
+    ).trim();
+    const from = document.getElementById("purchase-history-from-date")?.value || "";
+    const to = document.getElementById("purchase-history-to-date")?.value || "";
+
+    if (from && to && from > to) return [];
+
+    return purchaseHistoryRows.filter(row => {
+        const date = row.purchaseDate || String(row.createdAt || "").slice(0, 10);
+        const searchable = normalizePurchaseText([
+            row.receiptCode,
+            row.supplierName,
+            row.productCode,
+            row.productName,
+            row.createdBy,
+            row.username
+        ].join(" "));
+        return (!search || searchable.includes(search))
+            && (!from || date >= from)
+            && (!to || date <= to);
+    });
+}
+
+function renderPurchaseHistorySummary(rows) {
+    const receipts = new Set(rows.map(row => row.receiptId));
+    const products = new Set(rows.map(row => row.productId));
+    const quantity = rows.reduce((sum, row) => sum + Number(row.quantity || 0), 0);
+    const value = rows.reduce((sum, row) => sum + Number(row.amount || 0), 0);
+
+    document.getElementById("purchase-history-receipts").textContent =
+        receipts.size.toLocaleString("vi-VN");
+    document.getElementById("purchase-history-products").textContent =
+        products.size.toLocaleString("vi-VN");
+    document.getElementById("purchase-history-quantity").textContent =
+        quantity.toLocaleString("vi-VN");
+    document.getElementById("purchase-history-value").textContent =
+        formatPurchaseMoney(value);
+}
+
+function createPurchaseHistoryPageButton(label, page, disabled, active) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = label;
+    button.disabled = disabled;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-label", label === "‹" ? "Trang trước" : label === "›" ? "Trang sau" : `Trang ${page}`);
+    if (active) button.setAttribute("aria-current", "page");
+    button.addEventListener("click", () => {
+        if (!disabled && page !== currentPurchaseHistoryPage) {
+            currentPurchaseHistoryPage = page;
+            renderPurchaseHistory();
+        }
+    });
+    return button;
+}
+
+function renderPurchaseHistoryPagination(totalPages, totalRows) {
+    const container = document.getElementById("purchase-history-pagination");
+    if (!container) return;
+    container.innerHTML = "";
+    if (!totalRows) return;
+
+    container.appendChild(createPurchaseHistoryPageButton(
+        "‹", currentPurchaseHistoryPage - 1, currentPurchaseHistoryPage === 1, false
+    ));
+    const visibleCount = Math.min(5, totalPages);
+    const first = Math.min(
+        Math.max(currentPurchaseHistoryPage - 2, 1),
+        Math.max(totalPages - visibleCount + 1, 1)
+    );
+    for (let page = first; page < first + visibleCount; page += 1) {
+        container.appendChild(createPurchaseHistoryPageButton(
+            String(page), page, false, page === currentPurchaseHistoryPage
+        ));
+    }
+    container.appendChild(createPurchaseHistoryPageButton(
+        "›", currentPurchaseHistoryPage + 1, currentPurchaseHistoryPage === totalPages, false
+    ));
+}
+
+function renderPurchaseHistory() {
+    const body = document.getElementById("purchase-history-table-body");
+    const count = document.getElementById("purchase-history-count");
+    if (!body || !count) return;
+
+    const from = document.getElementById("purchase-history-from-date")?.value || "";
+    const to = document.getElementById("purchase-history-to-date")?.value || "";
+    const rows = getFilteredPurchaseHistory();
+    renderPurchaseHistorySummary(rows);
+
+    if (from && to && from > to) {
+        body.innerHTML = '<tr><td colspan="9" class="purchase-history-empty">Ngày bắt đầu không được lớn hơn ngày kết thúc.</td></tr>';
+        count.textContent = "Khoảng thời gian không hợp lệ";
+        renderPurchaseHistoryPagination(1, 0);
+        return;
+    }
+
+    const totalPages = Math.max(1, Math.ceil(rows.length / PURCHASE_HISTORY_PAGE_SIZE));
+    currentPurchaseHistoryPage = Math.min(Math.max(currentPurchaseHistoryPage, 1), totalPages);
+    const start = (currentPurchaseHistoryPage - 1) * PURCHASE_HISTORY_PAGE_SIZE;
+    const pageRows = rows.slice(start, start + PURCHASE_HISTORY_PAGE_SIZE);
+
+    if (!pageRows.length) {
+        body.innerHTML = '<tr><td colspan="9" class="purchase-history-empty">Không có hàng nhập phù hợp với bộ lọc.</td></tr>';
+        count.textContent = "Không có dữ liệu";
+        renderPurchaseHistoryPagination(1, 0);
+        return;
+    }
+
+    body.innerHTML = pageRows.map((row, index) => `
+        <tr>
+            <td class="purchase-history-index">${start + index + 1}</td>
+            <td class="purchase-history-date">${displayPurchaseDate(row.purchaseDate || row.createdAt)}</td>
+            <td><strong class="purchase-history-code">${escapePurchaseHTML(row.receiptCode)}</strong></td>
+            <td>${escapePurchaseHTML(row.supplierName || "—")}</td>
+            <td>
+                <strong class="purchase-history-product">${escapePurchaseHTML(row.productName)}</strong>
+                <small>${escapePurchaseHTML(row.productCode)}</small>
+            </td>
+            <td class="purchase-history-quantity">${Number(row.quantity || 0).toLocaleString("vi-VN")} ${escapePurchaseHTML(row.unit || "")}</td>
+            <td class="purchase-history-money">${formatPurchaseMoney(row.unitPrice)}</td>
+            <td class="purchase-history-money total">${formatPurchaseMoney(row.amount)}</td>
+            <td>
+                <strong class="purchase-history-user">${escapePurchaseHTML(row.createdBy || "—")}</strong>
+                <small>@${escapePurchaseHTML(row.username || "—")}</small>
+            </td>
+        </tr>
+    `).join("");
+
+    count.textContent = `Hiển thị ${start + 1}-${Math.min(start + PURCHASE_HISTORY_PAGE_SIZE, rows.length)} / ${rows.length} mặt hàng nhập`;
+    renderPurchaseHistoryPagination(totalPages, rows.length);
+}
+
+function setupPurchaseHistoryFilters() {
+    const search = document.getElementById("purchase-history-search");
+    const from = document.getElementById("purchase-history-from-date");
+    const to = document.getElementById("purchase-history-to-date");
+    const clear = document.getElementById("purchase-history-clear-button");
+    const today = document.getElementById("purchase-history-today-button");
+
+    if (search && !search.dataset.initialized) {
+        search.addEventListener("input", () => {
+            currentPurchaseHistoryPage = 1;
+            renderPurchaseHistory();
+        });
+        search.dataset.initialized = "true";
+    }
+    [from, to].forEach(input => {
+        if (input && !input.dataset.initialized) {
+            input.addEventListener("change", () => {
+                currentPurchaseHistoryPage = 1;
+                renderPurchaseHistory();
+            });
+            input.dataset.initialized = "true";
+        }
+    });
+    if (clear && !clear.dataset.initialized) {
+        clear.addEventListener("click", () => {
+            if (search) search.value = "";
+            if (from) from.value = "";
+            if (to) to.value = "";
+            currentPurchaseHistoryPage = 1;
+            renderPurchaseHistory();
+        });
+        clear.dataset.initialized = "true";
+    }
+    if (today && !today.dataset.initialized) {
+        today.addEventListener("click", () => {
+            const date = localPurchaseDate();
+            if (from) from.value = date;
+            if (to) to.value = date;
+            currentPurchaseHistoryPage = 1;
+            renderPurchaseHistory();
+        });
+        today.dataset.initialized = "true";
+    }
 }
 
 function generatePurchaseCode() {
@@ -150,7 +388,7 @@ function renderPurchaseItems() {
     if (purchaseItems.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="6">
+                <td colspan="7">
                     <div class="purchase-empty">
                         Chưa có sản phẩm trong phiếu nhập.
                     </div>
@@ -361,6 +599,10 @@ async function createPurchaseReceipt() {
             ? supplierInput.value.trim()
             : "";
 
+    const purchaseDate =
+        document.getElementById("purchase-date")?.value ||
+        localPurchaseDate();
+
     if (!supplier) {
         alert("Vui lòng nhập tên nhà cung cấp.");
         return;
@@ -393,13 +635,17 @@ async function createPurchaseReceipt() {
             await window.salesApi.purchases.create({
                 receiptCode,
                 supplierName: supplier,
+                purchaseDate,
                 items: purchaseItems.map(item => ({
                     productId: item.productId,
                     quantity: item.quantity,
                     unitPrice: item.unitPrice
                 }))
             });
-            await fetchPurchaseProducts();
+            await Promise.all([
+                fetchPurchaseProducts(),
+                fetchPurchaseHistory()
+            ]);
         } catch (error) {
             alert(error.message || "Không thể tạo phiếu nhập.");
             return;
@@ -443,6 +689,11 @@ function resetPurchaseForm() {
             "purchase-product-price"
         );
 
+    const dateInput =
+        document.getElementById(
+            "purchase-date"
+        );
+
     if (supplierInput) {
         supplierInput.value = "";
     }
@@ -457,6 +708,10 @@ function resetPurchaseForm() {
 
     if (priceInput) {
         priceInput.value = "";
+    }
+
+    if (dateInput) {
+        dateInput.value = localPurchaseDate();
     }
 
     renderPurchaseItems();
@@ -542,7 +797,17 @@ async function initPurchaseManagement() {
         return;
     }
 
-    await fetchPurchaseProducts();
+    const dateInput = document.getElementById("purchase-date");
+    if (dateInput && !dateInput.value) {
+        dateInput.value = localPurchaseDate();
+    }
+
+    setupPurchaseHistoryFilters();
+
+    await Promise.all([
+        fetchPurchaseProducts(),
+        fetchPurchaseHistory()
+    ]);
 
     loadPurchaseProducts();
     renderPurchaseItems();
@@ -554,6 +819,8 @@ async function initPurchaseManagement() {
 document.addEventListener(
     "DOMContentLoaded",
     function () {
+
+        setupPurchaseHistoryFilters();
 
         const addButton =
             document.getElementById(

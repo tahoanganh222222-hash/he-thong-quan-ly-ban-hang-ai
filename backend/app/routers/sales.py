@@ -939,6 +939,41 @@ def list_purchases(
     return [_purchase_dict(db, item, include_items=False) for item in receipts]
 
 
+@router.get("/purchases/items")
+def list_purchase_items(
+    db: Session = Depends(get_db),
+    _current_user: User = Depends(require_any_permission(*PURCHASE_READ_PERMISSIONS)),
+):
+    rows = (
+        db.query(PurchaseReceiptDetail, PurchaseReceipt, Product, User)
+        .join(PurchaseReceipt, PurchaseReceipt.id == PurchaseReceiptDetail.receipt_id)
+        .join(Product, Product.id == PurchaseReceiptDetail.product_id)
+        .join(User, User.id == PurchaseReceipt.user_id)
+        .order_by(PurchaseReceipt.created_at.desc(), PurchaseReceiptDetail.id.desc())
+        .all()
+    )
+    return [
+        {
+            "id": detail.id,
+            "receiptId": receipt.id,
+            "receiptCode": receipt.receipt_code,
+            "supplierName": receipt.supplier_name or "",
+            "purchaseDate": receipt.created_at.date().isoformat(),
+            "createdAt": receipt.created_at.isoformat(),
+            "productId": product.id,
+            "productCode": product.code,
+            "productName": product.name,
+            "unit": product.unit,
+            "quantity": detail.quantity,
+            "unitPrice": float(detail.unit_price),
+            "amount": float(detail.amount),
+            "createdBy": user.full_name,
+            "username": user.username,
+        }
+        for detail, receipt, product, user in rows
+    ]
+
+
 @router.get("/purchases/{receipt_id}")
 def get_purchase(
     receipt_id: int,
@@ -962,6 +997,11 @@ def create_purchase(
         user_id=current_user.id,
         supplier_name=data.supplierName.strip(),
         total_amount=0,
+        created_at=(
+            datetime.combine(data.purchaseDate, datetime.now().time())
+            if data.purchaseDate
+            else datetime.now()
+        ),
     )
     db.add(receipt)
     db.flush()

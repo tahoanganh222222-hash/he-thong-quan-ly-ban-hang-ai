@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Optional
 
 from pydantic import BaseModel, Field
@@ -94,6 +95,7 @@ class InvoiceUpdate(BaseModel):
 class PurchaseCreate(BaseModel):
     receiptCode: Optional[str] = Field(default=None, max_length=50)
     supplierName: str = Field(min_length=1, max_length=150)
+    purchaseDate: Optional[date] = None
     userId: Optional[int] = None
     items: list[DocumentItem] = Field(min_length=1)
 

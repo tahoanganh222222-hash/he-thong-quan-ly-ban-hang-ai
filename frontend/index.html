@@ -33,7 +33,7 @@
 >
 <link 
     rel="stylesheet" 
-    href="./css/purchases.css"
+    href="./css/purchases.css?v=20260913-2"
 >
 <link
     rel="stylesheet"
@@ -2311,6 +2311,83 @@
         </div>
 
     </div>
+
+    <div class="purchase-history-card">
+        <div class="purchase-history-header">
+            <div>
+                <span class="purchase-history-kicker">THEO DÕI NHẬP KHO</span>
+                <h3>Lịch sử hàng nhập</h3>
+                <p>Tra cứu từng sản phẩm đã nhập theo thời gian, phiếu nhập và nhà cung cấp.</p>
+            </div>
+            <button type="button" class="purchase-today-button" id="purchase-history-today-button">
+                Hôm nay
+            </button>
+        </div>
+
+        <div class="purchase-history-summary">
+            <article>
+                <span>Phiếu nhập</span>
+                <strong id="purchase-history-receipts">0</strong>
+            </article>
+            <article>
+                <span>Mặt hàng</span>
+                <strong id="purchase-history-products">0</strong>
+            </article>
+            <article>
+                <span>Tổng số lượng</span>
+                <strong id="purchase-history-quantity">0</strong>
+            </article>
+            <article>
+                <span>Tổng giá trị</span>
+                <strong id="purchase-history-value">0 ₫</strong>
+            </article>
+        </div>
+
+        <div class="purchase-history-toolbar">
+            <div class="purchase-history-search">
+                <span aria-hidden="true">⌕</span>
+                <input type="search" id="purchase-history-search"
+                    placeholder="Tìm mã phiếu, sản phẩm hoặc nhà cung cấp...">
+            </div>
+            <label>
+                <span>Từ ngày</span>
+                <input type="date" id="purchase-history-from-date">
+            </label>
+            <label>
+                <span>Đến ngày</span>
+                <input type="date" id="purchase-history-to-date">
+            </label>
+            <button type="button" class="purchase-history-clear" id="purchase-history-clear-button">
+                Xóa bộ lọc
+            </button>
+        </div>
+
+        <div class="purchase-history-table-wrapper">
+            <table class="purchase-history-table">
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Ngày nhập</th>
+                        <th>Mã phiếu</th>
+                        <th>Nhà cung cấp</th>
+                        <th>Sản phẩm</th>
+                        <th>Số lượng</th>
+                        <th>Giá nhập</th>
+                        <th>Thành tiền</th>
+                        <th>Người tạo</th>
+                    </tr>
+                </thead>
+                <tbody id="purchase-history-table-body">
+                    <tr><td colspan="9" class="purchase-history-empty">Đang tải lịch sử hàng nhập...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="purchase-history-footer">
+            <span id="purchase-history-count">Chưa có dữ liệu</span>
+            <div class="purchase-history-pagination" id="purchase-history-pagination"></div>
+        </div>
+    </div>
 </section>
 
 <!-- =========================================================
@@ -4240,13 +4317,13 @@
 
     <!-- JS -->
     <script src="./js/api.js?v=20260909-6"></script>
-    <script src="./js/data-api.js?v=20260910-3"></script>
+<script src="./js/data-api.js?v=20260913-2"></script>
     <script src="js/dashboard.js?v=20260911-1"></script>
     <script src="./js/products.js?v=20260909-6"></script>
     <script src="./js/categories.js?v=20260909-6"></script>
     <script src="./js/customers.js?v=20260910-1"></script>
     <script src="./js/invoices.js?v=20260910-4"></script>
-    <script src="./js/purchases.js?v=20260909-6"></script>
+<script src="./js/purchases.js?v=20260913-2"></script>
     <script src="./js/inventory.js?v=20260910-1"></script>
     <script src="./js/history.js?v=20260910-3"></script>
     <script src="./js/statistics.js?v=20260910-2"></script>
