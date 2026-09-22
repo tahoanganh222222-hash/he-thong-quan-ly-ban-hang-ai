@@ -1,4 +1,4 @@
-from sqlalchemy import Unicode
+from sqlalchemy import Unicode, UnicodeText
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base
@@ -20,6 +20,11 @@ class Category(Base):
 
     description: Mapped[str | None] = mapped_column(
         Unicode(255),
+        nullable=True
+    )
+
+    image_data: Mapped[str | None] = mapped_column(
+        UnicodeText,
         nullable=True
     )
 

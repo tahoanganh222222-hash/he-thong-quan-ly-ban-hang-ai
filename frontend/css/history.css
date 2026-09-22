@@ -221,3 +221,41 @@ html[data-app-theme="dark"] .history-table tbody tr:hover { background: #1d293d;
     .history-table-footer { align-items: flex-start; flex-direction: column; padding: 14px; }
     .history-pagination-buttons { justify-content: flex-start; }
 }
+
+/* Viền rõ hơn cho các khối tra cứu lịch sử. */
+html:not([data-app-theme="dark"]) .main-content .history-page .history-view-tabs {
+    border-color: #aebed3 !important;
+    box-shadow: 0 9px 24px rgba(31, 45, 75, 0.10) !important;
+}
+
+html:not([data-app-theme="dark"]) .main-content .history-page .history-summary-card {
+    border-color: #b2c1d5 !important;
+    box-shadow: 0 9px 24px rgba(31, 45, 75, 0.09) !important;
+}
+
+html:not([data-app-theme="dark"]) .main-content .history-page .history-toolbar {
+    border-color: #aebed3 !important;
+    box-shadow: 0 9px 23px rgba(31, 45, 75, 0.09) !important;
+}
+
+html:not([data-app-theme="dark"]) .main-content .history-page .history-table-card {
+    border-color: #a6b8cf !important;
+    box-shadow: 0 14px 34px rgba(31, 45, 75, 0.12) !important;
+}
+
+html:not([data-app-theme="dark"]) .main-content .history-page :is(
+    .history-search input,
+    .history-filter,
+    .history-clear-filter
+) {
+    border-color: #afbed2;
+}
+
+html[data-app-theme="dark"] .main-content .history-page :is(
+    .history-view-tabs,
+    .history-summary-card,
+    .history-toolbar,
+    .history-table-card
+) {
+    border-color: #465a74 !important;
+}

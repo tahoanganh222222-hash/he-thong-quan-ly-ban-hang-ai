@@ -211,21 +211,20 @@ function addInvoiceProduct() {
     if (existingItem) {
         existingItem.quantity =
             newQuantity;
-
-        existingItem.amount =
-            existingItem.quantity *
-            existingItem.unitPrice;
+        recalculateInvoiceItem(existingItem);
     } else {
-        invoiceItems.push({
+        const newItem = {
             productId: product.id,
             code: product.code,
             name: product.name,
             quantity,
             unitPrice: product.sellingPrice,
-            amount:
-                quantity *
-                product.sellingPrice
-        });
+            discountPerUnit: 0,
+            discount: 0,
+            amount: 0
+        };
+        recalculateInvoiceItem(newItem);
+        invoiceItems.push(newItem);
     }
 
     productSelect.value = "";
@@ -301,9 +300,37 @@ function renderInvoiceItems() {
                     </td>
 
                     <td>
-                        ${formatInvoiceMoney(
-                            item.amount
-                        )}
+                        <div class="invoice-item-discount-control">
+                            <input
+                                type="number"
+                                class="invoice-item-discount-input"
+                                min="0"
+                                max="${item.unitPrice}"
+                                step="1000"
+                                inputmode="numeric"
+                                value="${item.discountPerUnit}"
+                                aria-label="Số tiền giảm trên mỗi đơn vị ${item.name}"
+                                onchange="updateInvoiceItemDiscount(
+                                    ${item.productId},
+                                    this.value
+                                )"
+                            >
+                            <span>₫</span>
+                        </div>
+                        <small class="invoice-item-final-price">
+                            Còn ${formatInvoiceMoney(item.unitPrice - item.discountPerUnit)}/đơn vị
+                        </small>
+                    </td>
+
+                    <td>
+                        <strong class="invoice-item-amount">
+                            ${formatInvoiceMoney(item.amount)}
+                        </strong>
+                        ${item.discount > 0 ? `
+                            <small class="invoice-item-saving">
+                                Giảm ${formatInvoiceMoney(item.discount)}
+                            </small>
+                        ` : ""}
                     </td>
 
                     <td>
@@ -378,11 +405,49 @@ function updateInvoiceItemQuantity(
     }
 
     item.quantity = quantity;
+    recalculateInvoiceItem(item);
 
-    item.amount =
-        item.quantity *
-        item.unitPrice;
+    renderInvoiceItems();
+    updateInvoiceSummary();
+}
 
+function recalculateInvoiceItem(item) {
+    const grossAmount = Math.max(0, Number(item.unitPrice) || 0) * item.quantity;
+    const discountPerUnit = Math.min(
+        Number(item.unitPrice) || 0,
+        Math.max(0, Number(item.discountPerUnit) || 0)
+    );
+    item.discountPerUnit = discountPerUnit;
+    item.discount = Math.round(discountPerUnit * item.quantity);
+    item.amount = Math.max(0, grossAmount - item.discount);
+}
+
+function updateInvoiceItemDiscount(productId, value) {
+    if (
+        typeof requirePermission === "function" &&
+        !requirePermission("invoice_create")
+    ) {
+        return;
+    }
+
+    const discountPerUnit = Number(value);
+    const item = invoiceItems.find(
+        invoiceItem => invoiceItem.productId === productId
+    );
+    if (!item) return;
+
+    if (
+        !Number.isFinite(discountPerUnit) ||
+        discountPerUnit < 0 ||
+        discountPerUnit > item.unitPrice
+    ) {
+        alert(`Số tiền giảm mỗi đơn vị phải từ 0 đến ${formatInvoiceMoney(item.unitPrice)}.`);
+        renderInvoiceItems();
+        return;
+    }
+
+    item.discountPerUnit = discountPerUnit;
+    recalculateInvoiceItem(item);
     renderInvoiceItems();
     updateInvoiceSummary();
 }
@@ -422,33 +487,24 @@ function calculateInvoiceTotal() {
     );
 }
 
+function calculateInvoiceSubtotal() {
+    return invoiceItems.reduce(
+        (total, item) => total + item.quantity * item.unitPrice,
+        0
+    );
+}
+
+function calculateProductDiscountTotal() {
+    return invoiceItems.reduce(
+        (total, item) => total + Number(item.discount || 0),
+        0
+    );
+}
+
 function updateInvoiceSummary() {
-    const totalAmount =
-        calculateInvoiceTotal();
-
-    const discountInput =
-        document.getElementById(
-            "invoice-discount"
-        );
-
-    const discount =
-        Number(
-            discountInput
-                ? discountInput.value
-                : 0
-        ) || 0;
-
-    const safeDiscount =
-        Math.max(
-            0,
-            Math.min(
-                discount,
-                totalAmount
-            )
-        );
-
-    const finalAmount =
-        totalAmount - safeDiscount;
+    const subtotal = calculateInvoiceSubtotal();
+    const productDiscount = calculateProductDiscountTotal();
+    const finalAmount = calculateInvoiceTotal();
 
     const totalElement =
         document.getElementById(
@@ -460,9 +516,14 @@ function updateInvoiceSummary() {
             "invoice-final-amount"
         );
 
+    const productDiscountElement =
+        document.getElementById(
+            "invoice-product-discount"
+        );
+
     if (totalElement) {
         totalElement.textContent =
-            formatInvoiceMoney(totalAmount);
+            formatInvoiceMoney(subtotal);
     }
 
     if (finalElement) {
@@ -470,13 +531,12 @@ function updateInvoiceSummary() {
             formatInvoiceMoney(finalAmount);
     }
 
-    if (
-        discountInput &&
-        Number(discountInput.value) !== safeDiscount
-    ) {
-        discountInput.value =
-            safeDiscount;
+    if (productDiscountElement) {
+        productDiscountElement.textContent =
+            `- ${formatInvoiceMoney(productDiscount)}`;
     }
+
+    return { subtotal, productDiscount, finalAmount };
 }
 
 /* ================================
@@ -504,11 +564,6 @@ async function createSalesInvoice() {
             "invoice-customer"
         );
 
-    const discountInput =
-        document.getElementById(
-            "invoice-discount"
-        );
-
     const paymentMethod =
         document.querySelector(
             'input[name="invoice-payment"]:checked'
@@ -519,21 +574,7 @@ async function createSalesInvoice() {
             ? customerSelect.value
             : "";
 
-    const totalAmount =
-        calculateInvoiceTotal();
-
-    const discount =
-        Number(
-            discountInput
-                ? discountInput.value
-                : 0
-        ) || 0;
-
-    const finalAmount =
-        Math.max(
-            0,
-            totalAmount - discount
-        );
+    const finalAmount = calculateInvoiceTotal();
 
     if (!paymentMethod) {
         alert(
@@ -582,13 +623,13 @@ async function createSalesInvoice() {
         await window.salesApi.invoices.create({
             invoiceCode,
             customerId: customerId ? Number(customerId) : null,
-            discount,
+            discount: 0,
             paymentMethod: paymentMethod.value,
             items: invoiceItems.map(item => ({
                 productId: item.productId,
                 quantity: item.quantity,
                 unitPrice: item.unitPrice,
-                discount: 0
+                discount: item.discount
             }))
         });
         await loadInvoiceReferenceData();
@@ -627,11 +668,6 @@ function resetSalesInvoice() {
             "invoice-quantity"
         );
 
-    const discountInput =
-        document.getElementById(
-            "invoice-discount"
-        );
-
     if (customerSelect) {
         customerSelect.value = "";
     }
@@ -642,10 +678,6 @@ function resetSalesInvoice() {
 
     if (quantityInput) {
         quantityInput.value = 1;
-    }
-
-    if (discountInput) {
-        discountInput.value = 0;
     }
 
     const cashPayment =
@@ -728,11 +760,6 @@ document.addEventListener(
                 "invoice-add-product-button"
             );
 
-        const discountInput =
-            document.getElementById(
-                "invoice-discount"
-            );
-
         const createButton =
             document.getElementById(
                 "invoice-create-button"
@@ -747,13 +774,6 @@ document.addEventListener(
             addProductButton.addEventListener(
                 "click",
                 addInvoiceProduct
-            );
-        }
-
-        if (discountInput) {
-            discountInput.addEventListener(
-                "input",
-                updateInvoiceSummary
             );
         }
 
@@ -941,7 +961,13 @@ document.addEventListener(
             <div class="invoice-search-box">
 
                 <div class="invoice-search-title">
-                    <h3>Tìm kiếm và lọc hóa đơn</h3>
+                    <div class="invoice-search-heading">
+                        <span class="invoice-search-heading-icon" aria-hidden="true">⌕</span>
+                        <div>
+                            <h3>Tìm kiếm và lọc hóa đơn</h3>
+                            <p>Tra cứu nhanh theo thông tin giao dịch và khoảng thời gian</p>
+                        </div>
+                    </div>
                     <span id="invoice-search-result-count">
                         Tìm thấy 0 hóa đơn
                     </span>
@@ -950,7 +976,7 @@ document.addEventListener(
 
                 <div class="invoice-search-form">
 
-                    <div class="invoice-search-field">
+                    <div class="invoice-search-field invoice-search-keyword">
                         <label for="invoice-search-input">
                             Từ khóa
                         </label>
@@ -963,7 +989,7 @@ document.addEventListener(
                     </div>
 
 
-                    <div class="invoice-search-field">
+                    <div class="invoice-search-field invoice-search-date">
                         <label for="invoice-search-from-date">
                             Từ ngày
                         </label>
@@ -975,7 +1001,7 @@ document.addEventListener(
                     </div>
 
 
-                    <div class="invoice-search-field">
+                    <div class="invoice-search-field invoice-search-date">
                         <label for="invoice-search-to-date">
                             Đến ngày
                         </label>
@@ -987,7 +1013,7 @@ document.addEventListener(
                     </div>
 
 
-                    <div class="invoice-search-field">
+                    <div class="invoice-search-field invoice-search-select">
                         <label for="invoice-search-payment">
                             Thanh toán
                         </label>
@@ -1014,7 +1040,7 @@ document.addEventListener(
                     </div>
 
 
-                    <div class="invoice-search-field">
+                    <div class="invoice-search-field invoice-search-select">
                         <label for="invoice-search-status">
                             Trạng thái
                         </label>
@@ -1041,52 +1067,53 @@ document.addEventListener(
                     </div>
 
 
-                    <div class="invoice-search-field">
-                        <label for="invoice-search-min-amount">
-                            Giá trị từ
-                        </label>
+                    <div class="invoice-search-secondary-row">
+                        <div class="invoice-search-amount-group">
+                            <span class="invoice-search-group-label">Khoảng giá trị hóa đơn</span>
+                            <label class="invoice-search-amount-control" for="invoice-search-min-amount">
+                                <span>Từ</span>
+                                <input
+                                    type="number"
+                                    id="invoice-search-min-amount"
+                                    min="0"
+                                    step="1000"
+                                    placeholder="0"
+                                >
+                                <b>₫</b>
+                            </label>
+                            <span class="invoice-search-amount-separator" aria-hidden="true">—</span>
+                            <label class="invoice-search-amount-control" for="invoice-search-max-amount">
+                                <span>Đến</span>
+                                <input
+                                    type="number"
+                                    id="invoice-search-max-amount"
+                                    min="0"
+                                    step="1000"
+                                    placeholder="Không giới hạn"
+                                >
+                                <b>₫</b>
+                            </label>
+                        </div>
 
-                        <input
-                            type="number"
-                            id="invoice-search-min-amount"
-                            min="0"
-                            placeholder="0"
-                        >
-                    </div>
+                        <div class="invoice-search-actions">
+                            <button
+                                type="button"
+                                id="invoice-search-button"
+                                class="invoice-search-button"
+                            >
+                                <span aria-hidden="true">⌕</span>
+                                Tìm kiếm
+                            </button>
 
-
-                    <div class="invoice-search-field">
-                        <label for="invoice-search-max-amount">
-                            Giá trị đến
-                        </label>
-
-                        <input
-                            type="number"
-                            id="invoice-search-max-amount"
-                            min="0"
-                            placeholder="Không giới hạn"
-                        >
-                    </div>
-
-
-                    <div class="invoice-search-actions">
-
-                        <button
-                            type="button"
-                            id="invoice-search-button"
-                            class="invoice-search-button"
-                        >
-                            Tìm kiếm
-                        </button>
-
-                        <button
-                            type="button"
-                            id="invoice-search-reset-button"
-                            class="invoice-search-reset-button"
-                        >
-                            Xóa bộ lọc
-                        </button>
-
+                            <button
+                                type="button"
+                                id="invoice-search-reset-button"
+                                class="invoice-search-reset-button"
+                            >
+                                <span aria-hidden="true">↺</span>
+                                Xóa bộ lọc
+                            </button>
+                        </div>
                     </div>
 
                 </div>
@@ -1135,6 +1162,36 @@ document.addEventListener(
                 </div>
 
             </div>
+
+            <div
+                class="invoice-search-detail-modal"
+                id="invoice-search-detail-modal"
+                aria-hidden="true"
+            >
+                <div
+                    class="invoice-search-detail-dialog"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="invoice-search-detail-title"
+                >
+                    <div class="invoice-search-detail-header">
+                        <div>
+                            <span>CHI TIẾT GIAO DỊCH</span>
+                            <h3 id="invoice-search-detail-title">Thông tin hóa đơn</h3>
+                        </div>
+                        <button
+                            type="button"
+                            class="invoice-search-detail-close"
+                            id="invoice-search-detail-close"
+                            aria-label="Đóng chi tiết hóa đơn"
+                        >×</button>
+                    </div>
+                    <div
+                        class="invoice-search-detail-body"
+                        id="invoice-search-detail-body"
+                    ></div>
+                </div>
+            </div>
         `;
 
 
@@ -1167,6 +1224,14 @@ if (header) {
     );
 } else {
     target.prepend(container);
+}
+
+const detailModal = document.getElementById(
+    "invoice-search-detail-modal"
+);
+
+if (detailModal && detailModal.parentElement !== document.body) {
+    document.body.appendChild(detailModal);
 }
     }
 
@@ -1758,7 +1823,191 @@ if (header) {
        34.12. XEM CHI TIẾT
        ========================================================= */
 
-    function viewInvoiceSearchDetail(
+    function closeInvoiceSearchDetail() {
+
+        const modal = document.getElementById(
+            "invoice-search-detail-modal"
+        );
+
+        if (!modal) {
+            return;
+        }
+
+        modal.classList.remove("active");
+        modal.setAttribute("aria-hidden", "true");
+        document.body.classList.remove(
+            "invoice-search-detail-open"
+        );
+    }
+
+
+    function openInvoiceSearchDetail() {
+
+        const modal = document.getElementById(
+            "invoice-search-detail-modal"
+        );
+
+        if (!modal) {
+            return;
+        }
+
+        modal.classList.add("active");
+        modal.setAttribute("aria-hidden", "false");
+        document.body.classList.add(
+            "invoice-search-detail-open"
+        );
+    }
+
+
+    function renderInvoiceSearchDetail(invoice) {
+
+        const body = document.getElementById(
+            "invoice-search-detail-body"
+        );
+
+        if (!body) {
+            return;
+        }
+
+        const items = Array.isArray(invoice.items)
+            ? invoice.items
+            : [];
+        const productSubtotal = items.reduce(
+            (total, item) => total + Number(item.unitPrice || 0) * Number(item.quantity || 0),
+            0
+        );
+        const productDiscount = items.reduce(
+            (total, item) => total + Number(item.discount || 0),
+            0
+        );
+        const legacyInvoiceDiscount = Number(invoice.discount || 0);
+
+        const productRows = items.length
+            ? items.map(function (item, index) {
+                const imageSource = item.productImageData ||
+                    "./assets/branding/sales-manager-logo.svg";
+                return `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>
+                            <div class="sales-product-cell invoice-detail-product-cell">
+                                <img
+                                    class="sales-product-thumbnail invoice-detail-product-thumbnail"
+                                    src="${invoiceSearchEscapeHTML(imageSource)}"
+                                    alt="${invoiceSearchEscapeHTML(item.productName || "Sản phẩm")}"
+                                    loading="lazy"
+                                >
+                                <div>
+                                    <strong>${invoiceSearchEscapeHTML(
+                                        item.productName || "Sản phẩm"
+                                    )}</strong>
+                                    <small>${invoiceSearchEscapeHTML(
+                                        item.productCode || `SP${item.productId || ""}`
+                                    )}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${Number(item.quantity || 0).toLocaleString("vi-VN")}</td>
+                        <td>${invoiceSearchFormatMoney(item.unitPrice)}</td>
+                        <td>${invoiceSearchFormatMoney(item.discount)}</td>
+                        <td><strong>${invoiceSearchFormatMoney(item.amount)}</strong></td>
+                    </tr>
+                `;
+            }).join("")
+            : `
+                <tr>
+                    <td colspan="6" class="invoice-search-detail-empty">
+                        Hóa đơn chưa có thông tin sản phẩm.
+                    </td>
+                </tr>
+            `;
+
+        const customerDescription = invoice.customerPhone
+            ? `${invoice.customerName || "Khách lẻ"} · ${invoice.customerPhone}`
+            : (invoice.customerName || "Khách lẻ");
+
+        body.innerHTML = `
+            <div class="invoice-search-detail-meta">
+                <article>
+                    <span>Mã hóa đơn</span>
+                    <strong>${invoiceSearchEscapeHTML(invoice.code || invoice.invoiceCode)}</strong>
+                </article>
+                <article>
+                    <span>Khách hàng</span>
+                    <strong>${invoiceSearchEscapeHTML(customerDescription)}</strong>
+                </article>
+                <article>
+                    <span>Ngày lập</span>
+                    <strong>${invoiceSearchEscapeHTML(invoice.date)}</strong>
+                </article>
+                <article>
+                    <span>Thanh toán</span>
+                    <strong>${invoiceSearchEscapeHTML(
+                        invoiceSearchPaymentText(invoice.paymentMethod)
+                    )}</strong>
+                </article>
+            </div>
+
+            <div class="invoice-search-detail-products">
+                <div class="invoice-search-detail-section-title">
+                    <div>
+                        <span>SẢN PHẨM ĐÃ MUA</span>
+                        <h4>Danh sách mặt hàng</h4>
+                    </div>
+                    <strong>${items.length} mặt hàng</strong>
+                </div>
+                <div class="invoice-search-detail-table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Sản phẩm</th>
+                                <th>Số lượng</th>
+                                <th>Đơn giá</th>
+                                <th>Giảm giá</th>
+                                <th>Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>${productRows}</tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="invoice-search-detail-footer">
+                <div class="invoice-search-detail-status">
+                    <span>Trạng thái</span>
+                    <strong>${invoiceSearchEscapeHTML(
+                        invoiceSearchStatusText(invoice.status)
+                    )}</strong>
+                </div>
+                <div class="invoice-search-detail-totals">
+                    <div>
+                        <span>Tạm tính</span>
+                        <strong>${invoiceSearchFormatMoney(productSubtotal)}</strong>
+                    </div>
+                    <div>
+                        <span>Giảm theo sản phẩm</span>
+                        <strong>${invoiceSearchFormatMoney(productDiscount)}</strong>
+                    </div>
+                    ${legacyInvoiceDiscount > 0 ? `
+                        <div>
+                            <span>Giảm thêm hóa đơn</span>
+                            <strong>${invoiceSearchFormatMoney(legacyInvoiceDiscount)}</strong>
+                        </div>
+                    ` : ""}
+                    <div class="total">
+                        <span>Thành tiền</span>
+                        <strong>${invoiceSearchFormatMoney(
+                            invoice.finalAmount ?? invoice.totalAmount
+                        )}</strong>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+
+    async function viewInvoiceSearchDetail(
         invoiceId
     ) {
 
@@ -1778,7 +2027,7 @@ if (header) {
         }
 
 
-        const invoice =
+        const invoiceSummary =
             invoiceSearchData.find(
                 function (item) {
 
@@ -1788,7 +2037,7 @@ if (header) {
             );
 
 
-        if (!invoice) {
+        if (!invoiceSummary) {
 
             alert(
                 "Không tìm thấy hóa đơn."
@@ -1798,36 +2047,40 @@ if (header) {
         }
 
 
-        alert(
-            "Thông tin hóa đơn\n\n" +
-
-            "Mã hóa đơn: " +
-            invoice.code +
-
-            "\nKhách hàng: " +
-            (
-                invoice.customerName ||
-                "Khách lẻ"
-            ) +
-
-            "\nNgày: " +
-            invoice.date +
-
-            "\nTổng tiền: " +
-            invoiceSearchFormatMoney(
-                invoice.totalAmount
-            ) +
-
-            "\nThanh toán: " +
-            invoiceSearchPaymentText(
-                invoice.paymentMethod
-            ) +
-
-            "\nTrạng thái: " +
-            invoiceSearchStatusText(
-                invoice.status
-            )
+        const detailBody = document.getElementById(
+            "invoice-search-detail-body"
         );
+
+        if (detailBody) {
+            detailBody.innerHTML = `
+                <div class="invoice-search-detail-loading">
+                    <span></span>
+                    Đang tải sản phẩm trong hóa đơn...
+                </div>
+            `;
+        }
+
+        openInvoiceSearchDetail();
+
+        try {
+            const invoice = await window.salesApi.invoices.get(
+                invoiceId
+            );
+            renderInvoiceSearchDetail(invoice);
+        } catch (error) {
+            console.error("Không thể tải chi tiết hóa đơn:", error);
+
+            if (detailBody) {
+                detailBody.innerHTML = `
+                    <div class="invoice-search-detail-error">
+                        <strong>Không thể tải chi tiết hóa đơn</strong>
+                        <span>${invoiceSearchEscapeHTML(
+                            error.message || "Vui lòng thử lại sau."
+                        )}</span>
+                    </div>
+                `;
+            }
+        }
     }
 
 
@@ -1972,89 +2225,272 @@ if (header) {
 
             #invoice-search-filter-container {
                 width: 100%;
-                margin-top: 20px;
-                margin-bottom: 20px;
+                margin: 24px 0;
             }
 
             .invoice-search-box {
                 width: 100%;
                 box-sizing: border-box;
-                padding: 20px;
-                border: 1px solid #e5e7eb;
-                border-radius: 10px;
+                overflow: hidden;
+                border: 1px solid #d7e0ec;
+                border-radius: 18px;
                 background: #ffffff;
+                box-shadow: 0 12px 32px rgba(15, 23, 42, 0.07);
             }
 
             .invoice-search-title {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                gap: 15px;
-                margin-bottom: 18px;
+                gap: 20px;
+                padding: 22px 24px;
+                border-bottom: 1px solid #e2e8f0;
+                background: linear-gradient(135deg, #fbfdff, #f4f7ff);
+            }
+
+            .invoice-search-heading {
+                display: flex;
+                min-width: 0;
+                align-items: center;
+                gap: 13px;
+            }
+
+            .invoice-search-heading-icon {
+                display: inline-flex;
+                flex: 0 0 42px;
+                width: 42px;
+                height: 42px;
+                align-items: center;
+                justify-content: center;
+                border-radius: 12px;
+                color: #ffffff;
+                background: linear-gradient(135deg, #4f46e5, #2563eb);
+                box-shadow: 0 7px 16px rgba(79, 70, 229, 0.22);
+                font-size: 21px;
             }
 
             .invoice-search-title h3 {
                 margin: 0;
-                font-size: 18px;
+                color: #172033;
+                font-size: 19px;
+                line-height: 1.3;
+            }
+
+            .invoice-search-title p {
+                margin: 4px 0 0;
+                color: #7b879a;
+                font-size: 12px;
             }
 
             #invoice-search-result-count {
-                font-size: 13px;
-                color: #6b7280;
+                display: inline-flex;
+                flex: 0 0 auto;
+                align-items: center;
+                gap: 7px;
+                padding: 8px 12px;
+                border: 1px solid #dbe4f0;
+                border-radius: 999px;
+                color: #526077;
+                background: #ffffff;
+                font-size: 12px;
+                font-weight: 700;
+            }
+
+            #invoice-search-result-count::before {
+                content: "";
+                width: 7px;
+                height: 7px;
+                border-radius: 50%;
+                background: #22c55e;
+                box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.12);
             }
 
             .invoice-search-form {
                 display: grid;
-                grid-template-columns:
-                    repeat(auto-fit, minmax(180px, 1fr));
-                gap: 14px;
-                margin-bottom: 20px;
+                grid-template-columns: repeat(12, minmax(0, 1fr));
+                gap: 16px;
+                padding: 22px 24px 24px;
+                border-bottom: 1px solid #e2e8f0;
+                background: #ffffff;
             }
 
             .invoice-search-field {
                 display: flex;
+                grid-column: span 2;
                 flex-direction: column;
-                gap: 6px;
+                gap: 8px;
+                min-width: 0;
+            }
+
+            .invoice-search-keyword {
+                grid-column: span 4;
             }
 
             .invoice-search-field label {
-                font-size: 13px;
-                font-weight: 600;
+                color: #3d4b61;
+                font-size: 12px;
+                font-weight: 700;
             }
 
             .invoice-search-field input,
             .invoice-search-field select {
                 width: 100%;
                 box-sizing: border-box;
-                min-height: 38px;
-                padding: 8px 10px;
-                border: 1px solid #d1d5db;
-                border-radius: 6px;
+                height: 46px;
+                padding: 0 13px;
+                border: 1px solid #cbd6e4;
+                border-radius: 11px;
+                color: #334155;
                 background: #ffffff;
+                outline: none;
+                font: inherit;
+                font-size: 13px;
+                transition: border-color 0.18s ease, box-shadow 0.18s ease;
+            }
+
+            .invoice-search-field input:hover,
+            .invoice-search-field select:hover {
+                border-color: #9eacc0;
+            }
+
+            .invoice-search-field input:focus,
+            .invoice-search-field select:focus {
+                border-color: #6366f1;
+                box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.11);
+            }
+
+            .invoice-search-secondary-row {
+                display: flex;
+                grid-column: 1 / -1;
+                align-items: flex-end;
+                justify-content: space-between;
+                gap: 18px;
+                margin-top: 2px;
+                padding-top: 18px;
+                border-top: 1px dashed #d7e0ec;
+            }
+
+            .invoice-search-amount-group {
+                display: flex;
+                min-width: 0;
+                align-items: center;
+                gap: 9px;
+            }
+
+            .invoice-search-group-label {
+                margin-right: 4px;
+                color: #3d4b61;
+                font-size: 12px;
+                font-weight: 700;
+                white-space: nowrap;
+            }
+
+            .invoice-search-amount-control {
+                display: flex;
+                width: 210px;
+                height: 44px;
+                box-sizing: border-box;
+                align-items: center;
+                gap: 8px;
+                padding: 0 11px;
+                border: 1px solid #cbd6e4;
+                border-radius: 11px;
+                color: #738096;
+                background: #ffffff;
+                transition: border-color 0.18s ease, box-shadow 0.18s ease;
+            }
+
+            .invoice-search-amount-control:focus-within {
+                border-color: #6366f1;
+                box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.11);
+            }
+
+            .invoice-search-amount-control > span,
+            .invoice-search-amount-control > b {
+                flex: 0 0 auto;
+                font-size: 11px;
+                font-weight: 700;
+            }
+
+            .invoice-search-amount-control input {
+                width: 100%;
+                min-width: 0;
+                height: 38px;
+                padding: 0;
+                border: 0 !important;
+                color: #334155;
+                background: transparent !important;
+                outline: 0;
+                box-shadow: none !important;
+                font: inherit;
+                font-size: 13px;
+            }
+
+            html:not([data-app-theme="dark"]) .main-content .invoice-search-amount-control input,
+            html:not([data-app-theme="dark"]) .main-content .invoice-search-amount-control input:hover,
+            html:not([data-app-theme="dark"]) .main-content .invoice-search-amount-control input:focus,
+            html[data-app-theme="dark"] .main-content .invoice-search-amount-control input,
+            html[data-app-theme="dark"] .main-content .invoice-search-amount-control input:hover,
+            html[data-app-theme="dark"] .main-content .invoice-search-amount-control input:focus {
+                border: 0 !important;
+                border-radius: 0;
+                background: transparent !important;
+                box-shadow: none !important;
+            }
+
+            .invoice-search-amount-separator {
+                color: #94a3b8;
             }
 
             .invoice-search-actions {
                 display: flex;
-                align-items: flex-end;
-                gap: 8px;
+                flex: 0 0 auto;
+                align-items: center;
+                gap: 10px;
             }
 
             .invoice-search-button,
             .invoice-search-reset-button {
-                min-height: 38px;
-                padding: 8px 14px;
-                border: none;
-                border-radius: 6px;
+                display: inline-flex;
+                height: 44px;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                padding: 0 17px;
+                border-radius: 11px;
+                font-size: 13px;
+                font-weight: 700;
                 cursor: pointer;
+                transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+            }
+
+            .invoice-search-button {
+                border: 1px solid #4f46e5;
+                color: #ffffff;
+                background: linear-gradient(135deg, #4f46e5, #2563eb);
+                box-shadow: 0 7px 16px rgba(79, 70, 229, 0.2);
             }
 
             .invoice-search-reset-button {
-                background: #e5e7eb;
+                border: 1px solid #cbd6e4;
+                color: #536176;
+                background: #f8fafc;
+            }
+
+            .invoice-search-button:hover,
+            .invoice-search-reset-button:hover {
+                transform: translateY(-1px);
+            }
+
+            .invoice-search-reset-button:hover {
+                border-color: #9eacc0;
+                background: #f1f5f9;
             }
 
             .invoice-search-table-wrapper {
                 width: 100%;
                 overflow-x: auto;
+                background: #ffffff;
             }
 
             .invoice-search-table {
@@ -2064,14 +2500,30 @@ if (header) {
 
             .invoice-search-table th,
             .invoice-search-table td {
-                padding: 10px;
-                border-bottom: 1px solid #e5e7eb;
+                padding: 14px 16px;
+                border-right: 1px solid #d8e0eb;
+                border-bottom: 1px solid #d8e0eb;
                 text-align: left;
                 white-space: nowrap;
             }
 
+            .invoice-search-table th:last-child,
+            .invoice-search-table td:last-child {
+                border-right: 0;
+            }
+
             .invoice-search-table th {
-                font-weight: 600;
+                color: #4a586e;
+                background: #f5f8fc;
+                font-size: 11px;
+                font-weight: 800;
+                letter-spacing: 0.04em;
+                text-transform: uppercase;
+            }
+
+            .invoice-search-table td {
+                color: #475569;
+                font-size: 13px;
             }
 
             .invoice-search-table small {
@@ -2081,10 +2533,301 @@ if (header) {
             }
 
             .invoice-search-view-button {
-                padding: 6px 12px;
-                border: none;
-                border-radius: 5px;
+                padding: 7px 13px;
+                border: 1px solid #c7d2fe;
+                border-radius: 8px;
+                color: #4338ca;
+                background: #eef2ff;
+                font-weight: 700;
                 cursor: pointer;
+            }
+
+            body.invoice-search-detail-open {
+                overflow: hidden;
+            }
+
+            .invoice-search-detail-modal {
+                position: fixed;
+                inset: 0;
+                z-index: 1500;
+                display: none;
+                align-items: center;
+                justify-content: center;
+                width: 100vw;
+                height: 100vh;
+                height: 100dvh;
+                box-sizing: border-box;
+                padding: 24px;
+                background: rgba(15, 23, 42, 0.64);
+                backdrop-filter: blur(6px);
+            }
+
+            .invoice-search-detail-modal.active {
+                display: flex;
+            }
+
+            .invoice-search-detail-dialog {
+                display: flex;
+                flex-direction: column;
+                width: min(980px, 100%);
+                max-height: min(820px, calc(100dvh - 48px));
+                overflow: hidden;
+                border: 1px solid rgba(99, 102, 241, 0.28);
+                border-radius: 22px;
+                background: #ffffff;
+                box-shadow: 0 30px 80px rgba(15, 23, 42, 0.3);
+                animation: invoiceDetailEnter 0.2s ease both;
+            }
+
+            @keyframes invoiceDetailEnter {
+                from { opacity: 0; transform: translateY(12px) scale(0.98); }
+                to { opacity: 1; transform: translateY(0) scale(1); }
+            }
+
+            .invoice-search-detail-header {
+                flex: 0 0 auto;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 20px;
+                padding: 22px 26px;
+                color: #ffffff;
+                background: linear-gradient(135deg, #4338ca, #2563eb);
+            }
+
+            .invoice-search-detail-header span {
+                display: block;
+                margin-bottom: 5px;
+                font-size: 11px;
+                font-weight: 800;
+                letter-spacing: 0.14em;
+                opacity: 0.78;
+            }
+
+            .invoice-search-detail-header h3 {
+                margin: 0;
+                font-size: 24px;
+            }
+
+            .invoice-search-detail-close {
+                width: 42px;
+                height: 42px;
+                border: 1px solid rgba(255, 255, 255, 0.35);
+                border-radius: 12px;
+                color: #ffffff;
+                background: rgba(255, 255, 255, 0.12);
+                font-size: 26px;
+                line-height: 1;
+                cursor: pointer;
+            }
+
+            .invoice-search-detail-body {
+                flex: 1 1 auto;
+                min-height: 0;
+                overflow-y: auto;
+                padding: 24px 26px 28px;
+            }
+
+            .invoice-search-detail-meta {
+                display: grid;
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+                gap: 12px;
+                margin-bottom: 22px;
+            }
+
+            .invoice-search-detail-meta article {
+                min-width: 0;
+                padding: 14px 16px;
+                border: 1px solid #cbd5e1;
+                border-radius: 13px;
+                background: #f8fafc;
+            }
+
+            .invoice-search-detail-meta span,
+            .invoice-search-detail-status span {
+                display: block;
+                margin-bottom: 5px;
+                color: #64748b;
+                font-size: 12px;
+                font-weight: 700;
+            }
+
+            .invoice-search-detail-meta strong {
+                display: block;
+                overflow-wrap: anywhere;
+                color: #172033;
+                font-size: 14px;
+            }
+
+            .invoice-search-detail-products {
+                overflow: hidden;
+                border: 1px solid #aebbd0;
+                border-radius: 15px;
+            }
+
+            .invoice-search-detail-section-title {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 16px;
+                padding: 15px 18px;
+                border-bottom: 1px solid #aebbd0;
+                background: linear-gradient(135deg, #f8faff, #eef4ff);
+            }
+
+            .invoice-search-detail-section-title span {
+                color: #4f46e5;
+                font-size: 10px;
+                font-weight: 800;
+                letter-spacing: 0.13em;
+            }
+
+            .invoice-search-detail-section-title h4 {
+                margin: 3px 0 0;
+                color: #172033;
+                font-size: 17px;
+            }
+
+            .invoice-search-detail-section-title > strong {
+                padding: 7px 10px;
+                border-radius: 999px;
+                color: #4338ca;
+                background: #e0e7ff;
+                font-size: 12px;
+            }
+
+            .invoice-search-detail-table-wrap {
+                overflow-x: auto;
+            }
+
+            .invoice-search-detail-table-wrap table {
+                width: 100%;
+                min-width: 720px;
+                border-collapse: collapse;
+            }
+
+            .invoice-search-detail-table-wrap th,
+            .invoice-search-detail-table-wrap td {
+                padding: 13px 15px;
+                border-right: 1px solid #cbd5e1;
+                border-bottom: 1px solid #cbd5e1;
+                text-align: left;
+            }
+
+            .invoice-search-detail-table-wrap th:last-child,
+            .invoice-search-detail-table-wrap td:last-child {
+                border-right: 0;
+            }
+
+            .invoice-search-detail-table-wrap tbody tr:last-child td {
+                border-bottom: 0;
+            }
+
+            .invoice-search-detail-table-wrap th {
+                color: #475569;
+                background: #f1f5f9;
+                font-size: 11px;
+                letter-spacing: 0.04em;
+                text-transform: uppercase;
+            }
+
+            .invoice-search-detail-table-wrap td {
+                color: #475569;
+                font-size: 13px;
+            }
+
+            .invoice-search-detail-table-wrap td strong {
+                color: #172033;
+            }
+
+            .invoice-search-detail-table-wrap td small {
+                display: block;
+                margin-top: 3px;
+                color: #7c8aa0;
+            }
+
+            .invoice-search-detail-footer {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 24px;
+                margin-top: 22px;
+            }
+
+            .invoice-search-detail-status strong {
+                display: inline-flex;
+                padding: 7px 11px;
+                border-radius: 999px;
+                color: #047857;
+                background: #d1fae5;
+                font-size: 12px;
+            }
+
+            .invoice-search-detail-totals {
+                width: min(330px, 100%);
+            }
+
+            .invoice-search-detail-totals > div {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 20px;
+                padding: 7px 0;
+                color: #64748b;
+                font-size: 13px;
+            }
+
+            .invoice-search-detail-totals strong {
+                color: #172033;
+            }
+
+            .invoice-search-detail-totals .total {
+                margin-top: 6px;
+                padding-top: 13px;
+                border-top: 1px solid #cbd5e1;
+                color: #172033;
+                font-size: 15px;
+                font-weight: 800;
+            }
+
+            .invoice-search-detail-totals .total strong {
+                color: #4f46e5;
+                font-size: 21px;
+            }
+
+            .invoice-search-detail-loading,
+            .invoice-search-detail-error,
+            .invoice-search-detail-empty {
+                padding: 40px 20px !important;
+                text-align: center !important;
+            }
+
+            .invoice-search-detail-loading {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 12px;
+                color: #64748b;
+            }
+
+            .invoice-search-detail-loading span {
+                width: 20px;
+                height: 20px;
+                border: 3px solid #c7d2fe;
+                border-top-color: #4f46e5;
+                border-radius: 50%;
+                animation: invoiceDetailSpin 0.75s linear infinite;
+            }
+
+            @keyframes invoiceDetailSpin {
+                to { transform: rotate(360deg); }
+            }
+
+            .invoice-search-detail-error {
+                display: flex;
+                flex-direction: column;
+                gap: 7px;
+                color: #b91c1c;
             }
 
             .invoice-search-empty {
@@ -2098,7 +2841,8 @@ if (header) {
                 justify-content: space-between;
                 align-items: center;
                 gap: 16px;
-                padding-top: 16px;
+                padding: 16px 24px 20px;
+                background: #ffffff;
             }
 
             .invoice-search-pagination-info {
@@ -2155,6 +2899,163 @@ if (header) {
                 cursor: not-allowed;
             }
 
+            html[data-app-theme="dark"] .invoice-search-box {
+                border-color: #3a4a61;
+                background: #101b2d;
+                box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
+            }
+
+            html[data-app-theme="dark"] .invoice-search-title {
+                border-bottom-color: #3a4a61;
+                background: linear-gradient(135deg, #17243a, #121f33);
+            }
+
+            html[data-app-theme="dark"] .invoice-search-title h3 {
+                color: #f1f5fb;
+            }
+
+            html[data-app-theme="dark"] .invoice-search-title p {
+                color: #9cabc0;
+            }
+
+            html[data-app-theme="dark"] #invoice-search-result-count {
+                color: #d8e2ef;
+                border-color: #46566e;
+                background: #0d1728;
+            }
+
+            html[data-app-theme="dark"] .invoice-search-form,
+            html[data-app-theme="dark"] .invoice-search-table-wrapper,
+            html[data-app-theme="dark"] .invoice-search-pagination {
+                border-color: #3a4a61;
+                background: #101b2d;
+            }
+
+            html[data-app-theme="dark"] .invoice-search-secondary-row {
+                border-top-color: #3b4b62;
+            }
+
+            html[data-app-theme="dark"] .invoice-search-field label,
+            html[data-app-theme="dark"] .invoice-search-group-label {
+                color: #d8e2ef;
+            }
+
+            html[data-app-theme="dark"] .invoice-search-field input,
+            html[data-app-theme="dark"] .invoice-search-field select,
+            html[data-app-theme="dark"] .invoice-search-amount-control {
+                color: #e5edf7;
+                border-color: #46566e;
+                background: #0d1728;
+            }
+
+            html[data-app-theme="dark"] .invoice-search-field input:focus,
+            html[data-app-theme="dark"] .invoice-search-field select:focus,
+            html[data-app-theme="dark"] .invoice-search-amount-control:focus-within {
+                border-color: #818cf8;
+                box-shadow: 0 0 0 4px rgba(129, 140, 248, 0.13);
+            }
+
+            html[data-app-theme="dark"] .invoice-search-amount-control input {
+                color: #e5edf7;
+            }
+
+            html[data-app-theme="dark"] .invoice-search-reset-button {
+                color: #d7e1ef;
+                border-color: #46566e;
+                background: #17243a;
+            }
+
+            html[data-app-theme="dark"] .invoice-search-reset-button:hover {
+                border-color: #63738c;
+                background: #1c2b42;
+            }
+
+            html[data-app-theme="dark"] .invoice-search-table th {
+                color: #bac7d9;
+                border-color: #3a4a61;
+                background: #17243a;
+            }
+
+            html[data-app-theme="dark"] .invoice-search-table td {
+                color: #d6e0ed;
+                border-color: #34445b;
+                background: #101b2d;
+            }
+
+            html[data-app-theme="dark"] .invoice-search-table tbody tr:hover td {
+                background: #16243a;
+            }
+
+            html[data-app-theme="dark"] .invoice-search-table small,
+            html[data-app-theme="dark"] .invoice-search-pagination-info {
+                color: #9cabc0;
+            }
+
+            html[data-app-theme="dark"] .invoice-search-view-button {
+                color: #c7d2fe;
+                border-color: #4b5687;
+                background: #242c59;
+            }
+
+            html[data-app-theme="dark"] .invoice-search-page-button {
+                color: #d8e2ef;
+                border-color: #46566e;
+                background: #142238;
+            }
+
+            @media (max-width: 1200px) {
+                .invoice-search-form {
+                    grid-template-columns: repeat(6, minmax(0, 1fr));
+                }
+
+                .invoice-search-keyword {
+                    grid-column: span 6;
+                }
+
+                .invoice-search-date,
+                .invoice-search-select {
+                    grid-column: span 3;
+                }
+
+                .invoice-search-secondary-row {
+                    align-items: stretch;
+                    flex-direction: column;
+                }
+
+                .invoice-search-actions {
+                    justify-content: flex-end;
+                }
+            }
+
+            @media (max-width: 850px) {
+                .invoice-search-form {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
+
+                .invoice-search-keyword {
+                    grid-column: 1 / -1;
+                }
+
+                .invoice-search-date,
+                .invoice-search-select {
+                    grid-column: span 1;
+                }
+
+                .invoice-search-amount-group {
+                    display: grid;
+                    grid-template-columns: 1fr auto 1fr;
+                    width: 100%;
+                }
+
+                .invoice-search-group-label {
+                    grid-column: 1 / -1;
+                }
+
+                .invoice-search-amount-control {
+                    width: 100%;
+                }
+            }
+
             @media (max-width: 768px) {
 
                 .invoice-search-title {
@@ -2163,8 +3064,13 @@ if (header) {
                 }
 
                 .invoice-search-actions {
+                    width: 100%;
                     align-items: stretch;
-                    flex-direction: column;
+                }
+
+                .invoice-search-button,
+                .invoice-search-reset-button {
+                    flex: 1;
                 }
 
                 .invoice-search-pagination {
@@ -2172,6 +3078,74 @@ if (header) {
                     flex-direction: column;
                 }
 
+                .invoice-search-detail-modal {
+                    padding: 12px;
+                }
+
+                .invoice-search-detail-dialog {
+                    max-height: calc(100dvh - 24px);
+                    border-radius: 16px;
+                }
+
+                .invoice-search-detail-header,
+                .invoice-search-detail-body {
+                    padding-left: 18px;
+                    padding-right: 18px;
+                }
+
+                .invoice-search-detail-meta {
+                    grid-template-columns: 1fr 1fr;
+                }
+
+                .invoice-search-detail-footer {
+                    flex-direction: column;
+                }
+
+                .invoice-search-detail-totals {
+                    width: 100%;
+                }
+
+            }
+
+            @media (max-width: 560px) {
+                .invoice-search-title,
+                .invoice-search-form {
+                    padding-left: 16px;
+                    padding-right: 16px;
+                }
+
+                .invoice-search-form {
+                    grid-template-columns: 1fr;
+                }
+
+                .invoice-search-keyword,
+                .invoice-search-date,
+                .invoice-search-select {
+                    grid-column: span 1;
+                }
+
+                .invoice-search-amount-group {
+                    grid-template-columns: 1fr;
+                }
+
+                .invoice-search-group-label,
+                .invoice-search-amount-control,
+                .invoice-search-amount-separator {
+                    grid-column: span 1;
+                }
+
+                .invoice-search-amount-separator {
+                    display: none;
+                }
+
+                .invoice-search-actions {
+                    flex-direction: column;
+                }
+
+                .invoice-search-pagination {
+                    padding-left: 16px;
+                    padding-right: 16px;
+                }
             }
 
         `;
@@ -2430,6 +3404,36 @@ if (header) {
                 filterInvoiceSearch
             );
         }
+
+
+        const detailModal = document.getElementById(
+            "invoice-search-detail-modal"
+        );
+
+        const detailClose = document.getElementById(
+            "invoice-search-detail-close"
+        );
+
+        if (detailClose) {
+            detailClose.addEventListener(
+                "click",
+                closeInvoiceSearchDetail
+            );
+        }
+
+        if (detailModal) {
+            detailModal.addEventListener("click", function (event) {
+                if (event.target === detailModal) {
+                    closeInvoiceSearchDetail();
+                }
+            });
+        }
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") {
+                closeInvoiceSearchDetail();
+            }
+        });
 
 
         /*

@@ -26,6 +26,68 @@ const productsPerPage = 8;
 
 let editingProductId = null;
 let productFiltersInitialized = false;
+let productImageData = null;
+let productImageEventsInitialized = false;
+let productDetailEventsInitialized = false;
+let productDetailReturnFocus = null;
+const productCategoryImageByName = new Map();
+
+const PRODUCT_IMAGE_MAX_BYTES = 2 * 1024 * 1024;
+const PRODUCT_IMAGE_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
+
+function escapeProductHtml(value) {
+    return String(value ?? "")
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+}
+
+function getProductImageSource(product) {
+    if (product?.imageData) return product.imageData;
+    return productCategoryImageByName.get(product?.category || "") ||
+        "./assets/branding/sales-manager-logo.svg";
+}
+
+function updateProductImagePreview(product = null) {
+    const preview = document.getElementById("product-image-preview");
+    if (!preview) return;
+    const category = document.getElementById("product-category")?.value || product?.category || "";
+    preview.src = productImageData || getProductImageSource({ category });
+}
+
+function readProductImage(file) {
+    if (!PRODUCT_IMAGE_TYPES.has(file.type)) {
+        alert("Vui lòng chọn ảnh PNG, JPG hoặc WebP.");
+        return;
+    }
+    if (file.size > PRODUCT_IMAGE_MAX_BYTES) {
+        alert("Kích thước ảnh không được vượt quá 2 MB.");
+        return;
+    }
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+        productImageData = String(reader.result || "");
+        updateProductImagePreview();
+    });
+    reader.addEventListener("error", () => alert("Không thể đọc tệp ảnh đã chọn."));
+    reader.readAsDataURL(file);
+}
+
+function setupProductImageEditor() {
+    if (productImageEventsInitialized) return;
+    document.getElementById("product-image-input")?.addEventListener("change", event => {
+        const file = event.target.files?.[0];
+        if (file) readProductImage(file);
+        event.target.value = "";
+    });
+    document.getElementById("product-image-remove")?.addEventListener("click", () => {
+        productImageData = null;
+        updateProductImagePreview();
+    });
+    document.getElementById("product-category")?.addEventListener("change", () => {
+        if (!productImageData) updateProductImagePreview();
+    });
+    productImageEventsInitialized = true;
+}
 
 async function loadProductsFromAPI() {
 
@@ -337,19 +399,34 @@ function renderProducts() {
 
             <td>
                 <span class="product-code">
-                    ${product.code}
+                    ${escapeProductHtml(product.code)}
                 </span>
             </td>
 
             <td>
-                <span class="product-name">
-                    ${product.name}
-                </span>
+                <div
+                    class="product-visual product-detail-trigger"
+                    role="button"
+                    tabindex="0"
+                    onclick="openProductDetail(${product.id})"
+                    onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openProductDetail(${product.id}); }"
+                    title="Xem chi tiết ${escapeProductHtml(product.name)}"
+                    aria-label="Xem chi tiết sản phẩm ${escapeProductHtml(product.name)}"
+                >
+                    <span class="product-thumbnail-frame">
+                        <img class="product-thumbnail" src="${escapeProductHtml(getProductImageSource(product))}" alt="" loading="lazy">
+                    </span>
+                    <span class="product-name-copy">
+                        <strong>${escapeProductHtml(product.name)}</strong>
+                        <small>${escapeProductHtml(product.code)}</small>
+                    </span>
+                    <span class="product-detail-arrow" aria-hidden="true">›</span>
+                </div>
             </td>
 
             <td>
                 <span class="product-category">
-                    ${product.category}
+                    ${escapeProductHtml(product.category)}
                 </span>
             </td>
 
@@ -371,7 +448,7 @@ function renderProducts() {
 
             <td>
                 <span class="product-unit">
-                    ${product.unit}
+                    ${escapeProductHtml(product.unit)}
                 </span>
             </td>
 
@@ -647,6 +724,9 @@ function openAddProductModal() {
         "product-form"
     ).reset();
 
+    productImageData = null;
+    updateProductImagePreview();
+
 
     document.getElementById(
         "product-code"
@@ -739,6 +819,9 @@ function editProduct(id) {
         "product-unit"
     ).value =
         product.unit;
+
+    productImageData = product.imageData || null;
+    updateProductImagePreview(product);
 
 
     document.getElementById(
@@ -905,7 +988,8 @@ async function saveProduct(event) {
                 purchasePrice,
                 sellingPrice,
                 unit,
-                isActive: true
+                isActive: true,
+                imageData: productImageData
             });
             products.unshift(createdProduct);
             currentProductPage = 1;
@@ -939,7 +1023,7 @@ async function saveProduct(event) {
         try {
             const updatedProduct = await window.salesApi.products.update(
                 editingProductId,
-                { code, name, category, purchasePrice, sellingPrice, unit }
+                { code, name, category, purchasePrice, sellingPrice, unit, imageData: productImageData }
             );
             products = products.map(item =>
                 item.id === editingProductId ? updatedProduct : item
@@ -1035,14 +1119,152 @@ async function toggleProductStatus(id) {
 
 }
 
+
+function getProductStockStatus(product) {
+
+    const stock = Number(product?.stock || 0);
+    const minimum = Number(product?.minimum || 0);
+
+    if (stock <= 0) {
+        return { key: "out", text: "Hết hàng" };
+    }
+    if (stock <= minimum) {
+        return { key: "low", text: "Sắp hết hàng" };
+    }
+    return { key: "normal", text: "Đủ hàng" };
+}
+
+
+function openProductDetail(id) {
+
+    const product = products.find(item => Number(item.id) === Number(id));
+    const modal = document.getElementById("product-detail-modal");
+    const content = document.getElementById("product-detail-content");
+
+    if (!product || !modal || !content) {
+        return;
+    }
+
+    const stockStatus = getProductStockStatus(product);
+    const purchasePrice = Number(product.purchasePrice || 0);
+    const sellingPrice = Number(product.sellingPrice || 0);
+    const profit = sellingPrice - purchasePrice;
+
+    content.innerHTML = `
+        <div class="product-detail-showcase">
+            <div class="product-detail-image-wrap">
+                <img
+                    src="${escapeProductHtml(getProductImageSource(product))}"
+                    alt="${escapeProductHtml(product.name)}"
+                >
+            </div>
+            <div class="product-detail-identity">
+                <div class="product-detail-badges">
+                    <span class="product-detail-code">${escapeProductHtml(product.code)}</span>
+                    <span class="product-detail-business ${product.isActive ? "active" : "inactive"}">
+                        ${product.isActive ? "Đang kinh doanh" : "Ngừng kinh doanh"}
+                    </span>
+                </div>
+                <h3>${escapeProductHtml(product.name)}</h3>
+                <p>${escapeProductHtml(product.category || "Chưa phân loại")} · Đơn vị ${escapeProductHtml(product.unit || "—")}</p>
+                <div class="product-detail-selling-price">
+                    <small>Giá bán hiện tại</small>
+                    <strong>${formatProductMoney(sellingPrice)}</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="product-detail-grid">
+            <article>
+                <span>Giá nhập</span>
+                <strong>${formatProductMoney(purchasePrice)}</strong>
+            </article>
+            <article>
+                <span>Chênh lệch giá</span>
+                <strong class="${profit >= 0 ? "positive" : "negative"}">${formatProductMoney(profit)}</strong>
+            </article>
+            <article>
+                <span>Tồn kho hiện tại</span>
+                <strong>${Number(product.stock || 0).toLocaleString("vi-VN")} ${escapeProductHtml(product.unit || "")}</strong>
+            </article>
+            <article>
+                <span>Tồn tối thiểu</span>
+                <strong>${Number(product.minimum || 0).toLocaleString("vi-VN")} ${escapeProductHtml(product.unit || "")}</strong>
+            </article>
+        </div>
+
+        <div class="product-detail-stock ${stockStatus.key}">
+            <span class="product-detail-stock-dot" aria-hidden="true"></span>
+            <div>
+                <small>Trạng thái kho</small>
+                <strong>${stockStatus.text}</strong>
+            </div>
+        </div>
+    `;
+
+    productDetailReturnFocus = document.activeElement;
+    modal.hidden = false;
+    modal.classList.add("active");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("product-detail-open");
+    document.getElementById("product-detail-close")?.focus();
+}
+
+
+function closeProductDetail() {
+
+    const modal = document.getElementById("product-detail-modal");
+    if (!modal || !modal.classList.contains("active")) {
+        return;
+    }
+
+    modal.classList.remove("active");
+    modal.setAttribute("aria-hidden", "true");
+    modal.hidden = true;
+    document.body.classList.remove("product-detail-open");
+    if (productDetailReturnFocus instanceof HTMLElement) {
+        productDetailReturnFocus.focus();
+    }
+    productDetailReturnFocus = null;
+}
+
+
+function setupProductDetailModal() {
+
+    if (productDetailEventsInitialized) {
+        return;
+    }
+
+    const modal = document.getElementById("product-detail-modal");
+    document.getElementById("product-detail-close")?.addEventListener(
+        "click",
+        closeProductDetail
+    );
+    modal?.addEventListener("click", event => {
+        if (event.target === modal) {
+            closeProductDetail();
+        }
+    });
+    document.addEventListener("keydown", event => {
+        if (event.key === "Escape") {
+            closeProductDetail();
+        }
+    });
+    productDetailEventsInitialized = true;
+}
+
 async function loadProductCategoryOptions() {
     const select = document.getElementById("product-category");
     if (!select || !window.salesApi?.categories) return;
     const currentValue = select.value;
     try {
         const categoryItems = await window.salesApi.categories.list();
+        productCategoryImageByName.clear();
         select.innerHTML = '<option value="">Chọn danh mục</option>';
         categoryItems.forEach(category => {
+            if (category.imageData) {
+                productCategoryImageByName.set(category.name, category.imageData);
+            }
             const option = document.createElement("option");
             option.value = category.name;
             option.textContent = category.name + (category.isActive ? "" : " (Ngừng hoạt động)");
@@ -1172,6 +1394,9 @@ async function initProductManagement() {
     ) {
         return;
     }
+
+    setupProductImageEditor();
+    setupProductDetailModal();
 
     await loadProductsFromAPI();
 

@@ -123,6 +123,7 @@
                 .map(product => ({
                     code: product.code,
                     name: product.name,
+                    imageData: product.imageData,
                     quantity: soldByProduct.get(product.id) || 0
                 }))
                 .filter(product => product.quantity > 0)
@@ -154,6 +155,13 @@
             .replace(/>/g, "&gt;")
             .replace(/"/g, "&quot;")
             .replace(/'/g, "&#039;");
+    }
+
+
+    function getDashboardProductImage(product) {
+
+        return product?.imageData ||
+            "./assets/branding/sales-manager-logo.svg";
     }
 
 
@@ -573,16 +581,25 @@ function updateRevenue(period) {
                 <article class="top-product-item">
                     <span class="top-product-rank">${index + 1}</span>
 
-                    <div class="top-product-content">
-                        <div class="top-product-heading">
-                            <strong title="${escapeDashboardHtml(product.name)}">
-                                ${escapeDashboardHtml(product.name)}
-                            </strong>
-                            <span>${escapeDashboardHtml(product.code)}</span>
-                        </div>
+                    <div class="top-product-main">
+                        <img
+                            class="sales-product-thumbnail top-product-thumbnail"
+                            src="${escapeDashboardHtml(getDashboardProductImage(product))}"
+                            alt="${escapeDashboardHtml(product.name)}"
+                            loading="lazy"
+                        >
 
-                        <div class="top-product-progress" aria-hidden="true">
-                            <span style="width: ${progress}%"></span>
+                        <div class="top-product-content">
+                            <div class="top-product-heading">
+                                <strong title="${escapeDashboardHtml(product.name)}">
+                                    ${escapeDashboardHtml(product.name)}
+                                </strong>
+                                <span>${escapeDashboardHtml(product.code)}</span>
+                            </div>
+
+                            <div class="top-product-progress" aria-hidden="true">
+                                <span style="width: ${progress}%"></span>
+                            </div>
                         </div>
                     </div>
 
@@ -960,7 +977,7 @@ function updateRevenue(period) {
 
     function initDashboard() {
 
-        if (!localStorage.getItem("sales_management_access_token")) {
+        if (!(window.getAuthAccessToken?.() || localStorage.getItem("sales_management_access_token"))) {
             return Promise.resolve();
         }
 

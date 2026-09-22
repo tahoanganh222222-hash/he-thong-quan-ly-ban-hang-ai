@@ -21,8 +21,16 @@
             throw new Error("API sản phẩm chưa sẵn sàng.");
         }
 
-        const products =
-            await window.salesApi.products.list();
+        const [products, categories] = await Promise.all([
+            window.salesApi.products.list(),
+            window.salesApi.categories?.list
+                ? window.salesApi.categories.list().catch(() => [])
+                : Promise.resolve([])
+        ]);
+
+        const categoryImages = new Map(
+            categories.map(category => [category.name, category.imageData || ""])
+        );
 
         aiProducts =
             products
@@ -34,7 +42,10 @@
                     category: product.category || "",
                     sellingPrice: Number(product.sellingPrice || 0),
                     unit: product.unit || "",
-                    stock: Number(product.stock || 0)
+                    stock: Number(product.stock || 0),
+                    imageData: product.imageData ||
+                        categoryImages.get(product.category || "") ||
+                        "./assets/branding/sales-manager-logo.svg"
                 }));
 
         return aiProducts;
@@ -87,7 +98,32 @@
         return String(text || "")
             .toLowerCase()
             .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, "");
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/đ/g, "d")
+            .replace(/[^a-z0-9\s]/g, " ")
+            .replace(/\s+/g, " ")
+            .trim();
+    }
+
+
+    const PRODUCT_STOP_WORDS = new Set([
+        "toi", "can", "muon", "mua", "tim", "kiem", "tu", "van",
+        "san", "pham", "hang", "loai", "nao", "nay", "kia", "la",
+        "co", "cho", "giup", "minh", "mot", "cai", "chiec", "dung"
+    ]);
+
+
+    function containsTerm(text, term) {
+        const normalizedText = ` ${normalizeText(text)} `;
+        const normalizedTerm = normalizeText(term);
+        return normalizedTerm && normalizedText.includes(` ${normalizedTerm} `);
+    }
+
+
+    function getMeaningfulWords(text) {
+        return normalizeText(text)
+            .split(/\s+/)
+            .filter(word => word.length >= 2 && !PRODUCT_STOP_WORDS.has(word));
     }
 
 
@@ -166,14 +202,13 @@
 
 
         if (
-            normalized.includes("quat") ||
+            containsTerm(normalized, "quat") ||
             normalized.includes("lam mat") ||
             normalized.includes("phong nong")
         ) {
 
             keywords.push(
-                "quat",
-                "thiet bi dien"
+                "quat"
             );
         }
 
@@ -184,15 +219,14 @@
         ) {
 
             keywords.push(
-                "may say",
-                "thiet bi dien"
+                "may say toc"
             );
         }
 
 
         if (
-            normalized.includes("nuoc") ||
-            normalized.includes("uong") ||
+            containsTerm(normalized, "nuoc") ||
+            containsTerm(normalized, "uong") ||
             normalized.includes("giai khat")
         ) {
 
@@ -204,44 +238,47 @@
 
 
         if (
-            normalized.includes("mi") ||
-            normalized.includes("an") ||
+            containsTerm(normalized, "mi") ||
+            normalized.includes("an lien")
+        ) {
+
+            keywords.push("mi");
+
+        } else if (
+            normalized.includes("do an") ||
             normalized.includes("thuc pham")
         ) {
 
-            keywords.push(
-                "mi",
-                "thuc pham"
-            );
+            keywords.push("thuc pham");
         }
 
 
         if (
-            normalized.includes("giat") ||
-            normalized.includes("ve sinh")
+            containsTerm(normalized, "giat") ||
+            normalized.includes("bot giat") ||
+            normalized.includes("nuoc giat") ||
+            normalized.includes("xa bong")
         ) {
 
             keywords.push(
-                "giat",
-                "hang gia dung"
+                "giat"
             );
         }
 
 
         if (
-            normalized.includes("den") ||
+            containsTerm(normalized, "den") ||
             normalized.includes("bong den")
         ) {
 
             keywords.push(
-                "den",
-                "thiet bi dien"
+                "den"
             );
         }
 
 
         if (
-            normalized.includes("giay") ||
+            containsTerm(normalized, "giay") ||
             normalized.includes("a4") ||
             normalized.includes("van phong")
         ) {
@@ -276,7 +313,7 @@
                 product.category
             );
 
-        let score = 0;
+        let relevanceScore = 0;
 
 
         /*
@@ -293,22 +330,17 @@
          * Khớp từ khóa trực tiếp.
          */
 
-        const words =
-            normalizedNeed
-                .split(/\s+/)
-                .filter(
-                    word => word.length >= 3
-                );
+        const words = getMeaningfulWords(normalizedNeed);
 
 
         words.forEach(
             word => {
 
                 if (
-                    productText.includes(word)
+                    containsTerm(productText, word)
                 ) {
 
-                    score += 10;
+                    relevanceScore += 10;
                 }
             }
         );
@@ -323,18 +355,26 @@
                 normalizedNeed
             );
 
+        let categoryIntentMatched = false;
+
 
         categoryKeywords.forEach(
             keyword => {
 
                 if (
-                    productText.includes(keyword)
+                    containsTerm(productText, keyword) ||
+                    productText.includes(normalizeText(keyword))
                 ) {
 
-                    score += 20;
+                    relevanceScore += 25;
+                    categoryIntentMatched = true;
                 }
             }
         );
+
+        if (categoryKeywords.length > 0 && !categoryIntentMatched) {
+            return 0;
+        }
 
 
         /*
@@ -349,16 +389,30 @@
 
         if (budget !== null) {
 
-            if (
-                product.sellingPrice <= budget
-            ) {
-
-                score += 30;
-
-            } else {
-
-                score -= 20;
+            if (product.sellingPrice > budget) {
+                return -999;
             }
+        }
+
+
+        /*
+         * Không đề xuất chỉ vì sản phẩm còn hàng. Nếu người dùng đã mô tả
+         * loại hàng thì sản phẩm phải khớp nhu cầu; câu hỏi chỉ có ngân sách
+         * mới được phép gợi ý rộng theo giá.
+         */
+
+        if (relevanceScore === 0 && words.length > 0) {
+            return 0;
+        }
+
+        if (relevanceScore === 0 && budget === null) {
+            return 0;
+        }
+
+        let score = relevanceScore;
+
+        if (budget !== null) {
+            score += 20;
         }
 
 
@@ -368,7 +422,7 @@
 
         if (product.stock >= 5) {
 
-            score += 5;
+            score += 1;
         }
 
 
@@ -491,6 +545,34 @@
 
 
         return results;
+    }
+
+
+    function getGeminiRecommendations(answer, need) {
+        const normalizedAnswer = normalizeText(answer);
+        if (!normalizedAnswer) {
+            return [];
+        }
+
+        const selected = aiProducts
+            .filter(product => product.stock > 0)
+            .filter(product => {
+                const code = normalizeText(product.code);
+                const name = normalizeText(product.name);
+                return (
+                    (code && containsTerm(normalizedAnswer, code)) ||
+                    (name && normalizedAnswer.includes(name))
+                );
+            })
+            .map(product => ({
+                product,
+                score: calculateProductScore(product, need)
+            }))
+            .filter(item => item.score > -999)
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 3);
+
+        return selected;
     }
 
 
@@ -684,44 +766,56 @@
 
                 card.innerHTML = `
 
-                    <div class="ai-product-result-header">
+                    <div class="ai-product-result-main">
+                        <div class="ai-product-result-media">
+                            <img
+                                src="${escapeAIHtml(product.imageData)}"
+                                alt="Ảnh ${escapeAIHtml(product.name)}"
+                                loading="lazy"
+                            >
+                        </div>
 
-                        <div>
+                        <div class="ai-product-result-content">
+                            <div class="ai-product-result-header">
 
-                            <h4 class="ai-product-result-name">
-                                ${product.name}
-                            </h4>
+                                <div>
 
-                            <div class="ai-product-code">
-                                Mã sản phẩm:
-                                ${product.code}
+                                    <h4 class="ai-product-result-name">
+                                        ${escapeAIHtml(product.name)}
+                                    </h4>
+
+                                    <div class="ai-product-code">
+                                        Mã sản phẩm:
+                                        ${escapeAIHtml(product.code)}
+                                    </div>
+
+                                </div>
+
+                                <div class="ai-product-price">
+                                    ${formatAIMoney(
+                                        product.sellingPrice
+                                    )}
+                                </div>
+
                             </div>
 
+
+                            <div class="ai-product-info">
+
+                                <span class="ai-product-tag">
+                                    ${escapeAIHtml(product.category)}
+                                </span>
+
+                                <span class="ai-product-tag">
+                                    Đơn vị: ${escapeAIHtml(product.unit)}
+                                </span>
+
+                                <span class="ai-product-tag ai-product-stock">
+                                    Tồn kho: ${product.stock}
+                                </span>
+
+                            </div>
                         </div>
-
-                        <div class="ai-product-price">
-                            ${formatAIMoney(
-                                product.sellingPrice
-                            )}
-                        </div>
-
-                    </div>
-
-
-                    <div class="ai-product-info">
-
-                        <span class="ai-product-tag">
-                            ${product.category}
-                        </span>
-
-                        <span class="ai-product-tag">
-                            Đơn vị: ${product.unit}
-                        </span>
-
-                        <span class="ai-product-tag ai-product-stock">
-                            Tồn kho: ${product.stock}
-                        </span>
-
                     </div>
 
 
@@ -880,18 +974,19 @@
 
         try {
             await loadAIProducts();
-            const recommendations =
-                getRecommendations(
-                    need
-                );
+            let recommendations = [];
             let geminiAnswer = "";
             let geminiError = "";
             try {
                 const response = await window.salesApi.ai.productAdvice(need);
                 geminiAnswer = response.answer || "";
+                recommendations = getGeminiRecommendations(geminiAnswer, need);
             } catch (error) {
                 if (error.status === 401) return;
                 geminiError = error.message || "Không thể kết nối Gemini.";
+            }
+            if (!recommendations.length && !geminiAnswer) {
+                recommendations = getRecommendations(need);
             }
             renderRecommendations(
                 recommendations,

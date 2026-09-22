@@ -1,3 +1,6 @@
+import base64
+import binascii
+import re
 from datetime import datetime
 from decimal import Decimal
 from uuid import uuid4
@@ -52,6 +55,10 @@ PRODUCT_READ_PERMISSIONS = (
     "sales_data_qa",
 )
 
+CATALOG_IMAGE_PATTERN = re.compile(
+    r"^data:image/(?:png|jpeg|webp);base64,([A-Za-z0-9+/=\r\n]+)$"
+)
+MAX_CATALOG_IMAGE_BYTES = 2 * 1024 * 1024
 
 def _not_found(name: str) -> HTTPException:
     return HTTPException(status_code=404, detail=f"Không tìm thấy {name}")
@@ -63,6 +70,25 @@ def _commit(db: Session, duplicate_message: str = "Dữ liệu đã tồn tại"
     except IntegrityError as exc:
         db.rollback()
         raise HTTPException(status_code=409, detail=duplicate_message) from exc
+
+
+def _validated_image_data(value: str | None) -> str | None:
+    if not value:
+        return None
+    clean_value = value.strip()
+    match = CATALOG_IMAGE_PATTERN.fullmatch(clean_value)
+    if match is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Ảnh phải có định dạng PNG, JPG hoặc WebP",
+        )
+    try:
+        image_bytes = base64.b64decode(match.group(1), validate=True)
+    except (binascii.Error, ValueError) as exc:
+        raise HTTPException(status_code=400, detail="Dữ liệu ảnh không hợp lệ") from exc
+    if len(image_bytes) > MAX_CATALOG_IMAGE_BYTES:
+        raise HTTPException(status_code=400, detail="Kích thước ảnh không được vượt quá 2 MB")
+    return clean_value
 
 
 def _record_activity(
@@ -151,6 +177,7 @@ def _category_dict(category: Category) -> dict:
         "name": category.name,
         "description": category.description or "",
         "isActive": category.is_active,
+        "imageData": category.image_data,
     }
 
 
@@ -172,6 +199,7 @@ def create_category(
         name=data.name.strip(),
         description=(data.description or "").strip() or None,
         is_active=data.isActive,
+        image_data=_validated_image_data(data.imageData),
     )
     db.add(category)
     _record_activity(
@@ -194,9 +222,11 @@ def update_category(
     if category is None:
         raise _not_found("danh mục")
     changes = data.model_dump(exclude_unset=True)
-    field_map = {"isActive": "is_active"}
+    field_map = {"isActive": "is_active", "imageData": "image_data"}
     for key, value in changes.items():
         target = field_map.get(key, key)
+        if key == "imageData":
+            value = _validated_image_data(value)
         if isinstance(value, str):
             value = value.strip() or None
         setattr(category, target, value)
@@ -252,6 +282,7 @@ def _product_dict(db: Session, product: Product) -> dict:
         "isActive": product.is_active,
         "stock": inventory.quantity if inventory else 0,
         "minimum": inventory.min_quantity if inventory else 0,
+        "imageData": product.image_data,
     }
 
 
@@ -281,6 +312,7 @@ def _inventory_dict(db: Session, inventory: Inventory) -> dict:
         "quantity": inventory.quantity,
         "minimum": inventory.min_quantity,
         "isActive": product.is_active if product else False,
+        "imageData": product.image_data if product else None,
     }
 
 
@@ -310,18 +342,23 @@ def _invoice_dict(db: Session, invoice: Invoice, include_items: bool = True) -> 
             .order_by(InvoiceDetail.id)
             .all()
         )
-        payload["items"] = [
-            {
-                "id": detail.id,
-                "productId": detail.product_id,
-                "productName": (db.get(Product, detail.product_id).name),
-                "quantity": detail.quantity,
-                "unitPrice": float(detail.unit_price),
-                "discount": float(detail.discount),
-                "amount": float(detail.amount),
-            }
-            for detail in details
-        ]
+        invoice_items = []
+        for detail in details:
+            product = db.get(Product, detail.product_id)
+            invoice_items.append(
+                {
+                    "id": detail.id,
+                    "productId": detail.product_id,
+                    "productCode": product.code if product else "",
+                    "productName": product.name if product else "Sản phẩm",
+                    "productImageData": product.image_data if product else None,
+                    "quantity": detail.quantity,
+                    "unitPrice": float(detail.unit_price),
+                    "discount": float(detail.discount),
+                    "amount": float(detail.amount),
+                }
+            )
+        payload["items"] = invoice_items
     return payload
 
 
@@ -343,17 +380,22 @@ def _purchase_dict(db: Session, receipt: PurchaseReceipt, include_items: bool = 
             .order_by(PurchaseReceiptDetail.id)
             .all()
         )
-        payload["items"] = [
-            {
-                "id": detail.id,
-                "productId": detail.product_id,
-                "productName": (db.get(Product, detail.product_id).name),
-                "quantity": detail.quantity,
-                "unitPrice": float(detail.unit_price),
-                "amount": float(detail.amount),
-            }
-            for detail in details
-        ]
+        purchase_items = []
+        for detail in details:
+            product = db.get(Product, detail.product_id)
+            purchase_items.append(
+                {
+                    "id": detail.id,
+                    "productId": detail.product_id,
+                    "productCode": product.code if product else "",
+                    "productName": product.name if product else "Sản phẩm",
+                    "productImageData": product.image_data if product else None,
+                    "quantity": detail.quantity,
+                    "unitPrice": float(detail.unit_price),
+                    "amount": float(detail.amount),
+                }
+            )
+        payload["items"] = purchase_items
     return payload
 
 
@@ -392,6 +434,7 @@ def create_product(
         selling_price=Decimal(str(data.sellingPrice)),
         unit=data.unit.strip(),
         is_active=data.isActive,
+        image_data=_validated_image_data(data.imageData),
     )
     db.add(product)
     db.flush()
@@ -428,11 +471,14 @@ def update_product(
         "purchasePrice": "purchase_price",
         "sellingPrice": "selling_price",
         "isActive": "is_active",
+        "imageData": "image_data",
     }
     for key, value in changes.items():
         target = field_map.get(key, key)
         if key in {"purchasePrice", "sellingPrice"}:
             value = Decimal(str(value))
+        if key == "imageData":
+            value = _validated_image_data(value)
         if isinstance(value, str):
             value = value.strip()
         setattr(product, target, value)
@@ -742,7 +788,13 @@ def _replace_invoice_items(db: Session, invoice: Invoice, items) -> None:
             raise HTTPException(status_code=409, detail=f"Không đủ tồn kho cho {product.name}")
         price = Decimal(str(item.unitPrice)) if item.unitPrice is not None else product.selling_price
         discount = Decimal(str(item.discount))
-        amount = price * item.quantity - discount
+        line_total = price * item.quantity
+        if discount > line_total:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Giảm giá của {product.name} không được vượt quá thành tiền sản phẩm",
+            )
+        amount = line_total - discount
         inventory.quantity -= item.quantity
         db.add(
             InvoiceDetail(
@@ -756,7 +808,8 @@ def _replace_invoice_items(db: Session, invoice: Invoice, items) -> None:
         )
         total += amount
     invoice.total_amount = total
-    invoice.final_amount = max(Decimal("0"), total - invoice.discount)
+    invoice.discount = min(max(Decimal("0"), invoice.discount), total)
+    invoice.final_amount = total - invoice.discount
 
 
 INVOICE_READ_PERMISSIONS = (
@@ -844,7 +897,11 @@ def update_invoice(
     if data.items is not None:
         _replace_invoice_items(db, invoice, data.items)
     else:
-        invoice.final_amount = max(Decimal("0"), invoice.total_amount - invoice.discount)
+        invoice.discount = min(
+            max(Decimal("0"), invoice.discount),
+            invoice.total_amount,
+        )
+        invoice.final_amount = invoice.total_amount - invoice.discount
     _record_activity(
         db, current_user, "Cập nhật", "update", "Hóa đơn", invoice.invoice_code,
         f"Cập nhật hóa đơn, tổng tiền {invoice.final_amount}",
@@ -963,6 +1020,7 @@ def list_purchase_items(
             "productId": product.id,
             "productCode": product.code,
             "productName": product.name,
+            "productImageData": product.image_data,
             "unit": product.unit,
             "quantity": detail.quantity,
             "unitPrice": float(detail.unit_price),

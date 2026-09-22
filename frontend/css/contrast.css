@@ -1,8 +1,8 @@
 /* Độ tương phản viền dùng chung cho toàn bộ khu vực quản trị. */
 :root {
-    --sm-border-frame: #aab4c2;
-    --sm-border-divider: #7f8b9d;
-    --sm-border-heading: #667085;
+    --sm-border-frame: #bec9d8;
+    --sm-border-divider: #a5b2c3;
+    --sm-border-heading: #8190a4;
 }
 
 /* Khung ngoài chỉ nhấn nhẹ để form và thẻ vẫn thanh thoát. */
@@ -43,8 +43,8 @@
     border-width: 1px !important;
     border-color: var(--sm-border-frame) !important;
     box-shadow:
-        0 1px 2px rgba(15, 23, 42, 0.05),
-        0 9px 24px rgba(15, 23, 42, 0.09) !important;
+        0 2px 5px rgba(15, 23, 42, 0.08),
+        0 12px 30px rgba(30, 64, 175, 0.13) !important;
 }
 
 .main-content .stat-card {
@@ -163,9 +163,9 @@
 }
 
 html[data-app-theme="dark"] {
-    --sm-border-frame: #526075;
-    --sm-border-divider: #718096;
-    --sm-border-heading: #94a3b8;
+    --sm-border-frame: #455872;
+    --sm-border-divider: #5a6d86;
+    --sm-border-heading: #8191a7;
 }
 
 html[data-app-theme="dark"] .dashboard-chart-grid span {

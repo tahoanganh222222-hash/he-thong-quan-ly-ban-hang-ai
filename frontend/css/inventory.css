@@ -72,7 +72,75 @@
     background: #f3f4f6;
     font-size: 20px;
     font-weight: 700;
+    border: 1px solid transparent;
+    transition: transform 180ms ease, box-shadow 180ms ease;
 }
+
+.inventory-stat-card:hover .inventory-stat-icon {
+    transform: translateY(-2px) scale(1.04);
+}
+
+.inventory-stat-total .inventory-stat-icon {
+    color: #2563eb;
+    border-color: #bfdbfe;
+    background: #eff6ff;
+    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.12);
+}
+
+.inventory-stat-normal .inventory-stat-icon {
+    color: #15803d;
+    border-color: #bbf7d0;
+    background: #ecfdf3;
+    box-shadow: 0 8px 18px rgba(22, 163, 74, 0.12);
+}
+
+.inventory-stat-low .inventory-stat-icon {
+    color: #d97706;
+    border-color: #fde68a;
+    background: #fffbeb;
+    box-shadow: 0 8px 18px rgba(217, 119, 6, 0.12);
+}
+
+.inventory-stat-out .inventory-stat-icon {
+    color: #dc2626;
+    border-color: #fecaca;
+    background: #fef2f2;
+    box-shadow: 0 8px 18px rgba(220, 38, 38, 0.12);
+}
+
+.inventory-stat-total strong { color: #1d4ed8; }
+.inventory-stat-normal strong { color: #15803d; }
+.inventory-stat-low strong { color: #b45309; }
+.inventory-stat-out strong { color: #b91c1c; }
+
+html[data-app-theme="dark"] .inventory-stat-total .inventory-stat-icon {
+    color: #93c5fd;
+    border-color: #315b8f;
+    background: #172b46;
+}
+
+html[data-app-theme="dark"] .inventory-stat-normal .inventory-stat-icon {
+    color: #86efac;
+    border-color: #286044;
+    background: #163529;
+}
+
+html[data-app-theme="dark"] .inventory-stat-low .inventory-stat-icon {
+    color: #fcd34d;
+    border-color: #76551b;
+    background: #3d3017;
+}
+
+html[data-app-theme="dark"] .inventory-stat-out .inventory-stat-icon {
+    color: #fca5a5;
+    border-color: #7f353e;
+    background: #402127;
+}
+
+html[data-app-theme="dark"] .inventory-stat-total strong { color: #93c5fd; }
+html[data-app-theme="dark"] .inventory-stat-normal strong { color: #86efac; }
+html[data-app-theme="dark"] .inventory-stat-low strong { color: #fcd34d; }
+html[data-app-theme="dark"] .inventory-stat-out strong { color: #fca5a5; }
 
 .inventory-stat-card span {
     display: block;

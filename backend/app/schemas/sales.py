@@ -8,12 +8,14 @@ class CategoryCreate(BaseModel):
     name: str = Field(min_length=1, max_length=100)
     description: Optional[str] = Field(default=None, max_length=255)
     isActive: bool = True
+    imageData: Optional[str] = Field(default=None, max_length=2_800_000)
 
 
 class CategoryUpdate(BaseModel):
     name: Optional[str] = Field(default=None, min_length=1, max_length=100)
     description: Optional[str] = Field(default=None, max_length=255)
     isActive: Optional[bool] = None
+    imageData: Optional[str] = Field(default=None, max_length=2_800_000)
 
 
 class ProductCreate(BaseModel):
@@ -26,6 +28,7 @@ class ProductCreate(BaseModel):
     isActive: bool = True
     stock: int = Field(default=0, ge=0)
     minimum: int = Field(default=10, ge=0)
+    imageData: Optional[str] = Field(default=None, max_length=2_800_000)
 
 
 class ProductUpdate(BaseModel):
@@ -36,6 +39,7 @@ class ProductUpdate(BaseModel):
     sellingPrice: Optional[float] = Field(default=None, ge=0)
     unit: Optional[str] = Field(default=None, min_length=1, max_length=30)
     isActive: Optional[bool] = None
+    imageData: Optional[str] = Field(default=None, max_length=2_800_000)
 
 
 class CustomerCreate(BaseModel):

@@ -11,17 +11,23 @@
 
     <title>Hệ thống quản lý bán hàng</title>
 
+    <link
+        rel="icon"
+        type="image/svg+xml"
+        href="./assets/branding/sales-manager-logo.svg?v=20260916-1"
+    >
+
 <link
     rel="stylesheet"
     href="./css/api.css"
 >
 <link
     rel="stylesheet"
-    href="./css/products.css?v=20260909-5"
+    href="./css/products.css?v=20260922-2"
 >
 <link
     rel="stylesheet"
-    href="./css/categories.css?v=20260909-5"
+    href="./css/categories.css?v=20260922-1"
 >
 <link 
     rel="stylesheet" 
@@ -29,7 +35,7 @@
 >
 <link 
     rel="stylesheet" 
-    href="./css/invoices.css?v=20260910-2"
+    href="./css/invoices.css?v=20260922-2"
 >
 <link 
     rel="stylesheet" 
@@ -37,11 +43,11 @@
 >
 <link
     rel="stylesheet"
-    href="./css/inventory.css?v=20260910-1"
+    href="./css/inventory.css?v=20260922-1"
 >
 <link
     rel="stylesheet"
-    href="./css/history.css?v=20260910-3"
+    href="./css/history.css?v=20260922-1"
 >
 <link
     rel="stylesheet"
@@ -53,15 +59,15 @@
 >
 <link
     rel="stylesheet"
-    href="./css/users.css"
+    href="./css/users.css?v=20260922-1"
 >
 <link
     rel="stylesheet"
-    href="css/permissions.css"
+    href="css/permissions.css?v=20260922-3"
 >
 <link 
     rel="stylesheet" 
-    href="css/auth.css"
+    href="css/auth.css?v=20260922-1"
 >
 <link
     rel="stylesheet"
@@ -69,11 +75,11 @@
 >
 <link
     rel="stylesheet"
-    href="css/theme.css?v=20260910-6"
+    href="css/theme.css?v=20260922-3"
 >
 <link
     rel="stylesheet"
-    href="css/ai-premium.css?v=20260911-1"
+    href="css/ai-premium.css?v=20260922-1"
 >
 <link
     rel="stylesheet"
@@ -81,11 +87,15 @@
 >
 <link
     rel="stylesheet"
-    href="css/account.css?v=20260911-1"
+    href="css/account.css?v=20260922-2"
 >
 <link
     rel="stylesheet"
-    href="css/contrast.css?v=20260911-1"
+    href="css/contrast.css?v=20260922-2"
+>
+<link
+    rel="stylesheet"
+    href="css/modern-ui.css?v=20260922-5"
 >
 
 
@@ -99,14 +109,37 @@
         <form id="login-form">
             <input
                 id="login-username"
+                name="username"
                 type="text"
                 placeholder="Tên tài khoản"
+                autocomplete="username"
+                required
             >
             <input
                 id="login-password"
+                name="password"
                 type="password"
                 placeholder="Mật khẩu"
+                autocomplete="current-password"
+                required
             >
+            <label class="auth-remember" for="login-remember">
+                <input
+                    id="login-remember"
+                    name="remember"
+                    type="checkbox"
+                    checked
+                >
+                <span class="auth-remember-box" aria-hidden="true">
+                    <svg viewBox="0 0 16 16" fill="none">
+                        <path d="m3.5 8 2.8 2.8 6.2-6.1"/>
+                    </svg>
+                </span>
+                <span class="auth-remember-text">
+                    <strong>Ghi nhớ đăng nhập</strong>
+                    <small>Không cần đăng nhập lại trên thiết bị này</small>
+                </span>
+            </label>
             <div id="login-message"></div>
             <button type="submit">
                 Đăng nhập
@@ -123,8 +156,14 @@
              ========================= -->
         <aside class="sidebar">
             <div class="sidebar-logo">
-                <div class="logo-icon">
-                    SM
+                <div class="logo-icon logo-mark" aria-hidden="true">
+                    <img
+                        class="brand-logo-image"
+                        src="assets/branding/sales-manager-logo.svg?v=20260916-1"
+                        alt=""
+                        width="64"
+                        height="64"
+                    >
                 </div>
 
                 <div>
@@ -311,24 +350,41 @@
             <!-- HEADER -->
             <header class="topbar">
 
-                <div class="topbar-title-block">
-                    <span class="topbar-eyebrow">
-                        <i aria-hidden="true"></i>
-                        HỆ THỐNG QUẢN LÝ BÁN HÀNG
+                <div class="topbar-page-context">
+                    <span class="topbar-page-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M4 5.5C4 4.67 4.67 4 5.5 4h4C10.33 4 11 4.67 11 5.5v4c0 .83-.67 1.5-1.5 1.5h-4C4.67 11 4 10.33 4 9.5v-4Z"/>
+                            <path d="M13 5.5c0-.83.67-1.5 1.5-1.5h4c.83 0 1.5.67 1.5 1.5v4c0 .83-.67 1.5-1.5 1.5h-4c-.83 0-1.5-.67-1.5-1.5v-4Z"/>
+                            <path d="M4 14.5c0-.83.67-1.5 1.5-1.5h4c.83 0 1.5.67 1.5 1.5v4c0 .83-.67 1.5-1.5 1.5h-4c-.83 0-1.5-.67-1.5-1.5v-4Z"/>
+                            <path d="M13 14.5c0-.83.67-1.5 1.5-1.5h4c.83 0 1.5.67 1.5 1.5v4c0 .83-.67 1.5-1.5 1.5h-4c-.83 0-1.5-.67-1.5-1.5v-4Z"/>
+                        </svg>
                     </span>
 
-                    <div class="topbar-title-row">
-                        <h1>Dashboard</h1>
-                    </div>
+                    <div class="topbar-title-block">
+                        <span class="topbar-eyebrow" aria-label="Vị trí hiện tại">
+                            <span>Sales Manager</span>
+                            <b aria-hidden="true">/</b>
+                            <em id="topbar-breadcrumb-current">Tổng quan</em>
+                        </span>
 
-                    <p>
-                        Tổng quan hoạt động kinh doanh
-                    </p>
+                        <div class="topbar-title-row">
+                            <h1>Dashboard</h1>
+                        </div>
+
+                        <p>
+                            Tổng quan hoạt động kinh doanh
+                        </p>
+                    </div>
                 </div>
 
                 <div class="topbar-actions">
                     <div class="topbar-date-card" aria-label="Ngày giờ hiện tại">
-                        <span class="topbar-calendar-icon" aria-hidden="true">▣</span>
+                        <span class="topbar-calendar-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M7 3v3M17 3v3M4.5 9h15M6 5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"/>
+                                <path d="M8 13h3v3H8z"/>
+                            </svg>
+                        </span>
                         <span class="topbar-date-content">
                             <small id="topbar-current-weekday">Hôm nay</small>
                             <strong id="topbar-current-date">--/--/----</strong>
@@ -1000,7 +1056,36 @@
                 <option value="7">7 ngày gần nhất</option>
                 <option value="30">30 ngày gần nhất</option>
                 <option value="all">Toàn bộ dữ liệu</option>
+                <option value="custom">Tùy chọn khoảng ngày</option>
             </select>
+
+            <div class="ai-revenue-custom-range" id="ai-revenue-custom-range" hidden>
+                <label>
+                    <span>Từ ngày</span>
+                    <input type="date" id="ai-revenue-from-date">
+                </label>
+                <label>
+                    <span>Đến ngày</span>
+                    <input type="date" id="ai-revenue-to-date">
+                </label>
+            </div>
+            <p class="ai-revenue-range-error" id="ai-revenue-range-error" hidden></p>
+
+            <label class="ai-input-label ai-revenue-focus-label" for="ai-revenue-focus">
+                Nội dung cần phân tích
+                <small>Không bắt buộc</small>
+            </label>
+            <textarea
+                id="ai-revenue-focus"
+                class="ai-need-input ai-revenue-focus"
+                rows="4"
+                maxlength="500"
+                placeholder="Ví dụ: Phân tích nguyên nhân doanh thu giảm và đề xuất sản phẩm nên ưu tiên nhập thêm..."
+            ></textarea>
+            <div class="ai-revenue-input-meta">
+                <span>Mô tả nội dung bạn muốn Gemini tập trung phân tích</span>
+                <strong id="ai-revenue-focus-count">0/500</strong>
+            </div>
 
             <button
                 type="button"
@@ -1409,6 +1494,32 @@
 
                 </div>
 
+                <div class="product-form-group full product-image-field">
+                    <label for="product-image-input">
+                        Ảnh sản phẩm
+                    </label>
+                    <div class="catalog-image-editor product-image-editor">
+                        <div class="catalog-image-preview product-image-preview">
+                            <img id="product-image-preview" src="assets/branding/sales-manager-logo.svg" alt="Ảnh xem trước sản phẩm">
+                        </div>
+                        <div class="catalog-image-actions">
+                            <label class="catalog-image-select" for="product-image-input">
+                                Chọn ảnh
+                            </label>
+                            <input
+                                id="product-image-input"
+                                type="file"
+                                accept="image/png,image/jpeg,image/webp"
+                                hidden
+                            >
+                            <button type="button" class="catalog-image-remove" id="product-image-remove">
+                                Gỡ ảnh
+                            </button>
+                            <small>PNG, JPG hoặc WebP · Tối đa 2 MB</small>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
 
@@ -1432,6 +1543,35 @@
             </div>
         </form>
     </div>
+</div>
+
+<!-- PRODUCT DETAIL -->
+<div
+    class="product-detail-modal"
+    id="product-detail-modal"
+    aria-hidden="true"
+    hidden
+>
+    <section
+        class="product-detail-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="product-detail-title"
+    >
+        <header class="product-detail-header">
+            <div>
+                <span>THÔNG TIN SẢN PHẨM</span>
+                <h2 id="product-detail-title">Chi tiết sản phẩm</h2>
+            </div>
+            <button
+                type="button"
+                class="product-detail-close"
+                id="product-detail-close"
+                aria-label="Đóng chi tiết sản phẩm"
+            >×</button>
+        </header>
+        <div class="product-detail-content" id="product-detail-content"></div>
+    </section>
 </div>
 
 <!-- =========================================================
@@ -1589,6 +1729,31 @@
                     placeholder="Nhập mô tả danh mục..."
                 ></textarea>
             </div>
+            <div class="category-form-group category-image-field">
+                <label for="category-image-input">
+                    Ảnh minh họa
+                </label>
+                <div class="catalog-image-editor category-image-editor">
+                    <div class="catalog-image-preview category-image-preview">
+                        <img id="category-image-preview" src="assets/branding/sales-manager-logo.svg" alt="Ảnh xem trước danh mục">
+                    </div>
+                    <div class="catalog-image-actions">
+                        <label class="catalog-image-select" for="category-image-input">
+                            Chọn ảnh
+                        </label>
+                        <input
+                            id="category-image-input"
+                            type="file"
+                            accept="image/png,image/jpeg,image/webp"
+                            hidden
+                        >
+                        <button type="button" class="catalog-image-remove" id="category-image-remove">
+                            Gỡ ảnh
+                        </button>
+                        <small>PNG, JPG hoặc WebP · Tối đa 2 MB</small>
+                    </div>
+                </div>
+            </div>
             <div class="category-form-footer">
                 <button
                     type="button"
@@ -1606,6 +1771,35 @@
             </div>
         </form>
     </div>
+</div>
+
+<!-- CATEGORY DETAIL -->
+<div
+    class="category-detail-modal"
+    id="category-detail-modal"
+    aria-hidden="true"
+    hidden
+>
+    <section
+        class="category-detail-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="category-detail-title"
+    >
+        <header class="category-detail-header">
+            <div>
+                <span>THÔNG TIN DANH MỤC</span>
+                <h2 id="category-detail-title">Chi tiết danh mục</h2>
+            </div>
+            <button
+                type="button"
+                class="category-detail-close"
+                id="category-detail-close"
+                aria-label="Đóng chi tiết danh mục"
+            >×</button>
+        </header>
+        <div class="category-detail-content" id="category-detail-content"></div>
+    </section>
 </div>
 
 
@@ -1993,6 +2187,7 @@
                                 <th>SẢN PHẨM</th>
                                 <th>ĐƠN GIÁ</th>
                                 <th>SỐ LƯỢNG</th>
+                                <th>GIẢM/ĐƠN VỊ</th>
                                 <th>THÀNH TIỀN</th>
                                 <th>THAO TÁC</th>
                             </tr>
@@ -2022,15 +2217,14 @@
                     </div>
                     <div class="invoice-summary-row">
                         <span>
-                            Giảm giá
+                            Giảm theo sản phẩm
                         </span>
-                        <input
-                            type="number"
-                            id="invoice-discount"
-                            class="invoice-discount-input"
-                            min="0"
-                            value="0"
+                        <strong
+                            id="invoice-product-discount"
+                            class="invoice-product-discount-total"
                         >
+                            - 0 ₫
+                        </strong>
                     </div>
                     <div
                         class="invoice-summary-row invoice-summary-total"
@@ -2425,7 +2619,7 @@
     <!-- SUMMARY -->
     <div class="inventory-stats-grid">
 
-        <div class="inventory-stat-card">
+        <div class="inventory-stat-card inventory-stat-total">
 
             <div class="inventory-stat-icon">
                 ▣
@@ -2444,7 +2638,7 @@
         </div>
 
 
-        <div class="inventory-stat-card">
+        <div class="inventory-stat-card inventory-stat-normal">
 
             <div class="inventory-stat-icon">
                 ✓
@@ -2463,7 +2657,7 @@
         </div>
 
 
-        <div class="inventory-stat-card">
+        <div class="inventory-stat-card inventory-stat-low">
 
             <div class="inventory-stat-icon">
                 !
@@ -2482,7 +2676,7 @@
         </div>
 
 
-        <div class="inventory-stat-card">
+        <div class="inventory-stat-card inventory-stat-out">
 
             <div class="inventory-stat-icon">
                 ⚠
@@ -3560,13 +3754,19 @@
     id="user-modal-overlay"
 >
 
-    <div class="user-modal">
+    <div
+        class="user-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="user-modal-title"
+    >
 
         <div class="user-modal-header">
-
-            <h3 id="user-modal-title">
-                Thêm tài khoản
-            </h3>
+            <div class="user-modal-heading">
+                <span>QUẢN LÝ NGƯỜI DÙNG</span>
+                <h3 id="user-modal-title">Thêm tài khoản</h3>
+                <p>Nhập thông tin và thiết lập quyền truy cập cho tài khoản.</p>
+            </div>
 
             <button
                 type="button"
@@ -3583,7 +3783,7 @@
 
             <div class="user-modal-body">
 
-                <div class="user-form-group">
+                <div class="user-form-group user-form-full-name">
 
                     <label for="user-full-name">
                         Họ và tên
@@ -3599,7 +3799,7 @@
                 </div>
 
 
-                <div class="user-form-group">
+                <div class="user-form-group user-form-username">
 
                     <label for="user-username">
                         Tên tài khoản
@@ -3615,7 +3815,7 @@
                 </div>
 
 
-                <div class="user-form-group">
+                <div class="user-form-group user-form-password">
 
                     <label for="user-password">
                         Mật khẩu
@@ -3634,7 +3834,7 @@
                 </div>
 
 
-                <div class="user-form-group">
+                <div class="user-form-group user-form-phone">
 
                     <label for="user-phone">
                         Số điện thoại
@@ -3649,7 +3849,7 @@
                 </div>
 
 
-                <div class="user-form-group">
+                <div class="user-form-group user-form-email">
 
                     <label for="user-email">
                         Email
@@ -3664,7 +3864,7 @@
                 </div>
 
 
-                <div class="user-form-group">
+                <div class="user-form-group user-form-role">
 
                     <label for="user-role">
                         Vai trò
@@ -3693,7 +3893,7 @@
                 </div>
 
 
-                <div class="user-form-group">
+                <div class="user-form-group user-form-status">
 
                     <label for="user-status">
                         Trạng thái
@@ -3793,10 +3993,23 @@
         <!-- Tài khoản hiện tại -->
 
         <div class="permission-account-card">
-
-            <h3>
-                Tài khoản hiện tại
-            </h3>
+            <div class="permission-card-heading">
+                <span class="permission-card-heading-icon" aria-hidden="true">
+                    <img
+                        id="permission-current-avatar-image"
+                        alt=""
+                        hidden
+                    >
+                    <svg id="permission-current-avatar-fallback" viewBox="0 0 24 24" role="img">
+                        <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm7 8a7 7 0 0 0-14 0" />
+                    </svg>
+                </span>
+                <div>
+                    <span class="permission-eyebrow">PHIÊN ĐĂNG NHẬP</span>
+                    <h3>Tài khoản hiện tại</h3>
+                    <p>Thông tin người đang thực hiện cấu hình phân quyền.</p>
+                </div>
+            </div>
 
             <div class="permission-account-info">
 
@@ -3869,15 +4082,18 @@
         <div class="permission-role-card">
 
             <div class="permission-role-header">
+                <div class="permission-role-heading">
+                    <span class="permission-eyebrow">THIẾT LẬP TRUY CẬP</span>
+                    <h3>Quyền theo vai trò</h3>
+                    <p>Chọn vai trò và bật các chức năng được phép sử dụng.</p>
+                </div>
 
-                <h3>
-                    Quyền theo vai trò
-                </h3>
-
-                <select
-                    class="permission-role-select"
-                    id="permission-role-select"
-                >
+                <div class="permission-role-picker">
+                    <label for="permission-role-select">Vai trò cần cấu hình</label>
+                    <select
+                        class="permission-role-select"
+                        id="permission-role-select"
+                    >
 
                     <option value="ADMIN">
                         Quản trị viên
@@ -3895,7 +4111,8 @@
                         Khách hàng
                     </option>
 
-                </select>
+                    </select>
+                </div>
 
             </div>
 
@@ -4305,6 +4522,12 @@
                                 <button type="button" class="account-color-option" data-color="emerald" style="--swatch:#059669" aria-label="Xanh ngọc"></button>
                                 <button type="button" class="account-color-option" data-color="rose" style="--swatch:#e11d48" aria-label="Đỏ hồng"></button>
                                 <button type="button" class="account-color-option" data-color="amber" style="--swatch:#d97706" aria-label="Vàng cam"></button>
+                                <button type="button" class="account-color-option" data-color="navy" style="--swatch:#34558b" aria-label="Xanh navy trầm"></button>
+                                <button type="button" class="account-color-option" data-color="steel" style="--swatch:#46677f" aria-label="Xanh thép"></button>
+                                <button type="button" class="account-color-option" data-color="slate" style="--swatch:#526174" aria-label="Xám xanh"></button>
+                                <button type="button" class="account-color-option" data-color="forest" style="--swatch:#3f6b57" aria-label="Xanh rừng trầm"></button>
+                                <button type="button" class="account-color-option" data-color="deepTeal" style="--swatch:#18736f" aria-label="Xanh teal trầm"></button>
+                                <button type="button" class="account-color-option" data-color="plum" style="--swatch:#6b557c" aria-label="Tím mận trầm"></button>
                             </div>
                         </div>
 
@@ -4316,24 +4539,24 @@
     </div>
 
     <!-- JS -->
-    <script src="./js/api.js?v=20260909-6"></script>
-<script src="./js/data-api.js?v=20260913-2"></script>
-    <script src="js/dashboard.js?v=20260911-1"></script>
-    <script src="./js/products.js?v=20260909-6"></script>
-    <script src="./js/categories.js?v=20260909-6"></script>
+    <script src="./js/api.js?v=20260922-1"></script>
+<script src="./js/data-api.js?v=20260921-1"></script>
+    <script src="js/dashboard.js?v=20260922-2"></script>
+    <script src="./js/products.js?v=20260922-2"></script>
+    <script src="./js/categories.js?v=20260922-1"></script>
     <script src="./js/customers.js?v=20260910-1"></script>
-    <script src="./js/invoices.js?v=20260910-4"></script>
-<script src="./js/purchases.js?v=20260913-2"></script>
-    <script src="./js/inventory.js?v=20260910-1"></script>
+    <script src="./js/invoices.js?v=20260922-3"></script>
+<script src="./js/purchases.js?v=20260922-1"></script>
+    <script src="./js/inventory.js?v=20260922-1"></script>
     <script src="./js/history.js?v=20260910-3"></script>
-    <script src="./js/statistics.js?v=20260910-2"></script>
-    <script src="./js/reports.js?v=20260909-2"></script>
-    <script src="./js/users.js"></script>
-    <script src="./js/permissions.js"></script>
-    <script src="./js/auth.js?v=20260910-3"></script>
-    <script src="./js/account.js?v=20260910-3"></script>
-    <script src="js/ai-product.js?v=20260909-7"></script>
-    <script src="./js/ai-assistant.js?v=20260911-1"></script>
+    <script src="./js/statistics.js?v=20260922-1"></script>
+    <script src="./js/reports.js?v=20260922-1"></script>
+    <script src="./js/users.js?v=20260922-1"></script>
+    <script src="./js/permissions.js?v=20260922-3"></script>
+    <script src="./js/auth.js?v=20260922-1"></script>
+    <script src="./js/account.js?v=20260922-3"></script>
+    <script src="js/ai-product.js?v=20260922-1"></script>
+    <script src="./js/ai-assistant.js?v=20260922-1"></script>
     <script src="./js/ai-logs.js?v=20260910-2"></script>
 
     <script>
@@ -4561,7 +4784,7 @@
 
         function initDashboard() {
             if (
-                localStorage.getItem("sales_management_access_token") &&
+                (window.getAuthAccessToken?.() || localStorage.getItem("sales_management_access_token")) &&
                 typeof loadDashboardFromApi === "function"
             ) {
                 loadDashboardFromApi();
@@ -4734,7 +4957,7 @@ function showDashboardPage() {
     }
 
     if (
-        localStorage.getItem("sales_management_access_token") &&
+        (window.getAuthAccessToken?.() || localStorage.getItem("sales_management_access_token")) &&
         typeof window.initDashboardFromAPI === "function"
     ) {
         window.initDashboardFromAPI();

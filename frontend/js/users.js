@@ -2017,7 +2017,7 @@
 
         setupUsersEvents();
 
-        if (localStorage.getItem("sales_management_access_token")) {
+        if (window.getAuthAccessToken?.() || localStorage.getItem("sales_management_access_token")) {
             try {
                 await getUsers();
             } catch (error) {

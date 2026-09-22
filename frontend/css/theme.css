@@ -13,15 +13,15 @@
     --sm-danger: #ef4444;
     --sm-ink: #172033;
     --sm-muted: #64748b;
-    --sm-line: #cbd5e1;
+    --sm-line: #bec9d8;
     --sm-surface: #ffffff;
     --sm-canvas: #f4f7fb;
     --sm-shadow:
-        0 1px 2px rgba(15, 23, 42, 0.06),
-        0 9px 24px rgba(30, 41, 59, 0.09);
-    --sm-shadow-hover:
         0 2px 5px rgba(15, 23, 42, 0.08),
-        0 18px 42px rgba(30, 41, 59, 0.15);
+        0 12px 30px rgba(30, 64, 175, 0.13);
+    --sm-shadow-hover:
+        0 4px 8px rgba(15, 23, 42, 0.10),
+        0 18px 42px rgba(30, 64, 175, 0.19);
 }
 
 html {
@@ -498,7 +498,7 @@ body[data-user-role="customer"] .user-avatar {
 .ai-input-card,
 .ai-result-card {
     background: rgba(255, 255, 255, 0.96);
-    border: 1px solid #cbd5e1;
+    border: 1px solid var(--sm-line);
     border-radius: 16px;
     box-shadow: var(--sm-shadow);
 }
@@ -1478,7 +1478,7 @@ body[data-user-role="customer"] .user-avatar {
 
 .product-modal,
 .customer-modal,
-.user-modal,
+.user-modal-overlay,
 .category-modal {
     background: rgba(15, 23, 42, 0.55);
     backdrop-filter: blur(5px);
@@ -1486,7 +1486,7 @@ body[data-user-role="customer"] .user-avatar {
 
 .product-modal.active .product-modal-content,
 .customer-modal.active .customer-modal-content,
-.user-modal.active .user-modal-content,
+.user-modal-overlay.active .user-modal,
 .category-modal.active .category-modal-content {
     border: 1px solid rgba(255, 255, 255, 0.6);
     border-radius: 18px;

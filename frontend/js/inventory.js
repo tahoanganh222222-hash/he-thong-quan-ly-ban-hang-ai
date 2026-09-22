@@ -10,6 +10,19 @@ const inventoryItemsPerPage = 5;
 
 let currentInventoryPage = 1;
 
+function escapeInventoryHTML(value) {
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+function getInventoryProductImage(item) {
+    return item?.imageData || "./assets/branding/sales-manager-logo.svg";
+}
+
 async function loadInventoryFromAPI() {
 
     try {
@@ -292,7 +305,15 @@ function loadInventoryTable() {
                 </td>
 
                 <td>
-                    ${item.name}
+                    <div class="sales-product-cell inventory-product-cell">
+                        <img
+                            class="sales-product-thumbnail inventory-product-thumbnail"
+                            src="${escapeInventoryHTML(getInventoryProductImage(item))}"
+                            alt="${escapeInventoryHTML(item.name)}"
+                            loading="lazy"
+                        >
+                        <span>${escapeInventoryHTML(item.name)}</span>
+                    </div>
                 </td>
 
                 <td>

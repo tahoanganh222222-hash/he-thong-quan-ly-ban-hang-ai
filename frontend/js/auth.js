@@ -19,12 +19,43 @@
     const CURRENT_USER_STORAGE_KEY =
         "sales_management_current_user";
 
+    const ACCESS_TOKEN_STORAGE_KEY =
+        "sales_management_access_token";
+
+    const REMEMBER_LOGIN_STORAGE_KEY =
+        "sales_management_remember_login";
+
+    const REMEMBERED_USERNAME_STORAGE_KEY =
+        "sales_management_remembered_username";
+
 
     /* =========================================================
        STATE
        ========================================================= */
 
     let currentUser = null;
+
+    let authSessionStorage =
+        window.getAuthSessionStorage?.() || localStorage;
+
+    function clearStoredSession() {
+        if (typeof window.clearAuthSession === "function") {
+            window.clearAuthSession();
+            return;
+        }
+        [localStorage, sessionStorage].forEach(storage => {
+            storage.removeItem(ACCESS_TOKEN_STORAGE_KEY);
+            storage.removeItem(CURRENT_USER_STORAGE_KEY);
+        });
+    }
+
+    function selectAuthStorage(rememberLogin) {
+        authSessionStorage = rememberLogin ? localStorage : sessionStorage;
+        const unusedStorage = rememberLogin ? sessionStorage : localStorage;
+        unusedStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY);
+        unusedStorage.removeItem(CURRENT_USER_STORAGE_KEY);
+        return authSessionStorage;
+    }
 
 
     /* =========================================================
@@ -146,9 +177,8 @@
 
         if (!user) {
 
-            localStorage.removeItem(
-                CURRENT_USER_STORAGE_KEY
-            );
+            localStorage.removeItem(CURRENT_USER_STORAGE_KEY);
+            sessionStorage.removeItem(CURRENT_USER_STORAGE_KEY);
 
             currentUser = null;
 
@@ -192,7 +222,7 @@
             sessionUser;
 
 
-        localStorage.setItem(
+        authSessionStorage.setItem(
             CURRENT_USER_STORAGE_KEY,
             JSON.stringify(
                 sessionUser
@@ -223,19 +253,21 @@
 
         try {
 
-            const accessToken = localStorage.getItem(
-                "sales_management_access_token"
-            );
+            const accessToken = window.getAuthAccessToken?.()
+                || localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY)
+                || sessionStorage.getItem(ACCESS_TOKEN_STORAGE_KEY);
+
+            authSessionStorage = window.getAuthSessionStorage?.()
+                || (localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY) ? localStorage : sessionStorage);
 
             if (!accessToken || isAccessTokenExpired(accessToken)) {
                 currentUser = null;
-                localStorage.removeItem("sales_management_access_token");
-                localStorage.removeItem(CURRENT_USER_STORAGE_KEY);
+                clearStoredSession();
                 return null;
             }
 
             const data =
-                localStorage.getItem(
+                authSessionStorage.getItem(
                     CURRENT_USER_STORAGE_KEY
                 );
 
@@ -283,7 +315,7 @@
                 ].includes(user.role)
             ){
                 currentUser = null;
-                localStorage.removeItem(
+                authSessionStorage.removeItem(
                 CURRENT_USER_STORAGE_KEY
             );
             return null;
@@ -313,7 +345,7 @@
 
                 currentUser = null;
 
-                localStorage.removeItem(
+                authSessionStorage.removeItem(
                     CURRENT_USER_STORAGE_KEY
                 );
 
@@ -364,7 +396,7 @@
              * Cập nhật lại session.
              */
 
-            localStorage.setItem(
+            authSessionStorage.setItem(
                 CURRENT_USER_STORAGE_KEY,
                 JSON.stringify(
                     currentUser
@@ -383,9 +415,7 @@
 
             currentUser = null;
 
-            localStorage.removeItem(
-                CURRENT_USER_STORAGE_KEY
-            );
+            authSessionStorage.removeItem(CURRENT_USER_STORAGE_KEY);
 
             return null;
         }
@@ -544,7 +574,7 @@
        LOGIN FORM
        ========================================================= */
 
-    async function loginWithAPI(username, password) {
+    async function loginWithAPI(username, password, rememberLogin = true) {
 
         username = String(username || "").trim();
         password = String(password || "");
@@ -580,10 +610,19 @@
                 role: response.user.role,
                 isActive: response.user.is_active
             };
-            localStorage.setItem(
-                "sales_management_access_token",
+            selectAuthStorage(Boolean(rememberLogin)).setItem(
+                ACCESS_TOKEN_STORAGE_KEY,
                 response.access_token
             );
+            localStorage.setItem(
+                REMEMBER_LOGIN_STORAGE_KEY,
+                String(Boolean(rememberLogin))
+            );
+            if (rememberLogin) {
+                localStorage.setItem(REMEMBERED_USERNAME_STORAGE_KEY, username);
+            } else {
+                localStorage.removeItem(REMEMBERED_USERNAME_STORAGE_KEY);
+            }
             saveCurrentUser(user);
             return {
                 success: true,
@@ -623,6 +662,11 @@
                 "login-message"
             );
 
+        const rememberInput =
+            getElement(
+                "login-remember"
+            );
+
 
         if (
             !usernameInput ||
@@ -648,7 +692,8 @@
         const result =
             await loginWithAPI(
                 username,
-                password
+                password,
+                rememberInput?.checked !== false
             );
 
 
@@ -798,7 +843,9 @@
     async function logout() {
 
         const hadAccessToken = Boolean(
-            localStorage.getItem("sales_management_access_token")
+            window.getAuthAccessToken?.()
+            || localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY)
+            || sessionStorage.getItem(ACCESS_TOKEN_STORAGE_KEY)
         );
 
         if (hadAccessToken) {
@@ -817,13 +864,7 @@
         currentUser = null;
 
 
-        localStorage.removeItem(
-            CURRENT_USER_STORAGE_KEY
-        );
-
-        localStorage.removeItem(
-            "sales_management_access_token"
-        );
+        clearStoredSession();
 
 
         /*
@@ -1213,6 +1254,24 @@
 
             form.onsubmit =
                 handleLoginSubmit;
+        }
+
+        const rememberInput = getElement("login-remember");
+        const usernameInput = getElement("login-username");
+        const shouldRemember = localStorage.getItem(REMEMBER_LOGIN_STORAGE_KEY) !== "false";
+
+        if (rememberInput) {
+            rememberInput.checked = shouldRemember;
+            rememberInput.addEventListener("change", () => {
+                localStorage.setItem(
+                    REMEMBER_LOGIN_STORAGE_KEY,
+                    String(rememberInput.checked)
+                );
+            });
+        }
+
+        if (usernameInput && shouldRemember && !usernameInput.value) {
+            usernameInput.value = localStorage.getItem(REMEMBERED_USERNAME_STORAGE_KEY) || "";
         }
 
 

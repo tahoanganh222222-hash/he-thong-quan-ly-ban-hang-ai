@@ -157,6 +157,92 @@
 
 
 /* =========================================================
+   REMEMBER LOGIN
+   ========================================================= */
+
+#login-form .auth-remember {
+    display: grid;
+    grid-template-columns: 20px minmax(0, 1fr);
+    align-items: center;
+    gap: 10px;
+    margin: -2px 0 15px;
+    color: #334155;
+    cursor: pointer;
+    user-select: none;
+}
+
+#login-form .auth-remember input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.auth-remember-box {
+    display: grid;
+    width: 20px;
+    height: 20px;
+    place-items: center;
+    box-sizing: border-box;
+    border: 1.5px solid #b8c3d2;
+    border-radius: 6px;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+    transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.auth-remember-box svg {
+    width: 13px;
+    height: 13px;
+    stroke: #ffffff;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0;
+    transform: scale(0.75);
+    transition: opacity 140ms ease, transform 140ms ease;
+}
+
+#login-form .auth-remember input:checked + .auth-remember-box {
+    border-color: #4f46e5;
+    background: linear-gradient(145deg, #6366f1, #4338ca);
+    box-shadow: 0 4px 10px rgba(79, 70, 229, 0.22);
+}
+
+#login-form .auth-remember input:checked + .auth-remember-box svg {
+    opacity: 1;
+    transform: scale(1);
+}
+
+#login-form .auth-remember input:focus-visible + .auth-remember-box {
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.13);
+}
+
+.auth-remember-text {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.auth-remember-text strong {
+    font-size: 13px;
+    font-weight: 650;
+    line-height: 1.25;
+}
+
+.auth-remember-text small {
+    color: #8793a5;
+    font-size: 11px;
+    line-height: 1.3;
+}
+
+
+/* =========================================================
    LOGIN MESSAGE
    ========================================================= */
 
@@ -441,6 +527,19 @@
         background: #111827;
 
         border-color: #4b5563;
+    }
+
+    #login-form .auth-remember {
+        color: #e5e7eb;
+    }
+
+    .auth-remember-box {
+        border-color: #526176;
+        background: #111827;
+    }
+
+    .auth-remember-text small {
+        color: #94a3b8;
     }
 
 

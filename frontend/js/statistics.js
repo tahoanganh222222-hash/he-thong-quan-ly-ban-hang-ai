@@ -25,7 +25,9 @@ let currentRevenueStatisticsData = [];
     const escapeHTML = value => String(value ?? "")
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;");
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
 
     function createChartScale(maxValue, tickCount = 4) {
         if (maxValue <= 0) {
@@ -102,6 +104,7 @@ let currentRevenueStatisticsData = [];
                     const result = productSales.get(item.productId) || {
                         code: product.code || "",
                         name: item.productName || product.name || "",
+                        imageData: item.productImageData || product.imageData || "",
                         sold: 0,
                         revenue: 0
                     };
@@ -279,6 +282,12 @@ let currentRevenueStatisticsData = [];
         container.innerHTML = topRevenueProducts.map((product, index) => `
             <div class="statistics-product-item">
                 <span class="statistics-product-rank">${index + 1}</span>
+                <img
+                    class="sales-product-thumbnail statistics-product-thumbnail"
+                    src="${escapeHTML(product.imageData || "./assets/branding/sales-manager-logo.svg")}"
+                    alt="${escapeHTML(product.name)}"
+                    loading="lazy"
+                >
                 <div class="statistics-product-info">
                     <div class="statistics-product-name">${escapeHTML(product.name)}</div>
                     <div class="statistics-product-code">${escapeHTML(product.code)} · ${product.sold.toLocaleString("vi-VN")} sản phẩm</div>

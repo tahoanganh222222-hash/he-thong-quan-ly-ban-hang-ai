@@ -35,6 +35,16 @@ function escapePurchaseHTML(value) {
         .replaceAll("'", "&#039;");
 }
 
+function getPurchaseProductImage(item) {
+    const product = purchaseProducts.find(productItem =>
+        Number(productItem.id) === Number(item?.productId) ||
+        (item?.productCode && productItem.code === item.productCode) ||
+        (item?.code && productItem.code === item.code)
+    );
+    return item?.productImageData || item?.imageData || product?.imageData ||
+        "./assets/branding/sales-manager-logo.svg";
+}
+
 function normalizePurchaseText(value) {
     return String(value || "")
         .toLocaleLowerCase("vi")
@@ -196,8 +206,18 @@ function renderPurchaseHistory() {
             <td><strong class="purchase-history-code">${escapePurchaseHTML(row.receiptCode)}</strong></td>
             <td>${escapePurchaseHTML(row.supplierName || "—")}</td>
             <td>
-                <strong class="purchase-history-product">${escapePurchaseHTML(row.productName)}</strong>
-                <small>${escapePurchaseHTML(row.productCode)}</small>
+                <div class="sales-product-cell purchase-history-product-cell">
+                    <img
+                        class="sales-product-thumbnail purchase-product-thumbnail"
+                        src="${escapePurchaseHTML(getPurchaseProductImage(row))}"
+                        alt="${escapePurchaseHTML(row.productName)}"
+                        loading="lazy"
+                    >
+                    <div>
+                        <strong class="purchase-history-product">${escapePurchaseHTML(row.productName)}</strong>
+                        <small>${escapePurchaseHTML(row.productCode)}</small>
+                    </div>
+                </div>
             </td>
             <td class="purchase-history-quantity">${Number(row.quantity || 0).toLocaleString("vi-VN")} ${escapePurchaseHTML(row.unit || "")}</td>
             <td class="purchase-history-money">${formatPurchaseMoney(row.unitPrice)}</td>
@@ -364,6 +384,7 @@ function addPurchaseProduct() {
             productId: product.id,
             code: product.code,
             name: product.name,
+            imageData: product.imageData,
             quantity: quantity,
             unitPrice: unitPrice
         });
@@ -409,7 +430,14 @@ function renderPurchaseItems() {
                 </td>
 
                 <td>
-                    ${item.name}
+                    <div class="sales-product-cell purchase-line-product-cell">
+                        <img
+                            class="sales-product-thumbnail purchase-product-thumbnail"
+                            src="${escapePurchaseHTML(getPurchaseProductImage(item))}"
+                            alt="${escapePurchaseHTML(item.name)}"
+                        >
+                        <strong>${escapePurchaseHTML(item.name)}</strong>
+                    </div>
                 </td>
 
                 <td>
@@ -737,8 +765,18 @@ function renderPurchaseInventory() {
 
             return `
                 <tr>
-                    <td>${product.code}</td>
-                    <td>${product.name}</td>
+                    <td>${escapePurchaseHTML(product.code)}</td>
+                    <td>
+                        <div class="sales-product-cell purchase-inventory-product-cell">
+                            <img
+                                class="sales-product-thumbnail purchase-product-thumbnail"
+                                src="${escapePurchaseHTML(getPurchaseProductImage(product))}"
+                                alt="${escapePurchaseHTML(product.name)}"
+                                loading="lazy"
+                            >
+                            <span>${escapePurchaseHTML(product.name)}</span>
+                        </div>
+                    </td>
                     <td class="${stockClass}">
                         ${product.stock}
                     </td>

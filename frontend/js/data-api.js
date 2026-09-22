@@ -34,8 +34,10 @@
             productAdvice: need => request(
                 "/api/ai/product-advice", "POST", { need }
             ),
-            revenueAnalysis: period => request(
-                "/api/ai/revenue-analysis", "POST", { period }
+            revenueAnalysis: options => request(
+                "/api/ai/revenue-analysis",
+                "POST",
+                typeof options === "string" ? { period: options } : options
             ),
             salesQA: question => request(
                 "/api/ai/sales-qa", "POST", { question }

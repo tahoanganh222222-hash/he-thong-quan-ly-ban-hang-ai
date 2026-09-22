@@ -14,7 +14,13 @@
         blue: { primary: "#2563eb", dark: "#1e40af", soft: "#eff6ff", accent: "#06b6d4" },
         emerald: { primary: "#059669", dark: "#065f46", soft: "#ecfdf5", accent: "#0d9488" },
         rose: { primary: "#e11d48", dark: "#9f1239", soft: "#fff1f2", accent: "#f43f5e" },
-        amber: { primary: "#d97706", dark: "#92400e", soft: "#fffbeb", accent: "#f59e0b" }
+        amber: { primary: "#d97706", dark: "#92400e", soft: "#fffbeb", accent: "#f59e0b" },
+        navy: { primary: "#34558b", dark: "#233b63", soft: "#edf3fb", accent: "#5277ad" },
+        steel: { primary: "#46677f", dark: "#30495b", soft: "#edf4f7", accent: "#62859d" },
+        slate: { primary: "#526174", dark: "#354153", soft: "#f1f4f7", accent: "#708096" },
+        forest: { primary: "#3f6b57", dark: "#294c3d", soft: "#eff7f2", accent: "#5f8f78" },
+        deepTeal: { primary: "#18736f", dark: "#10524f", soft: "#edf8f7", accent: "#368f8a" },
+        plum: { primary: "#6b557c", dark: "#4c3a5a", soft: "#f6f1f8", accent: "#89719a" }
     };
 
     let currentProfile = null;
@@ -113,6 +119,46 @@
         }
     }
 
+    function getTopbarSection(title = "") {
+        const normalizedTitle = title.trim().toLocaleLowerCase("vi-VN");
+
+        if (normalizedTitle.includes("ai ") || normalizedTitle.startsWith("ai")) {
+            return "Trợ lý AI";
+        }
+        if (normalizedTitle.includes("thống kê") || normalizedTitle.includes("báo cáo")) {
+            return "Thống kê";
+        }
+        if (normalizedTitle.includes("người dùng") || normalizedTitle.includes("phân quyền")) {
+            return "Hệ thống";
+        }
+        if (normalizedTitle === "dashboard") {
+            return "Tổng quan";
+        }
+        return "Quản lý";
+    }
+
+    function setupTopbarContext() {
+        const title = document.querySelector(".topbar h1");
+        const breadcrumb = getElement("topbar-breadcrumb-current");
+        if (!title || !breadcrumb) return;
+
+        const syncContext = () => {
+            const section = getTopbarSection(title.textContent || "");
+            breadcrumb.textContent = section;
+            document.querySelector(".topbar")?.setAttribute(
+                "data-section",
+                section.toLocaleLowerCase("vi-VN")
+            );
+        };
+
+        syncContext();
+        new MutationObserver(syncContext).observe(title, {
+            childList: true,
+            characterData: true,
+            subtree: true
+        });
+    }
+
     function showMessage(id, message, type = "") {
         const element = getElement(id);
         if (!element) return;
@@ -143,7 +189,8 @@
 
     function updateSessionProfile(profile) {
         const normalized = normalizeProfile(profile);
-        localStorage.setItem(SESSION_KEY, JSON.stringify(normalized));
+        const storage = window.getAuthSessionStorage?.() || localStorage;
+        storage.setItem(SESSION_KEY, JSON.stringify(normalized));
         window.loadCurrentUser?.();
         window.updateAuthUI?.();
         window.syncCurrentPermissionUser?.();
@@ -170,7 +217,7 @@
     }
 
     async function refreshAccountProfile(options = {}) {
-        if (!localStorage.getItem("sales_management_access_token")) return null;
+        if (!(window.getAuthAccessToken?.() || localStorage.getItem("sales_management_access_token"))) return null;
         try {
             const profile = normalizeProfile(await window.salesApi.account.get());
             updateSessionProfile(profile);
@@ -444,6 +491,7 @@
 
     function initAccount() {
         setupEvents();
+        setupTopbarContext();
         applyAppearance();
         updateTopbarDateTime();
         window.setInterval(updateTopbarDateTime, 60_000);

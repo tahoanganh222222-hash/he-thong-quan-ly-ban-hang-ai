@@ -1,11 +1,35 @@
 const API_BASE_URL = "http://127.0.0.1:8000";
 let unauthorizedSessionHandled = false;
+const AUTH_TOKEN_KEY = "sales_management_access_token";
+const AUTH_USER_KEY = "sales_management_current_user";
+
+function getAuthAccessToken() {
+    return localStorage.getItem(AUTH_TOKEN_KEY)
+        || sessionStorage.getItem(AUTH_TOKEN_KEY)
+        || "";
+}
+
+function getAuthSessionStorage() {
+    if (localStorage.getItem(AUTH_TOKEN_KEY)) return localStorage;
+    if (sessionStorage.getItem(AUTH_TOKEN_KEY)) return sessionStorage;
+    return localStorage;
+}
+
+function clearAuthSession() {
+    [localStorage, sessionStorage].forEach(storage => {
+        storage.removeItem(AUTH_TOKEN_KEY);
+        storage.removeItem(AUTH_USER_KEY);
+    });
+}
+
+window.getAuthAccessToken = getAuthAccessToken;
+window.getAuthSessionStorage = getAuthSessionStorage;
+window.clearAuthSession = clearAuthSession;
 
 function handleUnauthorizedSession(endpoint) {
     if (endpoint === "/api/auth/login" || unauthorizedSessionHandled) return;
     unauthorizedSessionHandled = true;
-    localStorage.removeItem("sales_management_access_token");
-    localStorage.removeItem("sales_management_current_user");
+    clearAuthSession();
     window.setTimeout(function () {
         if (typeof window.logout === "function") {
             window.logout();
@@ -35,9 +59,7 @@ async function apiRequest(endpoint, options = {}) {
         `${API_BASE_URL}${endpoint}`;
 
 
-    const accessToken = localStorage.getItem(
-        "sales_management_access_token"
-    );
+    const accessToken = getAuthAccessToken();
 
     const defaultOptions = {
 

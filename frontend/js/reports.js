@@ -75,6 +75,7 @@
                 const sold = soldByProduct.get(item.productId) || {
                     code: product.code || "",
                     name: item.productName || product.name || "",
+                    imageData: item.productImageData || product.imageData || "",
                     sold: 0,
                     revenue: 0
                 };
@@ -131,7 +132,17 @@
         body.innerHTML = currentReport.products.map(item => `
             <tr>
                 <td>${escapeHTML(item.code)}</td>
-                <td>${escapeHTML(item.name)}</td>
+                <td>
+                    <div class="sales-product-cell report-product-cell">
+                        <img
+                            class="sales-product-thumbnail report-product-thumbnail"
+                            src="${escapeHTML(item.imageData || "./assets/branding/sales-manager-logo.svg")}"
+                            alt="${escapeHTML(item.name)}"
+                            loading="lazy"
+                        >
+                        <span>${escapeHTML(item.name)}</span>
+                    </div>
+                </td>
                 <td>${item.sold.toLocaleString("vi-VN")}</td>
                 <td class="money">${money(item.revenue)}</td>
             </tr>
@@ -149,7 +160,17 @@
             return `
                 <tr>
                     <td>${escapeHTML(item.code)}</td>
-                    <td>${escapeHTML(item.name)}</td>
+                    <td>
+                        <div class="sales-product-cell report-product-cell">
+                            <img
+                                class="sales-product-thumbnail report-product-thumbnail"
+                                src="${escapeHTML(item.imageData || "./assets/branding/sales-manager-logo.svg")}"
+                                alt="${escapeHTML(item.name)}"
+                                loading="lazy"
+                            >
+                            <span>${escapeHTML(item.name)}</span>
+                        </div>
+                    </td>
                     <td>${Number(item.quantity).toLocaleString("vi-VN")}</td>
                     <td>${Number(item.minimum).toLocaleString("vi-VN")}</td>
                     <td><span class="${low ? "report-warning" : "report-normal"}">

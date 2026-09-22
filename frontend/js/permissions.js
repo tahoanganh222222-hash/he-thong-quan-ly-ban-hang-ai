@@ -27,17 +27,22 @@ function syncCurrentPermissionUser() {
 
     try {
 
+        const runtimeUser =
+            typeof window.getCurrentUser === "function"
+                ? window.getCurrentUser()
+                : null;
+
         const saved =
-            localStorage.getItem(
+            (window.getAuthSessionStorage?.() || localStorage).getItem(
                 "sales_management_current_user"
             );
 
-        if (!saved) {
+        if (!runtimeUser && !saved) {
             currentPermissionUser = null;
             return;
         }
 
-        const user = JSON.parse(saved);
+        const user = runtimeUser || JSON.parse(saved);
 
         if (!user) {
             currentPermissionUser = null;
@@ -61,6 +66,7 @@ function syncCurrentPermissionUser() {
             fullName: user.fullName,
             role: roleMap[user.role] || null,
             phone: user.phone || "",
+            avatarData: user.avatarData || user.avatar_data || "",
             isActive: user.isActive === true
         };
 
@@ -690,6 +696,16 @@ function renderCurrentPermissionUser() {
             "permission-current-status"
         );
 
+    const avatarImage =
+        document.getElementById(
+            "permission-current-avatar-image"
+        );
+
+    const avatarFallback =
+        document.getElementById(
+            "permission-current-avatar-fallback"
+        );
+
 
     if (username) {
 
@@ -724,6 +740,32 @@ function renderCurrentPermissionUser() {
                 ? "Đang hoạt động"
                 : "Đã khóa";
 
+    }
+
+    if (avatarImage && avatarFallback) {
+        const topbarAvatar =
+            document.querySelector("#current-user-avatar img");
+        const avatarSource =
+            currentPermissionUser.avatarData ||
+            topbarAvatar?.currentSrc ||
+            topbarAvatar?.src ||
+            "";
+
+        if (avatarSource) {
+            avatarImage.src = avatarSource;
+            avatarImage.alt = `Ảnh đại diện của ${currentPermissionUser.fullName || currentPermissionUser.username}`;
+            avatarImage.hidden = false;
+            avatarFallback.hidden = true;
+            avatarImage.onerror = function () {
+                avatarImage.hidden = true;
+                avatarFallback.hidden = false;
+            };
+        } else {
+            avatarImage.removeAttribute("src");
+            avatarImage.alt = "";
+            avatarImage.hidden = true;
+            avatarFallback.hidden = false;
+        }
     }
 
 }
@@ -1221,7 +1263,6 @@ async function savePermissions() {
 
         return;
     }
-
 
     if (!rolePermissions[role]) {
 
@@ -2174,6 +2215,14 @@ window.addEventListener(
         permissionDrafts = clonePermissions(defaultRolePermissions);
         renderPermissionPage();
         applyPermissionVisibility();
+    }
+);
+
+window.addEventListener(
+    "auth:user-updated",
+    function () {
+        syncCurrentPermissionUser();
+        renderCurrentPermissionUser();
     }
 );
 

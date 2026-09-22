@@ -9,6 +9,7 @@
     let realSalesData = {
         daily: [],
         topProducts: [],
+        productDaily: [],
         warnings: [],
         totalProducts: 0,
         totalCustomers: 0,
@@ -42,6 +43,7 @@
         const productsById = new Map(products.map(product => [product.id, product]));
         const dailyMap = new Map();
         const productMap = new Map();
+        const productDailyMap = new Map();
 
         invoices.forEach(invoice => {
             const row = dailyMap.get(invoice.date) || {
@@ -68,6 +70,19 @@
                 sale.quantity += Number(item.quantity || 0);
                 sale.revenue += Number(item.amount || 0) * discountFactor;
                 productMap.set(item.productId, sale);
+
+                const dailyProductKey = `${invoice.date}:${item.productId}`;
+                const dailySale = productDailyMap.get(dailyProductKey) || {
+                    isoDate: invoice.date,
+                    productId: item.productId,
+                    code: product.code || "",
+                    name: item.productName || product.name || "Sản phẩm",
+                    quantity: 0,
+                    revenue: 0
+                };
+                dailySale.quantity += Number(item.quantity || 0);
+                dailySale.revenue += Number(item.amount || 0) * discountFactor;
+                productDailyMap.set(dailyProductKey, dailySale);
             });
         });
 
@@ -79,6 +94,7 @@
             topProducts: [...productMap.values()].sort(
                 (a, b) => b.revenue - a.revenue
             ),
+            productDaily: [...productDailyMap.values()],
             warnings: inventory
                 .filter(item => Number(item.quantity || 0) <= Number(item.minimum || 0))
                 .map(item => ({
@@ -140,10 +156,15 @@
         return realSalesData.warnings.map(item => ({ ...item }));
     }
 
+    function getProductDailySales() {
+        return realSalesData.productDaily.map(item => ({ ...item }));
+    }
+
     function getSalesSnapshot() {
         const daily = getDailyRevenue();
         const topProducts = getTopProducts();
         const warnings = getInventoryWarnings();
+        const productDaily = getProductDailySales();
         const totalRevenue = daily.reduce((sum, item) => sum + item.revenue, 0);
         const totalInvoices = daily.reduce((sum, item) => sum + item.invoices, 0);
         const bestDay = daily.reduce(
@@ -154,6 +175,7 @@
         return {
             daily,
             topProducts,
+            productDaily,
             warnings,
             totalRevenue,
             totalInvoices,
@@ -287,7 +309,7 @@
                     <div>
                         <div class="ai-empty-result-icon">📊</div>
                         <h4>Chưa có kết quả phân tích</h4>
-                        <p>Chọn khoảng thời gian và nhấn “Tạo báo cáo AI”.</p>
+                        <p>Chọn khoảng thời gian, nhập nội dung cần phân tích và nhấn “Tạo báo cáo AI”.</p>
                     </div>
                 </div>
             `;
@@ -309,14 +331,127 @@
         return daily.filter(item => item.isoDate >= startISO);
     }
 
+    function shiftISODate(isoDate, dayOffset) {
+        const value = new Date(`${isoDate}T00:00:00`);
+        value.setDate(value.getDate() + dayOffset);
+        return [
+            value.getFullYear(),
+            String(value.getMonth() + 1).padStart(2, "0"),
+            String(value.getDate()).padStart(2, "0")
+        ].join("-");
+    }
+
+    function displayISODate(isoDate) {
+        return isoDate ? isoDate.split("-").reverse().join("/") : "";
+    }
+
+    function setRevenueRangeError(message = "") {
+        const errorElement = getElement("ai-revenue-range-error");
+        const fromDate = getElement("ai-revenue-from-date");
+        const toDate = getElement("ai-revenue-to-date");
+        [fromDate, toDate].forEach(input => input?.classList.toggle("is-invalid", Boolean(message)));
+        if (errorElement) {
+            errorElement.textContent = message;
+            errorElement.hidden = !message;
+        }
+    }
+
+    function updateRevenueRangeUI() {
+        const period = getElement("ai-revenue-period")?.value || "7";
+        const range = getElement("ai-revenue-custom-range");
+        const fromDate = getElement("ai-revenue-from-date");
+        const toDate = getElement("ai-revenue-to-date");
+        const isCustom = period === "custom";
+        if (range) range.hidden = !isCustom;
+        if (fromDate) fromDate.disabled = !isCustom;
+        if (toDate) toDate.disabled = !isCustom;
+
+        if (isCustom && fromDate && toDate && (!fromDate.value || !toDate.value)) {
+            const latestDate = realSalesData.daily.at(-1)?.isoDate || localISODate();
+            toDate.value = toDate.value || latestDate;
+            fromDate.value = fromDate.value || shiftISODate(latestDate, -6);
+        }
+        setRevenueRangeError();
+    }
+
+    function updateRevenueFocusCounter() {
+        const input = getElement("ai-revenue-focus");
+        const counter = getElement("ai-revenue-focus-count");
+        if (counter) {
+            counter.textContent = `${input?.value.length || 0}/500`;
+        }
+    }
+
+    function readRevenueSelection() {
+        const period = getElement("ai-revenue-period")?.value || "7";
+        const fromDate = getElement("ai-revenue-from-date")?.value || "";
+        const toDate = getElement("ai-revenue-to-date")?.value || "";
+        const focus = (getElement("ai-revenue-focus")?.value || "").trim();
+
+        if (period === "custom" && (!fromDate || !toDate)) {
+            setRevenueRangeError("Vui lòng chọn đủ ngày bắt đầu và ngày kết thúc.");
+            return null;
+        }
+        if (period === "custom" && fromDate > toDate) {
+            setRevenueRangeError("Ngày bắt đầu không được sau ngày kết thúc.");
+            return null;
+        }
+        setRevenueRangeError();
+        return {
+            period,
+            fromDate: period === "custom" ? fromDate : null,
+            toDate: period === "custom" ? toDate : null,
+            focus: focus || null
+        };
+    }
+
+    function getRevenueDailyForSelection(daily, selection) {
+        if (selection.period === "custom") {
+            return daily.filter(item => (
+                item.isoDate >= selection.fromDate && item.isoDate <= selection.toDate
+            ));
+        }
+        const requestedDays = selection.period === "all"
+            ? Number.NaN
+            : Number(selection.period);
+        return getRecentDaily(daily, requestedDays);
+    }
+
+    function getBestProductForPeriod(productDaily, daily) {
+        const selectedDates = new Set(daily.map(item => item.isoDate));
+        const totals = new Map();
+        productDaily.forEach(item => {
+            if (!selectedDates.has(item.isoDate)) return;
+            const total = totals.get(item.productId) || {
+                name: item.name,
+                quantity: 0,
+                revenue: 0
+            };
+            total.quantity += Number(item.quantity || 0);
+            total.revenue += Number(item.revenue || 0);
+            totals.set(item.productId, total);
+        });
+        return [...totals.values()].sort((a, b) => b.revenue - a.revenue)[0] || null;
+    }
+
+    function getRevenueRangeLabel(selection, daily) {
+        if (selection.period === "custom") {
+            return `${displayISODate(selection.fromDate)} – ${displayISODate(selection.toDate)}`;
+        }
+        if (selection.period === "all") return "toàn bộ dữ liệu";
+        return `${daily.length} ngày dữ liệu`;
+    }
+
     async function generateRevenueReport() {
         if (!canUse("revenue_statistics")) {
             return;
         }
 
+        const selection = readRevenueSelection();
         const result = getElement("ai-revenue-results");
         const status = getElement("ai-revenue-status");
-        if (!result) {
+        if (!result || !selection) {
+            if (status && !selection) status.textContent = "Kiểm tra khoảng ngày";
             return;
         }
 
@@ -347,9 +482,7 @@
 
         window.setTimeout(async () => {
             const snapshot = getSalesSnapshot();
-            const period = getElement("ai-revenue-period")?.value || "7";
-            const requestedDays = period === "all" ? Number.NaN : Number(period);
-            const daily = getRecentDaily(snapshot.daily, requestedDays);
+            const daily = getRevenueDailyForSelection(snapshot.daily, selection);
             const totalRevenue = daily.reduce((sum, item) => sum + item.revenue, 0);
             const totalInvoices = daily.reduce((sum, item) => sum + item.invoices, 0);
             const averageInvoice = totalInvoices > 0 ? totalRevenue / totalInvoices : 0;
@@ -372,24 +505,15 @@
             const trendText = change >= 0
                 ? `tăng ${Math.abs(change).toFixed(1)}%`
                 : `giảm ${Math.abs(change).toFixed(1)}%`;
-            const bestProduct = snapshot.topProducts[0];
+            const bestProduct = getBestProductForPeriod(snapshot.productDaily, daily);
+            const rangeLabel = getRevenueRangeLabel(selection, daily);
 
-            const recommendations = [];
-            recommendations.push(
-                change >= 0
-                    ? "Doanh thu đang có xu hướng tích cực; nên duy trì nhóm sản phẩm bán tốt và chương trình bán hàng hiện tại."
-                    : "Doanh thu đang giảm; nên kiểm tra nguyên nhân theo ngày, nhân viên bán hàng và nhóm sản phẩm."
-            );
-            if (bestProduct) {
-                recommendations.push(
-                    `Ưu tiên bảo đảm tồn kho cho ${bestProduct.name}, hiện là sản phẩm nổi bật nhất.`
-                );
-            }
-            if (snapshot.warnings.length > 0) {
-                recommendations.push(
-                    `Có ${snapshot.warnings.length} sản phẩm dưới mức tồn kho an toàn; cần lập kế hoạch nhập hàng.`
-                );
-            }
+            const trendSummary = daily.length < 2
+                ? "Chưa đủ dữ liệu theo ngày để so sánh xu hướng."
+                : `Doanh thu bình quân giai đoạn sau ${trendText} so với giai đoạn đầu.`;
+            const productSummary = bestProduct
+                ? `Sản phẩm nổi bật nhất trong phạm vi là ${bestProduct.name} với ${bestProduct.quantity.toLocaleString("vi-VN")} sản phẩm đã bán.`
+                : "Chưa có sản phẩm bán ra trong phạm vi này.";
 
             result.innerHTML = `
                 <div class="ai-summary-grid">
@@ -409,10 +533,9 @@
                 <div class="ai-analysis-block">
                     <h4>Nhận xét tự động</h4>
                     <p>
-                        Dữ liệu ${daily.length} ngày ghi nhận doanh thu
+                        Phạm vi <strong>${escapeHtml(rangeLabel)}</strong> ghi nhận doanh thu
                         <strong>${formatMoney(totalRevenue)}</strong> từ
-                        <strong>${totalInvoices}</strong> hóa đơn. Doanh thu bình quân
-                        giai đoạn sau ${trendText} so với giai đoạn đầu.
+                        <strong>${totalInvoices}</strong> hóa đơn. ${escapeHtml(trendSummary)}
                     </p>
                     <p>
                         Ngày có doanh thu cao nhất là
@@ -421,20 +544,21 @@
                     </p>
                 </div>
                 <div class="ai-analysis-block">
-                    <h4>Đề xuất</h4>
-                    <ul>${recommendations.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+                    <h4>Dữ liệu sản phẩm</h4>
+                    <p>${escapeHtml(productSummary)}</p>
                 </div>
             `;
             if (status) status.textContent = "Đang hỏi Gemini";
             try {
-                const aiResponse = await window.salesApi.ai.revenueAnalysis(period);
+                const aiResponse = await window.salesApi.ai.revenueAnalysis(selection);
                 result.insertAdjacentHTML("beforeend", `
                     <div class="ai-analysis-block">
-                        <h4>Phân tích từ Gemini</h4>
+                        <h4>${selection.focus ? "Gemini trả lời yêu cầu" : "Phân tích từ Gemini"}</h4>
+                        ${selection.focus ? `<p class="ai-analysis-request"><strong>Yêu cầu:</strong> ${escapeHtml(selection.focus)}</p>` : ""}
                         <p>${formatAIText(aiResponse.answer)}</p>
                     </div>
                 `);
-                if (status) status.textContent = `Gemini • ${daily.length} ngày dữ liệu`;
+                if (status) status.textContent = `Gemini • ${rangeLabel}`;
             } catch (error) {
                 if (error.status === 401) return;
                 result.insertAdjacentHTML("beforeend", `
@@ -443,7 +567,7 @@
                         <p>${escapeHtml(error.message || "Đang dùng kết quả phân tích nội bộ.")}</p>
                     </div>
                 `);
-                if (status) status.textContent = `${daily.length} ngày • nội bộ`;
+                if (status) status.textContent = `${rangeLabel} • nội bộ`;
             }
         }, 350);
     }
@@ -698,9 +822,17 @@
 
     function resetRevenueReport() {
         const period = getElement("ai-revenue-period");
+        const fromDate = getElement("ai-revenue-from-date");
+        const toDate = getElement("ai-revenue-to-date");
+        const focus = getElement("ai-revenue-focus");
         if (period) {
             period.value = "7";
         }
+        if (fromDate) fromDate.value = "";
+        if (toDate) toDate.value = "";
+        if (focus) focus.value = "";
+        updateRevenueRangeUI();
+        updateRevenueFocusCounter();
         renderRevenueEmpty();
     }
 
@@ -720,6 +852,10 @@
     function setupAssistantEvents() {
         const revenueButton = getElement("ai-revenue-generate-button");
         const revenueReset = getElement("ai-revenue-reset-button");
+        const revenuePeriod = getElement("ai-revenue-period");
+        const revenueFromDate = getElement("ai-revenue-from-date");
+        const revenueToDate = getElement("ai-revenue-to-date");
+        const revenueFocus = getElement("ai-revenue-focus");
         const qaButton = getElement("ai-qa-submit-button");
         const qaReset = getElement("ai-qa-reset-button");
         const questionInput = getElement("ai-data-question");
@@ -729,6 +865,21 @@
         }
         if (revenueReset) {
             revenueReset.addEventListener("click", resetRevenueReport);
+        }
+        if (revenuePeriod) {
+            revenuePeriod.addEventListener("change", updateRevenueRangeUI);
+        }
+        [revenueFromDate, revenueToDate].forEach(input => {
+            input?.addEventListener("change", () => setRevenueRangeError());
+        });
+        if (revenueFocus) {
+            revenueFocus.addEventListener("input", updateRevenueFocusCounter);
+            revenueFocus.addEventListener("keydown", event => {
+                if (event.key === "Enter" && event.ctrlKey && !event.isComposing) {
+                    event.preventDefault();
+                    generateRevenueReport();
+                }
+            });
         }
         if (qaButton) {
             qaButton.addEventListener("click", askSalesData);
@@ -750,6 +901,9 @@
             });
             updateQuestionInput();
         }
+
+        updateRevenueRangeUI();
+        updateRevenueFocusCounter();
 
         document.querySelectorAll("[data-ai-question]").forEach(button => {
             button.addEventListener("click", () => {

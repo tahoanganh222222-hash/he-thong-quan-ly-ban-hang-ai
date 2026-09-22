@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from sqlalchemy import Boolean, ForeignKey, Numeric, String, Unicode
+from sqlalchemy import Boolean, ForeignKey, Numeric, String, Unicode, UnicodeText
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base
@@ -43,6 +43,11 @@ class Product(Base):
     unit: Mapped[str] = mapped_column(
         Unicode(30),
         nullable=False
+    )
+
+    image_data: Mapped[str | None] = mapped_column(
+        UnicodeText,
+        nullable=True
     )
 
     is_active: Mapped[bool] = mapped_column(

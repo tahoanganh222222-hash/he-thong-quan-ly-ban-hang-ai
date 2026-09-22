@@ -4,11 +4,46 @@ let categoryCurrentPage = 1;
 const categoryPageSize = 6;
 let categoryEditingId = null;
 let categoryEventsInitialized = false;
+let categoryImageData = null;
+let categoryDetailReturnFocus = null;
+let activeCategoryDetailId = null;
+
+const CATEGORY_IMAGE_MAX_BYTES = 2 * 1024 * 1024;
+const CATEGORY_IMAGE_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
 
 function escapeCategoryHtml(value) {
     return String(value ?? "")
         .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+}
+
+function getCategoryImageSource(name, imageData = null) {
+    return imageData || "./assets/branding/sales-manager-logo.svg";
+}
+
+function updateCategoryImagePreview() {
+    const preview = document.getElementById("category-image-preview");
+    if (!preview) return;
+    const name = document.getElementById("category-name")?.value || "";
+    preview.src = getCategoryImageSource(name, categoryImageData);
+}
+
+function readCategoryImage(file) {
+    if (!CATEGORY_IMAGE_TYPES.has(file.type)) {
+        alert("Vui lòng chọn ảnh PNG, JPG hoặc WebP.");
+        return;
+    }
+    if (file.size > CATEGORY_IMAGE_MAX_BYTES) {
+        alert("Kích thước ảnh không được vượt quá 2 MB.");
+        return;
+    }
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+        categoryImageData = String(reader.result || "");
+        updateCategoryImagePreview();
+    });
+    reader.addEventListener("error", () => alert("Không thể đọc tệp ảnh đã chọn."));
+    reader.readAsDataURL(file);
 }
 
 async function loadCategoriesFromAPI() {
@@ -57,7 +92,26 @@ function renderCategories() {
     }
     tableBody.innerHTML = page.map(category => `<tr>
         <td>${category.id}</td>
-        <td><strong>${escapeCategoryHtml(category.name)}</strong></td>
+        <td>
+            <div
+                class="category-visual category-detail-trigger"
+                role="button"
+                tabindex="0"
+                onclick="openCategoryDetail(${category.id})"
+                onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openCategoryDetail(${category.id}); }"
+                title="Xem chi tiết ${escapeCategoryHtml(category.name)}"
+                aria-label="Xem chi tiết danh mục ${escapeCategoryHtml(category.name)}"
+            >
+                <span class="category-thumbnail-frame">
+                    <img class="category-thumbnail" src="${escapeCategoryHtml(getCategoryImageSource(category.name, category.imageData))}" alt="" loading="lazy">
+                </span>
+                <span class="category-name-copy">
+                    <strong>${escapeCategoryHtml(category.name)}</strong>
+                    <small>Nhóm sản phẩm</small>
+                </span>
+                <span class="category-detail-arrow" aria-hidden="true">›</span>
+            </div>
+        </td>
         <td>${escapeCategoryHtml(category.description || "-")}</td>
         <td><span class="category-status ${category.isActive ? "active" : "inactive"}">
             ${category.isActive ? "Đang hoạt động" : "Ngừng hoạt động"}
@@ -105,6 +159,8 @@ function openAddCategoryModal() {
     const form = document.getElementById("category-form");
     if (!modal || !form) return;
     form.reset();
+    categoryImageData = null;
+    updateCategoryImagePreview();
     const title = document.getElementById("category-modal-title");
     if (title) title.textContent = "Thêm danh mục";
     modal.classList.add("active");
@@ -121,6 +177,8 @@ function editCategory(id) {
     if (title) title.textContent = "Sửa danh mục";
     if (name) name.value = category.name;
     if (description) description.value = category.description || "";
+    categoryImageData = category.imageData || null;
+    updateCategoryImagePreview();
     document.getElementById("category-modal")?.classList.add("active");
 }
 
@@ -144,10 +202,14 @@ async function saveCategory(event) {
     }
     try {
         if (categoryEditingId === null) {
-            await window.salesApi.categories.create({ name, description, isActive: true });
+            await window.salesApi.categories.create({
+                name, description, isActive: true, imageData: categoryImageData
+            });
             alert("Thêm danh mục thành công.");
         } else {
-            await window.salesApi.categories.update(categoryEditingId, { name, description });
+            await window.salesApi.categories.update(categoryEditingId, {
+                name, description, imageData: categoryImageData
+            });
             alert("Cập nhật danh mục thành công.");
         }
         closeCategoryModal();
@@ -187,6 +249,83 @@ async function deleteCategory(id) {
     }
 }
 
+async function openCategoryDetail(id) {
+    const category = categories.find(item => Number(item.id) === Number(id));
+    const modal = document.getElementById("category-detail-modal");
+    const content = document.getElementById("category-detail-content");
+    if (!category || !modal || !content) return;
+
+    activeCategoryDetailId = Number(category.id);
+    content.innerHTML = `
+        <div class="category-detail-showcase">
+            <div class="category-detail-image-wrap">
+                <img
+                    src="${escapeCategoryHtml(getCategoryImageSource(category.name, category.imageData))}"
+                    alt="${escapeCategoryHtml(category.name)}"
+                >
+            </div>
+            <div class="category-detail-identity">
+                <div class="category-detail-badges">
+                    <span class="category-detail-code">DM${String(category.id).padStart(3, "0")}</span>
+                    <span class="category-detail-business ${category.isActive ? "active" : "inactive"}">
+                        ${category.isActive ? "Đang hoạt động" : "Ngừng hoạt động"}
+                    </span>
+                </div>
+                <h3>${escapeCategoryHtml(category.name)}</h3>
+                <p>${escapeCategoryHtml(category.description || "Danh mục chưa có mô tả.")}</p>
+            </div>
+        </div>
+        <div class="category-detail-summary">
+            <article>
+                <span>Mã danh mục</span>
+                <strong>#${category.id}</strong>
+            </article>
+            <article>
+                <span>Loại dữ liệu</span>
+                <strong>Nhóm sản phẩm</strong>
+            </article>
+            <article>
+                <span>Sản phẩm thuộc danh mục</span>
+                <strong id="category-detail-product-count">Đang tải...</strong>
+            </article>
+        </div>
+    `;
+
+    categoryDetailReturnFocus = document.activeElement;
+    modal.hidden = false;
+    modal.classList.add("active");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("category-detail-open");
+    document.getElementById("category-detail-close")?.focus();
+
+    try {
+        const productItems = await window.salesApi.products.list();
+        if (activeCategoryDetailId !== Number(category.id)) return;
+        const count = productItems.filter(product => product.category === category.name).length;
+        const countElement = document.getElementById("category-detail-product-count");
+        if (countElement) countElement.textContent = `${count} sản phẩm`;
+    } catch (error) {
+        const countElement = document.getElementById("category-detail-product-count");
+        if (countElement && activeCategoryDetailId === Number(category.id)) {
+            countElement.textContent = "Chưa xác định";
+        }
+    }
+}
+
+function closeCategoryDetail() {
+    const modal = document.getElementById("category-detail-modal");
+    if (!modal) return;
+    modal.classList.remove("active");
+    modal.setAttribute("aria-hidden", "true");
+    modal.hidden = true;
+    document.body.classList.remove("category-detail-open");
+    activeCategoryDetailId = null;
+    if (categoryDetailReturnFocus instanceof HTMLElement) {
+        categoryDetailReturnFocus.focus();
+    }
+    categoryDetailReturnFocus = null;
+}
+
 function setupCategoryFilters() {
     document.getElementById("category-search-input")?.addEventListener("input", () => {
         categoryCurrentPage = 1;
@@ -203,8 +342,27 @@ function setupCategoryModal() {
     document.getElementById("category-modal-close")?.addEventListener("click", closeCategoryModal);
     document.getElementById("category-cancel-button")?.addEventListener("click", closeCategoryModal);
     document.getElementById("category-form")?.addEventListener("submit", saveCategory);
+    document.getElementById("category-image-input")?.addEventListener("change", event => {
+        const file = event.target.files?.[0];
+        if (file) readCategoryImage(file);
+        event.target.value = "";
+    });
+    document.getElementById("category-image-remove")?.addEventListener("click", () => {
+        categoryImageData = null;
+        updateCategoryImagePreview();
+    });
+    document.getElementById("category-name")?.addEventListener("input", () => {
+        if (!categoryImageData) updateCategoryImagePreview();
+    });
     document.getElementById("category-modal")?.addEventListener("click", event => {
         if (event.target.id === "category-modal") closeCategoryModal();
+    });
+    document.getElementById("category-detail-close")?.addEventListener("click", closeCategoryDetail);
+    document.getElementById("category-detail-modal")?.addEventListener("click", event => {
+        if (event.target.id === "category-detail-modal") closeCategoryDetail();
+    });
+    document.addEventListener("keydown", event => {
+        if (event.key === "Escape") closeCategoryDetail();
     });
 }
 
