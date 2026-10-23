@@ -199,7 +199,7 @@
                 user.username,
 
             fullName:
-                user.fullName,
+                user.fullName || user.full_name || "",
 
             phone:
                 user.phone || "",
@@ -1004,7 +1004,7 @@
 
                 element.textContent =
                     user
-                        ? user.fullName
+                        ? (user.fullName || user.full_name || user.username || "")
                         : "";
             }
         );
@@ -1258,6 +1258,10 @@
 
         const rememberInput = getElement("login-remember");
         const usernameInput = getElement("login-username");
+        const passwordInput = getElement("login-password");
+        const passwordToggle = getElement("login-password-toggle");
+        const forgotButton = getElement("login-forgot-button");
+        const message = getElement("login-message");
         const shouldRemember = localStorage.getItem(REMEMBER_LOGIN_STORAGE_KEY) !== "false";
 
         if (rememberInput) {
@@ -1273,6 +1277,37 @@
         if (usernameInput && shouldRemember && !usernameInput.value) {
             usernameInput.value = localStorage.getItem(REMEMBERED_USERNAME_STORAGE_KEY) || "";
         }
+
+        if (passwordInput && passwordToggle) {
+            passwordToggle.addEventListener("click", () => {
+                const showPassword = passwordInput.type === "password";
+                passwordInput.type = showPassword ? "text" : "password";
+                passwordToggle.setAttribute(
+                    "aria-label",
+                    showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"
+                );
+            });
+        }
+
+        forgotButton?.addEventListener("click", () => {
+            if (!message) return;
+            message.textContent = "Vui lòng liên hệ quản trị viên để được cấp lại mật khẩu.";
+            message.className = "auth-message auth-message-info";
+        });
+
+        document.querySelectorAll("[data-login-account]").forEach(button => {
+            button.addEventListener("click", () => {
+                if (!usernameInput || !passwordInput) return;
+                usernameInput.value = button.dataset.loginAccount || "";
+                passwordInput.value = "123456";
+                passwordInput.type = "password";
+                passwordToggle?.setAttribute("aria-label", "Hiện mật khẩu");
+                if (message) {
+                    message.textContent = "Đã điền tài khoản mẫu. Bấm Đăng nhập để tiếp tục.";
+                    message.className = "auth-message auth-message-info";
+                }
+            });
+        });
 
 
         /*

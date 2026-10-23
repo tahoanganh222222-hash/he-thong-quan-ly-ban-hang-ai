@@ -150,6 +150,9 @@
             email:
                 String(user.email || "").trim(),
 
+            avatarData:
+                String(user.avatarData || user.avatar_data || "").trim(),
+
             role:
                 roleNames[user.role]
                     ? user.role
@@ -389,7 +392,46 @@
        RENDER USERS
        ========================================================= */
 
+    function renderUserSummary() {
+
+        const total = users.length;
+        const active = users.filter(user => user.isActive).length;
+        const locked = Math.max(0, total - active);
+        const activePercent = total ? Math.round((active / total) * 100) : 0;
+        const lockedPercent = total ? Math.round((locked / total) * 100) : 0;
+
+        const values = {
+            "users-stat-total": total,
+            "users-stat-active": active,
+            "users-stat-temporary": 0,
+            "users-stat-locked": locked,
+            "users-stat-active-percent": `${activePercent}%`,
+            "users-stat-locked-percent": `${lockedPercent}%`
+        };
+
+        Object.entries(values).forEach(([id, value]) => {
+            const element = getElement(id);
+            if (element) element.textContent = value;
+        });
+    }
+
+    function getUserInitials(fullName) {
+
+        const words = String(fullName || "U")
+            .trim()
+            .split(/\s+/)
+            .filter(Boolean);
+
+        if (!words.length) return "U";
+
+        return words.length === 1
+            ? words[0].slice(0, 2).toUpperCase()
+            : `${words[0][0]}${words[words.length - 1][0]}`.toUpperCase();
+    }
+
     function renderUsers() {
+
+        renderUserSummary();
 
         const tbody =
             getElement(
@@ -415,7 +457,7 @@
         if (count) {
 
             count.textContent =
-                `${filteredUsers.length} tài khoản`;
+                `Hiển thị ${filteredUsers.length} tài khoản`;
         }
 
 
@@ -450,6 +492,17 @@
 
     function renderUserRow(user) {
 
+        const currentUser = getCurrentUser();
+        const isCurrentUser = Boolean(
+            currentUser &&
+            String(currentUser.username || "").toLowerCase() ===
+                String(user.username || "").toLowerCase()
+        );
+
+        const avatar = user.avatarData
+            ? `<img src="${escapeHtml(user.avatarData)}" alt="">`
+            : escapeHtml(getUserInitials(user.fullName));
+
         const roleClass =
             `user-role-${user.role}`;
 
@@ -482,12 +535,16 @@
             <tr>
 
                 <td class="user-id">
-                    #${escapeHtml(user.id)}
+                    ${escapeHtml(user.id)}
                 </td>
 
                 <td>
-                    <div class="user-name">
-                        ${escapeHtml(user.fullName)}
+                    <div class="user-identity">
+                        <span class="user-list-avatar user-list-avatar-${escapeHtml(user.role)}">${avatar}</span>
+                        <span class="user-name-copy">
+                            <strong>${escapeHtml(user.fullName)}${isCurrentUser ? '<b class="user-current-badge">Bạn</b>' : ""}</strong>
+                            <small>${escapeHtml(user.email || "Chưa có email")}</small>
+                        </span>
                     </div>
                 </td>
 
@@ -532,7 +589,7 @@
                             data-action="edit"
                             data-id="${user.id}"
                         >
-                            Sửa
+                            <span aria-hidden="true">✎</span> Sửa
                         </button>
 
                         <button
@@ -541,7 +598,7 @@
                             data-action="toggle"
                             data-id="${user.id}"
                         >
-                            ${toggleText}
+                            <span aria-hidden="true">▣</span> ${toggleText}
                         </button>
 
                     </div>

@@ -17,53 +17,63 @@
         href="./assets/branding/sales-manager-logo.svg?v=20260916-1"
     >
 
+    <script>
+        try {
+            if (localStorage.getItem("sales-manager-sidebar-collapsed") === "true") {
+                document.documentElement.dataset.sidebarCollapsed = "true";
+            }
+        } catch (error) {
+            // Giao diện vẫn hoạt động nếu trình duyệt chặn localStorage.
+        }
+    </script>
+
 <link
     rel="stylesheet"
     href="./css/api.css"
 >
 <link
     rel="stylesheet"
-    href="./css/products.css?v=20260922-2"
+    href="./css/products.css?v=20260925-5"
 >
 <link
     rel="stylesheet"
-    href="./css/categories.css?v=20260922-1"
+    href="./css/categories.css?v=20260925-3"
 >
 <link 
     rel="stylesheet" 
-    href="./css/customers.css?v=20260910-1"
+    href="./css/customers.css?v=20260925-4"
 >
 <link 
     rel="stylesheet" 
-    href="./css/invoices.css?v=20260922-2"
+    href="./css/invoices.css?v=20260925-4"
 >
 <link 
     rel="stylesheet" 
-    href="./css/purchases.css?v=20260913-2"
+    href="./css/purchases.css?v=20260925-7"
 >
 <link
     rel="stylesheet"
-    href="./css/inventory.css?v=20260922-1"
+    href="./css/inventory.css?v=20260925-6"
 >
 <link
     rel="stylesheet"
-    href="./css/history.css?v=20260922-1"
+    href="./css/history.css?v=20260925-7"
 >
 <link
     rel="stylesheet"
-    href="./css/statistics.css?v=20260910-1"
+    href="./css/statistics.css?v=20260928-4"
 >
 <link
     rel="stylesheet"
-    href="./css/reports.css"
+    href="./css/reports.css?v=20260928-5"
 >
 <link
     rel="stylesheet"
-    href="./css/users.css?v=20260922-1"
+    href="./css/users.css?v=20260925-4"
 >
 <link
     rel="stylesheet"
-    href="css/permissions.css?v=20260922-3"
+    href="css/permissions.css?v=20260928-1"
 >
 <link 
     rel="stylesheet" 
@@ -83,11 +93,11 @@
 >
 <link
     rel="stylesheet"
-    href="css/ai-logs.css?v=20260910-1"
+    href="css/ai-logs.css?v=20260925-4"
 >
 <link
     rel="stylesheet"
-    href="css/account.css?v=20260922-2"
+    href="css/account.css?v=20261003-1"
 >
 <link
     rel="stylesheet"
@@ -95,7 +105,23 @@
 >
 <link
     rel="stylesheet"
-    href="css/modern-ui.css?v=20260922-5"
+    href="css/modern-ui.css?v=20260924-17"
+>
+<link
+    rel="stylesheet"
+    href="css/sidebar.css?v=20261003-1"
+>
+<link
+    rel="stylesheet"
+    href="css/dashboard.css?v=20260928-1"
+>
+<link
+    rel="stylesheet"
+    href="css/detail-views.css?v=20260930-3"
+>
+<link
+    rel="stylesheet"
+    href="css/notifications.css?v=20260930-1"
 >
 
 
@@ -106,45 +132,100 @@
          ================================================= -->
 
     <section id="login-page">
-        <form id="login-form">
-            <input
-                id="login-username"
-                name="username"
-                type="text"
-                placeholder="Tên tài khoản"
-                autocomplete="username"
-                required
-            >
-            <input
-                id="login-password"
-                name="password"
-                type="password"
-                placeholder="Mật khẩu"
-                autocomplete="current-password"
-                required
-            >
-            <label class="auth-remember" for="login-remember">
-                <input
-                    id="login-remember"
-                    name="remember"
-                    type="checkbox"
-                    checked
-                >
-                <span class="auth-remember-box" aria-hidden="true">
-                    <svg viewBox="0 0 16 16" fill="none">
-                        <path d="m3.5 8 2.8 2.8 6.2-6.1"/>
-                    </svg>
-                </span>
-                <span class="auth-remember-text">
-                    <strong>Ghi nhớ đăng nhập</strong>
-                    <small>Không cần đăng nhập lại trên thiết bị này</small>
-                </span>
-            </label>
-            <div id="login-message"></div>
-            <button type="submit">
-                Đăng nhập
-            </button>
-        </form>
+        <div class="auth-shell">
+            <section class="auth-showcase" aria-label="Giới thiệu hệ thống">
+                <div class="auth-brand">
+                    <img src="assets/branding/sales-manager-logo.svg?v=20260916-1" alt="" width="58" height="58">
+                    <div>
+                        <strong>Sales Manager</strong>
+                        <span>Hệ thống quản lý bán hàng</span>
+                    </div>
+                </div>
+
+                <div class="auth-showcase-copy">
+                    <span class="auth-eyebrow">Quản lý hiệu quả · Vận hành dễ dàng</span>
+                    <h1>Quản lý bán hàng<br><em>dễ dàng hơn</em></h1>
+                    <p>Theo dõi sản phẩm, khách hàng, hóa đơn và doanh thu trong một hệ thống thống nhất.</p>
+
+                    <div class="auth-feature-list">
+                        <div><span>▣</span><p><strong>Quản lý sản phẩm</strong><small>Theo dõi hàng hóa và tồn kho</small></p></div>
+                        <div><span>♙</span><p><strong>Quản lý khách hàng</strong><small>Lưu trữ và chăm sóc khách hàng</small></p></div>
+                        <div><span>▥</span><p><strong>Thống kê doanh thu</strong><small>Báo cáo trực quan và chính xác</small></p></div>
+                        <div><span>♢</span><p><strong>Phân quyền linh hoạt</strong><small>Bảo vệ dữ liệu theo từng vai trò</small></p></div>
+                    </div>
+                </div>
+
+                <div class="auth-visual" aria-hidden="true">
+                    <div class="auth-visual-orbit"></div>
+                    <div class="auth-dashboard-mockup">
+                        <div class="auth-mockup-sidebar"><i></i><i></i><i></i><i></i><i></i></div>
+                        <div class="auth-mockup-main">
+                            <div class="auth-mockup-top"><i></i><i></i></div>
+                            <div class="auth-mockup-cards"><i></i><i></i><i></i></div>
+                            <div class="auth-mockup-chart"><span></span></div>
+                        </div>
+                    </div>
+                    <div class="auth-revenue-card">
+                        <span>Doanh thu hôm nay</span>
+                        <strong>12.500.000₫</strong>
+                        <small>↑ 12%</small>
+                    </div>
+                </div>
+            </section>
+
+            <form id="login-form">
+                <div class="auth-form-brand">
+                    <img src="assets/branding/sales-manager-logo.svg?v=20260916-1" alt="" width="48" height="48">
+                    <div><strong>Sales Manager</strong><span>Hệ thống quản lý bán hàng</span></div>
+                </div>
+
+                <div class="auth-form-heading">
+                    <h2>Đăng nhập</h2>
+                    <p>Chào mừng bạn quay trở lại. Đăng nhập để tiếp tục sử dụng hệ thống.</p>
+                </div>
+
+                <label class="auth-field" for="login-username">
+                    <span>Tên tài khoản</span>
+                    <span class="auth-input-wrap">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="8" r="3.2"/><path d="M6 19c.7-3.6 2.7-5.4 6-5.4s5.3 1.8 6 5.4"/></svg>
+                        <input id="login-username" name="username" type="text" placeholder="Nhập tên tài khoản" autocomplete="username" required>
+                    </span>
+                </label>
+
+                <label class="auth-field" for="login-password">
+                    <span>Mật khẩu</span>
+                    <span class="auth-input-wrap">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="6" y="10" width="12" height="10" rx="2"/><path d="M9 10V7a3 3 0 0 1 6 0v3"/></svg>
+                        <input id="login-password" name="password" type="password" placeholder="Nhập mật khẩu" autocomplete="current-password" required>
+                        <button class="auth-password-toggle" id="login-password-toggle" type="button" aria-label="Hiện mật khẩu">
+                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 12s3.4-5 9-5 9 5 9 5-3.4 5-9 5-9-5-9-5Z"/><circle cx="12" cy="12" r="2.2"/></svg>
+                        </button>
+                    </span>
+                </label>
+
+                <div class="auth-form-options">
+                    <label class="auth-remember" for="login-remember">
+                        <input id="login-remember" name="remember" type="checkbox" checked>
+                        <span class="auth-remember-box" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none"><path d="m3.5 8 2.8 2.8 6.2-6.1"/></svg></span>
+                        <span class="auth-remember-text"><strong>Ghi nhớ đăng nhập</strong><small>Không cần đăng nhập lại trên thiết bị này</small></span>
+                    </label>
+                    <button type="button" class="auth-forgot-button" id="login-forgot-button">Quên mật khẩu?</button>
+                </div>
+
+                <div id="login-message"></div>
+                <button class="auth-submit-button" type="submit">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M14 5h5v14h-5M10 8l4 4-4 4M14 12H4"/></svg>
+                    <span>Đăng nhập</span>
+                </button>
+
+                <div class="auth-demo-divider"><span>Tài khoản mẫu</span></div>
+                <div class="auth-demo-accounts">
+                    <button type="button" data-login-account="admin"><strong>Quản trị viên</strong><small>admin</small></button>
+                    <button type="button" data-login-account="staff01"><strong>Nhân viên</strong><small>staff01</small></button>
+                    <button type="button" data-login-account="user01"><strong>Khách hàng</strong><small>user01</small></button>
+                </div>
+            </form>
+        </div>
     </section>
 
 
@@ -166,13 +247,27 @@
                     >
                 </div>
 
-                <div>
+                <div class="sidebar-brand-copy">
                     <h2>Sales Manager</h2>
                     <span>Quản lý bán hàng</span>
                 </div>
+
+                <button
+                    class="sidebar-toggle"
+                    id="sidebar-toggle"
+                    type="button"
+                    aria-label="Thu gọn thanh bên"
+                    aria-controls="sidebar-navigation"
+                    aria-expanded="true"
+                    title="Thu gọn thanh bên"
+                >
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M5 7h14M5 12h14M5 17h14"/>
+                    </svg>
+                </button>
             </div>
 
-            <nav class="sidebar-menu">
+            <nav class="sidebar-menu" id="sidebar-navigation" aria-label="Điều hướng chính">
                 <div class="menu-section">
                     TỔNG QUAN
                 </div>
@@ -334,7 +429,12 @@
                     id="logout-button"
                     data-auth-action="logout"
                 >
-                    Đăng xuất
+                    <span class="logout-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M10 5H6.5A1.5 1.5 0 0 0 5 6.5v11A1.5 1.5 0 0 0 6.5 19H10M14 8l4 4-4 4M18 12H9"/>
+                        </svg>
+                    </span>
+                    <span class="logout-label">Đăng xuất</span>
                 </button>
 
             </div>
@@ -392,6 +492,60 @@
                         <time id="topbar-current-time">--:--</time>
                     </div>
 
+                    <div class="topbar-notification">
+                        <button
+                            type="button"
+                            class="topbar-notification-button"
+                            id="topbar-notification-button"
+                            aria-label="Mở thông báo"
+                            aria-haspopup="true"
+                            aria-controls="topbar-notification-panel"
+                            aria-expanded="false"
+                        >
+                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/>
+                                <path d="M10 21h4"/>
+                            </svg>
+                            <span class="topbar-notification-badge" id="topbar-notification-badge" hidden>0</span>
+                        </button>
+
+                        <section
+                            class="topbar-notification-panel"
+                            id="topbar-notification-panel"
+                            aria-label="Danh sách thông báo"
+                            hidden
+                        >
+                            <div class="topbar-notification-head">
+                                <div>
+                                    <span class="topbar-notification-kicker">CẬP NHẬT HỆ THỐNG</span>
+                                    <h2>Thông báo</h2>
+                                </div>
+                                <button type="button" id="topbar-notification-read-all">Đánh dấu đã xem</button>
+                            </div>
+
+                            <div class="topbar-notification-summary" id="topbar-notification-summary">
+                                Đang tải thông báo...
+                            </div>
+
+                            <div class="topbar-notification-list" id="topbar-notification-list" role="list"></div>
+
+                            <div class="topbar-notification-foot">
+                                <button type="button" id="topbar-notification-settings">
+                                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                        <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/>
+                                        <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21h-4v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.1 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H2.3v-4h.1A1.7 1.7 0 0 0 4.1 8a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 8.5 3.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V2h4v.1A1.7 1.7 0 0 0 15 3.6a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 8c.14.38.36.72.64 1 .3.28.68.45 1.08.48h.1v4h-.1A1.7 1.7 0 0 0 19.4 15Z"/>
+                                    </svg>
+                                    Cài đặt thông báo
+                                </button>
+                                <button type="button" id="topbar-notification-refresh" aria-label="Làm mới thông báo">
+                                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                        <path d="M20 6v5h-5"/><path d="M18.5 15a7 7 0 1 1-.8-7.8L20 11"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </section>
+                    </div>
+
                     <button
                         type="button"
                         class="user-info"
@@ -408,7 +562,7 @@
                         </span>
 
                         <span class="user-detail">
-                            <strong id="current-user-name" data-current-username>
+                            <strong id="current-user-name" data-current-fullname>
                                 admin
                             </strong>
 
@@ -457,11 +611,11 @@
                             0 ₫
                         </h2>
 
-                        <p class="stat-description">
-                            So với ngày hôm qua:
+                        <p class="stat-description stat-revenue-comparison">
                             <strong id="revenue-change">
-                                +0%
+                                ↑ 0.0%
                             </strong>
+                            <span>So với ngày hôm qua</span>
                         </p>
 
                     </div>
@@ -562,11 +716,11 @@
                 <!-- =========================
                      MIDDLE SECTION
                      ========================= -->
-                <div class="dashboard-grid">
+                <div class="dashboard-grid dashboard-overview-grid">
 
 
                     <!-- DOANH THU -->
-                    <div class="dashboard-card revenue-card" data-permission="revenue_statistics">
+                    <div class="dashboard-card revenue-card dashboard-revenue-card" data-permission="revenue_statistics">
 
                         <div class="card-header">
 
@@ -617,7 +771,7 @@
 
 
                     <!-- SẢN PHẨM BÁN CHẠY -->
-                    <div class="dashboard-card" data-permission="top_products">
+                    <div class="dashboard-card dashboard-top-products-card" data-permission="top_products">
 
                         <div class="card-header">
 
@@ -630,6 +784,14 @@
                                     Theo số lượng bán
                                 </p>
                             </div>
+
+                            <button
+                                type="button"
+                                class="view-all-button"
+                                id="dashboard-view-all-products"
+                            >
+                                Xem tất cả
+                            </button>
 
                         </div>
 
@@ -649,11 +811,11 @@
                 <!-- =========================
                      BOTTOM SECTION
                      ========================= -->
-                <div class="dashboard-grid">
+                <div class="dashboard-grid dashboard-operations-grid">
 
 
                     <!-- HÓA ĐƠN GẦN ĐÂY -->
-                    <div class="dashboard-card" data-permission="invoice_search">
+                    <div class="dashboard-card dashboard-invoices-card" data-permission="invoice_search">
 
                         <div class="card-header">
 
@@ -680,7 +842,7 @@
 
                         <div class="table-wrapper">
 
-                            <table>
+                            <table class="dashboard-recent-table">
 
                                 <thead>
                                     <tr>
@@ -699,6 +861,14 @@
                                         <th>
                                             Trạng thái
                                         </th>
+
+                                        <th>
+                                            Thời gian
+                                        </th>
+
+                                        <th aria-label="Thao tác">
+                                            Thao tác
+                                        </th>
                                     </tr>
                                 </thead>
 
@@ -716,7 +886,7 @@
 
 
                     <!-- CẢNH BÁO TỒN KHO -->
-                    <div class="dashboard-card" data-permission="inventory_view">
+                    <div class="dashboard-card dashboard-inventory-card" data-permission="inventory_view">
 
                         <div class="card-header">
 
@@ -838,32 +1008,62 @@
 >
 
     <div class="products-page-header">
-
-        <div>
-            <h2>
-                Quản lý sản phẩm
-            </h2>
-
-            <p>
-                Quản lý thông tin và trạng thái sản phẩm
-            </p>
+        <div class="products-hero-copy">
+            <span class="products-hero-kicker">
+                <i aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4.5 7.7 7.5 4.2 7.5-4.2M12 12v8.6"/></svg>
+                </i>
+                QUẢN LÝ SẢN PHẨM
+            </span>
+            <h2>Quản lý <em>sản phẩm</em></h2>
+            <p>Quản lý thông tin và trạng thái sản phẩm</p>
         </div>
+        <div class="products-hero-visual" aria-hidden="true">
+            <img src="./assets/illustrations/products-management-v1.png?v=20260925-1" alt="">
+        </div>
+        <p class="products-hero-note">
+            <i aria-hidden="true">“</i>
+            <span>Quản lý sản phẩm hiệu quả<strong>Giúp kinh doanh dễ dàng hơn</strong></span>
+            <b aria-hidden="true">”</b>
+        </p>
+    </div>
 
-        <button
-            class="product-add-button"
-            id="add-product-button"
-        >
-            + Thêm sản phẩm
-        </button>
-
+    <div class="product-summary-grid" aria-label="Tổng quan sản phẩm">
+        <article class="product-summary-card total">
+            <span class="product-summary-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4.5 7.7 7.5 4.2 7.5-4.2M12 12v8.6"/></svg>
+            </span>
+            <div><strong id="product-stat-total">0</strong><span>Tổng sản phẩm</span><small>Toàn bộ mặt hàng trong hệ thống</small></div>
+        </article>
+        <article class="product-summary-card active">
+            <span class="product-summary-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16.5 8.5"/></svg>
+            </span>
+            <div><strong id="product-stat-active">0</strong><span>Đang kinh doanh</span><small id="product-stat-active-note">0% tổng sản phẩm</small></div>
+            <i class="product-summary-progress"><b id="product-stat-active-bar"></b></i>
+        </article>
+        <article class="product-summary-card low">
+            <span class="product-summary-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M12 7v5l3 2"/><circle cx="12" cy="12" r="9"/></svg>
+            </span>
+            <div><strong id="product-stat-low">0</strong><span>Sắp hết hàng</span><small id="product-stat-low-note">0% cần nhập thêm</small></div>
+            <i class="product-summary-progress"><b id="product-stat-low-bar"></b></i>
+        </article>
+        <article class="product-summary-card inactive">
+            <span class="product-summary-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8.8 8.8 6.4 6.4m0-6.4-6.4 6.4"/></svg>
+            </span>
+            <div><strong id="product-stat-inactive">0</strong><span>Ngừng kinh doanh</span><small id="product-stat-inactive-note">0% tổng sản phẩm</small></div>
+            <i class="product-summary-progress"><b id="product-stat-inactive-bar"></b></i>
+        </article>
     </div>
 
 
     <!-- TOOLBAR -->
 
-    <div class="product-toolbar" data-permission="search_filter">
+    <div class="product-toolbar">
 
-        <div class="product-search">
+        <div class="product-search" data-permission="search_filter">
 
             <span class="product-search-icon">
                 ⌕
@@ -872,7 +1072,7 @@
             <input
                 type="text"
                 id="product-search-input"
-                placeholder="Tìm kiếm theo mã hoặc tên sản phẩm..."
+                placeholder="Tìm theo mã, tên sản phẩm hoặc danh mục..."
             >
 
         </div>
@@ -881,6 +1081,7 @@
         <select
             class="product-filter"
             id="product-category-filter"
+            data-permission="search_filter"
         >
 
             <option value="all">
@@ -893,6 +1094,7 @@
         <select
             class="product-filter"
             id="product-status-filter"
+            data-permission="search_filter"
         >
 
             <option value="all">
@@ -908,6 +1110,22 @@
             </option>
 
         </select>
+
+        <button
+            type="button"
+            class="product-reset-button"
+            id="product-reset-filter"
+            data-permission="search_filter"
+        >
+            Đặt lại
+        </button>
+
+        <button
+            class="product-add-button"
+            id="add-product-button"
+        >
+            + Thêm sản phẩm
+        </button>
 
     </div>
 
@@ -962,6 +1180,10 @@
 
                         <th>
                             ĐƠN VỊ
+                        </th>
+
+                        <th>
+                            TỒN KHO
                         </th>
 
                         <th>
@@ -1239,16 +1461,20 @@
 
     <div class="ai-logs-summary" aria-label="Tổng quan nhật ký AI">
         <article class="ai-log-summary-card requests">
-            <span class="ai-log-summary-icon">✦</span>
+            <span class="ai-log-summary-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 1.45 4.55L18 9l-4.55 1.45L12 15l-1.45-4.55L6 9l4.55-1.45L12 3Z"/></svg></span>
             <div><small>Tổng yêu cầu</small><strong id="ai-logs-total">0</strong></div>
         </article>
         <article class="ai-log-summary-card tokens">
-            <span class="ai-log-summary-icon">◎</span>
+            <span class="ai-log-summary-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/></svg></span>
             <div><small>Token đã dùng</small><strong id="ai-logs-tokens">0</strong></div>
         </article>
         <article class="ai-log-summary-card users">
-            <span class="ai-log-summary-icon">♙</span>
+            <span class="ai-log-summary-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M7 20c.5-4 2.2-6 5-6s4.5 2 5 6M9 5h6M9 20h6"/></svg></span>
             <div><small>Người sử dụng</small><strong id="ai-logs-users">0</strong></div>
+        </article>
+        <article class="ai-log-summary-card today">
+            <span class="ai-log-summary-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="1"/><rect x="9" y="9" width="6" height="6"/></svg></span>
+            <div><small>Yêu cầu hôm nay</small><strong id="ai-logs-today">0</strong></div>
         </article>
     </div>
 
@@ -1267,6 +1493,7 @@
         <button type="button" id="ai-logs-clear-filter" class="ai-logs-clear-filter">Xóa bộ lọc</button>
     </div>
 
+    <div class="ai-logs-content-grid">
     <div class="ai-logs-table-card">
         <div class="ai-logs-table-heading">
             <div>
@@ -1296,6 +1523,23 @@
             <span id="ai-logs-count">Không có yêu cầu AI</span>
             <div id="ai-logs-pagination" class="ai-logs-pagination" aria-label="Phân trang nhật ký AI"></div>
         </div>
+    </div>
+
+    <aside class="ai-logs-insights" aria-label="Thống kê nhật ký AI">
+        <section class="ai-logs-insight-card ai-logs-chart-card">
+            <h3>Thống kê theo tính năng AI</h3>
+            <div class="ai-logs-chart-layout">
+                <div class="ai-logs-donut-chart" id="ai-logs-donut-chart">
+                    <span><strong id="ai-logs-donut-total">0</strong><small>yêu cầu</small></span>
+                </div>
+                <div class="ai-logs-chart-legend" id="ai-logs-chart-legend"></div>
+            </div>
+        </section>
+        <section class="ai-logs-insight-card ai-logs-recent-card">
+            <h3>Hoạt động gần đây</h3>
+            <div class="ai-logs-recent-list" id="ai-logs-recent-list"></div>
+        </section>
+    </aside>
     </div>
 </section>
 
@@ -1559,16 +1803,28 @@
         aria-labelledby="product-detail-title"
     >
         <header class="product-detail-header">
-            <div>
-                <span>THÔNG TIN SẢN PHẨM</span>
-                <h2 id="product-detail-title">Chi tiết sản phẩm</h2>
+            <div class="product-detail-heading">
+                <span class="product-detail-header-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M6.5 4.5h11A1.5 1.5 0 0 1 19 6v12a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 18V6a1.5 1.5 0 0 1 1.5-1.5Z"/>
+                        <path d="M8.5 9h7M8.5 13h7M8.5 17h4"/>
+                    </svg>
+                </span>
+                <div class="product-detail-heading-copy">
+                    <span class="product-detail-kicker">SẢN PHẨM</span>
+                    <h2 id="product-detail-title">Chi tiết sản phẩm</h2>
+                </div>
             </div>
             <button
                 type="button"
                 class="product-detail-close"
                 id="product-detail-close"
                 aria-label="Đóng chi tiết sản phẩm"
-            >×</button>
+            >
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="m7 7 10 10M17 7 7 17"/>
+                </svg>
+            </button>
         </header>
         <div class="product-detail-content" id="product-detail-content"></div>
     </section>
@@ -1582,24 +1838,64 @@
     id="categories-page"
 >
     <div class="categories-page-header">
-        <div>
-            <h2>
-                Quản lý danh mục
-           </h2>
-            <p>
-                Quản lý các nhóm sản phẩm trong cửa hàng
-            </p>
+        <div class="categories-hero-copy">
+            <span class="categories-hero-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                    <rect x="3.5" y="3.5" width="7" height="7" rx="1.6"></rect>
+                    <rect x="13.5" y="3.5" width="7" height="7" rx="1.6"></rect>
+                    <rect x="3.5" y="13.5" width="7" height="7" rx="1.6"></rect>
+                    <path d="M17 13.5v7M13.5 17h7"></path>
+                </svg>
+            </span>
+            <div>
+                <span class="categories-hero-kicker">QUẢN LÝ DANH MỤC</span>
+                <h2>
+                    Quản lý <em>danh mục</em>
+                </h2>
+                <p>
+                    Quản lý các nhóm sản phẩm trong cửa hàng
+                </p>
+            </div>
         </div>
-        <button
-            class="category-add-button"
-            id="add-category-button"
-        >
-            + Thêm danh mục
-        </button>
+        <div class="categories-hero-visual" aria-hidden="true">
+            <img src="./assets/illustrations/category-management-v1.png?v=20260925-1" alt="">
+        </div>
+        <p class="categories-hero-note">
+            <i aria-hidden="true">✦</i>
+            <span>Quản lý danh mục khoa học<strong>Dễ dàng sắp xếp và tìm kiếm</strong></span>
+        </p>
+    </div>
+    <div class="category-summary-grid" aria-label="Tổng quan danh mục">
+        <article class="category-summary-card total">
+            <span class="category-summary-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M3.5 7.5h6l1.7 2H20.5v8.5a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2V7.5Z"/><path d="M3.5 10h17"/></svg>
+            </span>
+            <div><strong id="category-stat-total">0</strong><span>Tổng danh mục</span><small>Nhóm sản phẩm trong hệ thống</small></div>
+        </article>
+        <article class="category-summary-card products">
+            <span class="category-summary-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4.5 7.7 7.5 4.2 7.5-4.2M12 12v8.6"/></svg>
+            </span>
+            <div><strong id="category-stat-products">0</strong><span>Tổng sản phẩm</span><small>Được phân loại theo danh mục</small></div>
+        </article>
+        <article class="category-summary-card active">
+            <span class="category-summary-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16.5 8.5"/></svg>
+            </span>
+            <div><strong id="category-stat-active">0</strong><span>Đang hoạt động</span><small id="category-stat-active-note">0% tổng danh mục</small></div>
+            <i class="category-summary-progress"><b id="category-stat-active-bar"></b></i>
+        </article>
+        <article class="category-summary-card inactive">
+            <span class="category-summary-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.5 12h7"/></svg>
+            </span>
+            <div><strong id="category-stat-inactive">0</strong><span>Ngừng hoạt động</span><small id="category-stat-inactive-note">0% tổng danh mục</small></div>
+            <i class="category-summary-progress"><b id="category-stat-inactive-bar"></b></i>
+        </article>
     </div>
     <!-- TOOLBAR -->
-    <div class="category-toolbar" data-permission="search_filter">
-        <div class="category-search">
+    <div class="category-toolbar">
+        <div class="category-search" data-permission="search_filter">
             <span class="category-search-icon">
                 ⌕
             </span>
@@ -1612,6 +1908,7 @@
         <select
             class="category-filter"
             id="category-status-filter"
+            data-permission="search_filter"
         >
             <option value="all">
                 Tất cả trạng thái
@@ -1623,6 +1920,22 @@
                 Ngừng hoạt động
             </option>
         </select>
+        <select
+            class="category-filter"
+            id="category-sort-filter"
+            data-permission="search_filter"
+            aria-label="Sắp xếp danh mục"
+        >
+            <option value="newest">Sắp xếp: Mới nhất</option>
+            <option value="name">Tên: A đến Z</option>
+            <option value="products">Nhiều sản phẩm nhất</option>
+        </select>
+        <button
+            class="category-add-button"
+            id="add-category-button"
+        >
+            + Thêm danh mục
+        </button>
     </div>
     <!-- CATEGORY TABLE -->
     <div class="category-table-card">
@@ -1649,6 +1962,9 @@
                         </th>
                         <th>
                             MÔ TẢ
+                        </th>
+                        <th>
+                            SỐ SẢN PHẨM
                         </th>
                         <th>
                             TRẠNG THÁI
@@ -1787,16 +2103,28 @@
         aria-labelledby="category-detail-title"
     >
         <header class="category-detail-header">
-            <div>
-                <span>THÔNG TIN DANH MỤC</span>
-                <h2 id="category-detail-title">Chi tiết danh mục</h2>
+            <div class="category-detail-heading">
+                <span class="category-detail-header-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M4.5 7.5h6l1.7 2H19a1.5 1.5 0 0 1 1.5 1.5v7A1.5 1.5 0 0 1 19 19.5H5A1.5 1.5 0 0 1 3.5 18V9A1.5 1.5 0 0 1 5 7.5Z"/>
+                        <path d="M5.5 7.5V6A1.5 1.5 0 0 1 7 4.5h4l1.6 2"/>
+                    </svg>
+                </span>
+                <div class="category-detail-heading-copy">
+                    <span class="category-detail-kicker">DANH MỤC</span>
+                    <h2 id="category-detail-title">Chi tiết danh mục</h2>
+                </div>
             </div>
             <button
                 type="button"
                 class="category-detail-close"
                 id="category-detail-close"
                 aria-label="Đóng chi tiết danh mục"
-            >×</button>
+            >
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="m7 7 10 10M17 7 7 17"/>
+                </svg>
+            </button>
         </header>
         <div class="category-detail-content" id="category-detail-content"></div>
     </section>
@@ -1808,10 +2136,102 @@
      ========================================================= -->
 <section class="customers-page" id="customers-page">
     <div class="customers-page-header">
-        <div>
-            <h2>Quản lý khách hàng</h2>
-            <p>Quản lý thông tin và nhóm khách hàng</p>
+        <div class="customers-hero-copy">
+            <span class="customers-hero-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                    <circle cx="9" cy="8" r="3"></circle>
+                    <circle cx="17" cy="10" r="2.4"></circle>
+                    <path d="M3.5 19c.5-3.7 2.4-5.6 5.5-5.6s5 1.9 5.5 5.6M14 14.2c2.9-.8 5.1.8 5.8 3.8"></path>
+                </svg>
+            </span>
+            <div>
+                <h2>Quản lý <em>khách hàng</em></h2>
+                <p>Quản lý thông tin và nhóm khách hàng</p>
+            </div>
         </div>
+        <div class="customers-hero-visual" aria-hidden="true">
+            <img src="./assets/illustrations/customer-management-v1.png?v=20260925-1" alt="">
+        </div>
+        <p class="customers-hero-note">
+            <i aria-hidden="true">✦</i>
+            <span>Quản lý khách hàng hiệu quả<strong>Xây dựng mối quan hệ bền vững</strong></span>
+        </p>
+    </div>
+
+    <div class="customer-summary-grid" aria-label="Thống kê khách hàng">
+        <article class="customer-summary-card is-total">
+            <span class="customer-summary-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.25"/><path d="M5.5 19c.7-3.8 2.9-5.7 6.5-5.7s5.8 1.9 6.5 5.7"/></svg>
+            </span>
+            <span class="customer-summary-copy">
+                <strong id="customer-stat-total">0</strong>
+                <span>Tổng khách hàng</span>
+                <small>Toàn bộ hồ sơ trong hệ thống</small>
+            </span>
+        </article>
+        <article class="customer-summary-card is-active">
+            <span class="customer-summary-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.3"/><path d="M3.5 19c.5-3.7 2.4-5.6 5.5-5.6s5 1.9 5.5 5.6M14 14.2c2.9-.8 5.1.8 5.8 3.8"/></svg>
+            </span>
+            <span class="customer-summary-copy">
+                <strong id="customer-stat-active">0</strong>
+                <span>Đang hoạt động</span>
+                <small id="customer-stat-active-rate">0% tổng khách hàng</small>
+            </span>
+        </article>
+        <article class="customer-summary-card is-loyal">
+            <span class="customer-summary-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none"><path d="m12 3 2.5 5.1 5.6.8-4 3.9.9 5.5-5-2.6-5 2.6.9-5.5-4-3.9 5.6-.8L12 3Z"/></svg>
+            </span>
+            <span class="customer-summary-copy">
+                <strong id="customer-stat-loyal">0</strong>
+                <span>Khách thân thiết</span>
+                <small>Nhóm thân thiết và VIP</small>
+            </span>
+        </article>
+        <article class="customer-summary-card is-inactive">
+            <span class="customer-summary-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none"><circle cx="10" cy="8" r="3"/><path d="M4 19c.6-3.7 2.6-5.5 6-5.5 1.1 0 2.1.2 2.9.6M16 14l5 5M21 14l-5 5"/></svg>
+            </span>
+            <span class="customer-summary-copy">
+                <strong id="customer-stat-inactive">0</strong>
+                <span>Ngừng hoạt động</span>
+                <small>Có thể mở lại khi cần</small>
+            </span>
+        </article>
+    </div>
+
+    <div class="customer-toolbar">
+        <div class="customer-search" data-permission="search_filter">
+            <span class="customer-search-icon">⌕</span>
+            <input
+                type="text"
+                id="customer-search-input"
+                placeholder="Tìm theo mã, tên, số điện thoại hoặc email..."
+            >
+        </div>
+        <select
+            class="customer-filter"
+            id="customer-group-filter"
+            data-permission="search_filter"
+            aria-label="Lọc theo nhóm khách hàng"
+        >
+            <option value="all">Tất cả nhóm</option>
+            <option value="Khách thường">Khách thường</option>
+            <option value="Khách thân thiết">Khách thân thiết</option>
+            <option value="Khách VIP">Khách VIP</option>
+        </select>
+        <select
+            class="customer-filter"
+            id="customer-status-filter"
+            data-permission="search_filter"
+            aria-label="Lọc theo trạng thái"
+        >
+            <option value="all">Tất cả trạng thái</option>
+            <option value="active">Đang hoạt động</option>
+            <option value="inactive">Ngừng hoạt động</option>
+        </select>
+        <button type="button" class="customer-reset-button" id="customer-reset-filter">Đặt lại</button>
         <button
             class="customer-add-button"
             id="add-customer-button"
@@ -1819,73 +2239,41 @@
             + Thêm khách hàng
         </button>
     </div>
-    <div class="customer-toolbar" data-permission="search_filter">
-        <div class="customer-search">
-            <span class="customer-search-icon">⌕</span>
-            <input
-                type="text"
-                id="customer-search-input"
-                placeholder="Tìm kiếm theo mã, tên hoặc số điện thoại..."
-            >
+
+    <div class="customer-workspace">
+        <div class="customer-table-card">
+            <div class="customer-table-header">
+                <strong>Danh sách khách hàng</strong>
+                <span class="customer-count" id="customer-count">0 khách hàng</span>
+            </div>
+            <div class="customer-table-wrapper">
+                <table class="customer-table">
+                    <thead>
+                        <tr>
+                            <th>KHÁCH HÀNG</th>
+                            <th>LIÊN HỆ</th>
+                            <th>ĐỊA CHỈ</th>
+                            <th>NHÓM</th>
+                            <th>TRẠNG THÁI</th>
+                            <th>THAO TÁC</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customer-table-body"></tbody>
+                </table>
+            </div>
+            <div class="customer-pagination">
+                <span class="customer-pagination-info" id="customer-pagination-info">Không có khách hàng</span>
+                <div class="customer-pagination-buttons" id="customer-pagination-buttons"></div>
+            </div>
         </div>
-        <select
-            class="customer-filter"
-            id="customer-status-filter"
-        >
-            <option value="all">
-                Tất cả trạng thái
-            </option>
-            <option value="active">
-                Đang hoạt động
-            </option>
-            <option value="inactive">
-                Ngừng hoạt động
-            </option>
-        </select>
-    </div>
-    <div class="customer-table-card">
-        <div class="customer-table-header">
-            <strong>
-                Danh sách khách hàng
-            </strong>
-            <span
-                class="customer-count"
-                id="customer-count"
-            >
-                0 khách hàng
-            </span>
-        </div>
-        <div class="customer-table-wrapper">
-            <table class="customer-table">
-                <thead>
-                    <tr>
-                        <th>STT</th>
-                        <th>MÃ KHÁCH HÀNG</th>
-                        <th>TÊN KHÁCH HÀNG</th>
-                        <th>SỐ ĐIỆN THOẠI</th>
-                        <th>EMAIL</th>
-                        <th>ĐỊA CHỈ</th>
-                        <th>NHÓM KHÁCH HÀNG</th>
-                        <th>TRẠNG THÁI</th>
-                        <th>THAO TÁC</th>
-                    </tr>
-                </thead>
-                <tbody id="customer-table-body">
-                </tbody>
-            </table>
-        </div>
-        <div class="customer-pagination">
-            <span
-                class="customer-pagination-info"
-                id="customer-pagination-info"
-            >
-                Không có khách hàng
-            </span>
-            <div
-                class="customer-pagination-buttons"
-                id="customer-pagination-buttons"
-            ></div>
-        </div>
+
+        <aside class="customer-detail-panel" id="customer-detail-panel" aria-live="polite">
+            <div class="customer-detail-empty">
+                <span aria-hidden="true">◎</span>
+                <strong>Chọn một khách hàng</strong>
+                <p>Thông tin chi tiết và lịch sử mua hàng sẽ hiển thị tại đây.</p>
+            </div>
+        </aside>
     </div>
 </section>
 
@@ -2043,13 +2431,42 @@
 <div
     class="customer-modal customer-history-modal"
     id="customer-history-modal"
+    aria-hidden="true"
 >
-    <div class="customer-modal-content customer-history-modal-content">
+    <div
+        class="customer-modal-content customer-history-modal-content"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="customer-history-title"
+    >
         <div class="customer-modal-header customer-history-modal-header">
-            <div>
+            <div class="customer-history-identity">
                 <span class="customer-history-eyebrow">LỊCH SỬ MUA HÀNG</span>
-                <h3 id="customer-history-title">Khách hàng</h3>
-                <p id="customer-history-subtitle"></p>
+                <div class="customer-history-title-row">
+                    <h3 id="customer-history-title">Khách hàng</h3>
+                    <span class="customer-history-code" id="customer-history-code">KH---</span>
+                </div>
+                <div class="customer-history-contact">
+                    <span id="customer-history-phone">Chưa có số điện thoại</span>
+                    <span id="customer-history-group">Khách thường</span>
+                </div>
+            </div>
+            <div class="customer-history-visual" aria-hidden="true">
+                <img src="./assets/illustrations/customer-management-v1.png?v=20260925-1" alt="">
+            </div>
+            <div class="customer-history-latest">
+                <span class="customer-history-latest-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <rect x="4" y="5.5" width="16" height="14" rx="2.5"></rect>
+                        <path d="M8 3.5v4M16 3.5v4M4 9.5h16"></path>
+                        <path d="M8 13h3v3H8z"></path>
+                    </svg>
+                </span>
+                <div>
+                    <small>Lần mua gần nhất</small>
+                    <strong id="customer-history-last-purchase">Chưa có</strong>
+                    <span id="customer-history-lifetime-spend">Chưa ghi nhận chi tiêu</span>
+                </div>
             </div>
             <button
                 type="button"
@@ -2072,11 +2489,50 @@
     id="sales-invoice-page"
 >
     <div class="sales-invoice-page-header">
-        <h2>Lập hóa đơn bán hàng</h2>
-        <p>
-            Tạo hóa đơn và ghi nhận thanh toán cho khách hàng
+        <div class="invoice-hero-copy">
+            <span class="invoice-hero-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                    <path d="M6 3h10l3 3v15l-2-1.3L15 21l-2-1.3L11 21l-2-1.3L6 21V3Z"></path>
+                    <path d="M15 3v4h4M9 10h6M9 14h6"></path>
+                </svg>
+            </span>
+            <div>
+                <h2>Lập hóa đơn <em>bán hàng</em></h2>
+                <p>Tạo hóa đơn và ghi nhận thanh toán cho khách hàng</p>
+            </div>
+        </div>
+        <div class="invoice-hero-visual" aria-hidden="true">
+            <img src="./assets/illustrations/invoice-sales-v1.png?v=20260925-1" alt="">
+        </div>
+        <p class="invoice-hero-note">
+            <i aria-hidden="true">✦</i>
+            <span>Quản lý bán hàng dễ dàng<strong>Nhanh chóng · Chính xác · Hiệu quả</strong></span>
         </p>
     </div>
+    <nav class="invoice-view-tabs" role="tablist" aria-label="Chế độ quản lý hóa đơn">
+        <button
+            type="button"
+            class="invoice-view-tab active"
+            data-invoice-mode="create"
+            data-permission="invoice_create"
+            role="tab"
+            aria-selected="true"
+        >
+            <span class="invoice-tab-icon" aria-hidden="true">＋</span>
+            <span><strong>Lập hóa đơn</strong><small>Tạo hóa đơn bán hàng mới</small></span>
+        </button>
+        <button
+            type="button"
+            class="invoice-view-tab"
+            data-invoice-mode="list"
+            data-permission="invoice_search"
+            role="tab"
+            aria-selected="false"
+        >
+            <span class="invoice-tab-icon" aria-hidden="true">⌕</span>
+            <span><strong>Danh sách hóa đơn</strong><small>Tìm kiếm, lọc và xem giao dịch</small></span>
+        </button>
+    </nav>
     <div class="sales-invoice-layout">
         <!-- LEFT -->
         <div>
@@ -2318,17 +2774,41 @@
     id="purchase-page"
 >
     <div class="purchase-page-header">
-        <div>
-            <h2>Nhập hàng</h2>
-            <p>
-                Lập phiếu nhập hàng và cập nhật tồn kho
-            </p>
+        <div class="purchase-hero-copy">
+            <span class="purchase-hero-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4.5 7.7 7.5 4.2 7.5-4.2M12 12v8.6"/></svg>
+            </span>
+            <div>
+                <span class="purchase-hero-kicker">QUẢN LÝ NHẬP KHO</span>
+                <h2>Nhập <em>hàng</em></h2>
+                <p>Lập phiếu nhập hàng và cập nhật tồn kho</p>
+            </div>
         </div>
+        <div class="purchase-hero-visual" aria-hidden="true">
+            <img src="./assets/illustrations/purchase-warehouse-v1.png?v=20260925-1" alt="">
+        </div>
+        <p class="purchase-hero-note">
+            <i aria-hidden="true">✦</i>
+            <span>Nhập đúng · Quản lý đủ<strong>Tối ưu tồn kho hiệu quả hơn</strong></span>
+        </p>
     </div>
+
+    <div class="purchase-view-tabs" role="tablist" aria-label="Chức năng nhập hàng">
+        <button type="button" class="purchase-view-tab active" data-purchase-view="create" role="tab" aria-selected="true">
+            <span class="purchase-view-icon">＋</span>
+            <span><strong>Nhập hàng</strong><small>Thêm hàng mới và cập nhật tồn kho</small></span>
+        </button>
+        <button type="button" class="purchase-view-tab" data-purchase-view="history" role="tab" aria-selected="false">
+            <span class="purchase-view-icon">◷</span>
+            <span><strong>Lịch sử nhập hàng</strong><small>Tra cứu các phiếu nhập đã tạo</small></span>
+        </button>
+    </div>
+
+    <div class="purchase-workspace active" id="purchase-create-panel" role="tabpanel">
     <div class="purchase-layout">
         <!-- CỘT TRÁI -->
         <div>
-            <div class="purchase-card">
+            <div class="purchase-card purchase-main-card">
                 <h3>Thông tin phiếu nhập</h3>
                 <div class="purchase-form-grid">
                     <div class="purchase-form-group">
@@ -2427,56 +2907,20 @@
 
         <!-- CỘT PHẢI -->
         <div>
-            <div class="purchase-card">
+            <div class="purchase-card purchase-summary-card">
                 <h3>Tổng hợp phiếu nhập</h3>
                 <div class="purchase-summary">
-                    <div class="purchase-summary-row">
-                        <span>
-                            Tổng số lượng
-                        </span>
-                        <strong
-                            id="purchase-item-count"
-                        >
-                            0
-                        </strong>
-                    </div>
-                    <div
-                        class="purchase-summary-row total"
-                    >
-                        <span>
-                            Tổng tiền
-                        </span>
+                    <div class="purchase-summary-row lines"><span>Số sản phẩm</span><strong id="purchase-line-count">0</strong></div>
+                    <div class="purchase-summary-row quantity"><span>Tổng số lượng</span><strong id="purchase-item-count">0</strong></div>
+                    <div class="purchase-summary-row total"><span>Tổng tiền</span><strong id="purchase-summary-total">0 ₫</strong></div>
+                    <div class="purchase-summary-row average"><span>Giá nhập TB</span><strong id="purchase-average-price">0 ₫</strong></div>
 
-                        <strong
-                            id="purchase-total"
-                        >
-                        0 ₫
-                        </strong>
-                    </div>
-
-                </div>
-                <div class="purchase-actions">
-                    <button
-                        type="button"
-                        class="purchase-cancel-button"
-                        id="purchase-cancel-button"
-                    >
-                        Làm mới
-                    </button>
-                    <button
-                        type="button"
-                        class="purchase-create-button"
-                        id="purchase-create-button"
-                    >
-                        Tạo phiếu nhập
-                    </button>
                 </div>
             </div>
 
 
             <div
-                class="purchase-card"
-                style="margin-top: 20px;"
+                class="purchase-card purchase-inventory-card"
             >
                 <h3>
                     Tồn kho sau nhập
@@ -2506,6 +2950,31 @@
 
     </div>
 
+    <div class="purchase-total-bar">
+        <div class="purchase-total-bar-value">
+            <span>Tổng tiền nhập</span>
+            <strong id="purchase-total">0 ₫</strong>
+        </div>
+        <div class="purchase-actions">
+            <button
+                type="button"
+                class="purchase-cancel-button"
+                id="purchase-cancel-button"
+            >
+                Hủy
+            </button>
+            <button
+                type="button"
+                class="purchase-create-button"
+                id="purchase-create-button"
+            >
+                Lưu phiếu nhập
+            </button>
+        </div>
+    </div>
+    </div>
+
+    <div class="purchase-workspace" id="purchase-history-panel" role="tabpanel">
     <div class="purchase-history-card">
         <div class="purchase-history-header">
             <div>
@@ -2582,274 +3051,111 @@
             <div class="purchase-history-pagination" id="purchase-history-pagination"></div>
         </div>
     </div>
+    </div>
 </section>
 
 <!-- =========================================================
      INVENTORY MANAGEMENT - PART 10
      ========================================================= -->
 
-<section
-    class="inventory-page"
-    id="inventory-page"
->
-
-    <!-- HEADER -->
-    <div class="inventory-page-header">
-
-        <div>
-            <h2>
-                Quản lý tồn kho
-            </h2>
-
-            <p>
-                Theo dõi số lượng tồn kho và tình trạng sản phẩm
-            </p>
+<section class="inventory-page" id="inventory-page">
+    <header class="inventory-page-header">
+        <div class="inventory-hero-copy">
+            <h2>Quản lý <em>tồn kho</em></h2>
+            <p>Theo dõi số lượng tồn kho và tình trạng sản phẩm theo thời gian.</p>
         </div>
+        <div class="inventory-hero-visual" aria-hidden="true">
+            <img src="./assets/illustrations/inventory-warehouse-v3.png?v=20260925-1" alt="">
+        </div>
+        <div class="inventory-hero-note"><i>✦</i><span>Kiểm soát tồn kho tốt<br><strong>Giúp kinh doanh hiệu quả hơn</strong></span></div>
+    </header>
 
-        <button
-            class="inventory-refresh-button"
-            id="inventory-refresh-button"
-        >
-            ↻ Làm mới
-        </button>
-
-    </div>
-
-
-    <!-- SUMMARY -->
     <div class="inventory-stats-grid">
-
-        <div class="inventory-stat-card inventory-stat-total">
-
-            <div class="inventory-stat-icon">
-                ▣
-            </div>
-
-            <div>
-                <span>
-                    Tổng sản phẩm
-                </span>
-
-                <strong id="inventory-total-products">
-                    0
-                </strong>
-            </div>
-
-        </div>
-
-
-        <div class="inventory-stat-card inventory-stat-normal">
-
-            <div class="inventory-stat-icon">
-                ✓
-            </div>
-
-            <div>
-                <span>
-                    Đủ hàng
-                </span>
-
-                <strong id="inventory-normal-products">
-                    0
-                </strong>
-            </div>
-
-        </div>
-
-
-        <div class="inventory-stat-card inventory-stat-low">
-
-            <div class="inventory-stat-icon">
-                !
-            </div>
-
-            <div>
-                <span>
-                    Sắp hết hàng
-                </span>
-
-                <strong id="inventory-low-products">
-                    0
-                </strong>
-            </div>
-
-        </div>
-
-
-        <div class="inventory-stat-card inventory-stat-out">
-
-            <div class="inventory-stat-icon">
-                ⚠
-            </div>
-
-            <div>
-                <span>
-                    Hết hàng
-                </span>
-
-                <strong id="inventory-out-products">
-                    0
-                </strong>
-            </div>
-
-        </div>
-
+        <article class="inventory-stat-card inventory-stat-total">
+            <div class="inventory-stat-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Zm0 0v9m8-4.5-8 4.5-8-4.5M12 21v-9"/></svg></div>
+            <div class="inventory-stat-copy"><span>Tổng sản phẩm</span><strong id="inventory-total-products">0</strong><small class="inventory-stat-note"><b>↑ +13%</b><span>so với tháng trước</span></small></div>
+            <span class="inventory-mini-bars"><i></i><i></i><i></i><i></i></span>
+        </article>
+        <article class="inventory-stat-card inventory-stat-normal">
+            <div class="inventory-stat-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/><path d="m8 12 3 3 9-10"/></svg></div>
+            <div class="inventory-stat-copy"><span>Đủ hàng</span><strong id="inventory-normal-products">0</strong><small class="inventory-stat-note"><b id="inventory-normal-percent">0%</b><span>tổng sản phẩm</span></small></div>
+            <span class="inventory-mini-bars"><i></i><i></i><i></i><i></i></span>
+        </article>
+        <article class="inventory-stat-card inventory-stat-low">
+            <div class="inventory-stat-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v10"/><path d="M12 19h.01"/></svg></div>
+            <div class="inventory-stat-copy"><span>Sắp hết hàng</span><strong id="inventory-low-products">0</strong><small class="inventory-stat-note"><b id="inventory-low-percent">0%</b><span>tổng sản phẩm</span></small></div>
+            <span class="inventory-mini-bars"><i></i><i></i><i></i><i></i></span>
+        </article>
+        <article class="inventory-stat-card inventory-stat-out">
+            <div class="inventory-stat-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.8 2.4 18a2 2 0 0 0 1.8 3h15.6a2 2 0 0 0 1.8-3L13.7 3.8a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4m0 4h.01"/></svg></div>
+            <div class="inventory-stat-copy"><span>Hết hàng</span><strong id="inventory-out-products">0</strong><small class="inventory-stat-note"><b id="inventory-out-percent">0%</b><span>tổng sản phẩm</span></small></div>
+            <span class="inventory-mini-bars"><i></i><i></i><i></i><i></i></span>
+        </article>
     </div>
 
+    <div class="inventory-analytics-grid">
+        <article class="inventory-analytics-card inventory-status-chart-card">
+            <h3>Tình trạng tồn kho</h3>
+            <div class="inventory-status-chart-layout">
+                <div class="inventory-donut" id="inventory-status-donut"><span><strong id="inventory-donut-total">0</strong><small>sản phẩm</small></span></div>
+                <div class="inventory-status-legend" id="inventory-status-legend"></div>
+            </div>
+        </article>
+        <article class="inventory-analytics-card inventory-trend-card">
+            <div class="inventory-analytics-heading">
+                <h3 id="inventory-trend-title">Biến động tồn kho <small>(7 ngày qua)</small></h3>
+                <select id="inventory-trend-metric" aria-label="Chọn dữ liệu biểu đồ tồn kho">
+                    <option value="stock">Tổng số lượng</option>
+                    <option value="import">Lượng nhập kho</option>
+                    <option value="export">Lượng xuất kho</option>
+                </select>
+            </div>
+            <div class="inventory-trend-chart" id="inventory-trend-chart" aria-label="Biểu đồ biến động tồn kho"></div>
+        </article>
+    </div>
 
-    <!-- TOOLBAR -->
     <div class="inventory-toolbar" data-permission="search_filter">
-
-        <div class="inventory-search">
-
-            <span class="inventory-search-icon">
-                ⌕
-            </span>
-
-            <input
-                type="text"
-                id="inventory-search-input"
-                placeholder="Tìm kiếm theo mã hoặc tên sản phẩm..."
-            >
-
-        </div>
-
-
-        <select
-            class="inventory-filter"
-            id="inventory-status-filter"
-        >
-
-            <option value="all">
-                Tất cả trạng thái
-            </option>
-
-            <option value="normal">
-                Đủ hàng
-            </option>
-
-            <option value="low">
-                Sắp hết hàng
-            </option>
-
-            <option value="out">
-                Hết hàng
-            </option>
-
+        <label class="inventory-search">
+            <span class="inventory-search-icon">⌕</span>
+            <input type="text" id="inventory-search-input" placeholder="Tìm kiếm theo mã, tên sản phẩm...">
+        </label>
+        <select class="inventory-filter" id="inventory-category-filter"><option value="all">Tất cả danh mục</option></select>
+        <select class="inventory-filter" id="inventory-status-filter">
+            <option value="all">Tất cả trạng thái</option>
+            <option value="normal">Đủ hàng</option>
+            <option value="low">Sắp hết hàng</option>
+            <option value="out">Hết hàng</option>
         </select>
-
-
-        <select
-            class="inventory-filter"
-            id="inventory-category-filter"
-        >
-
-            <option value="all">
-                Tất cả danh mục
-            </option>
-
-        </select>
-
+        <button type="button" class="inventory-refresh-button" id="inventory-refresh-button">↻ Làm mới</button>
     </div>
 
-
-    <!-- TABLE -->
     <div class="inventory-table-card">
-
-        <div class="inventory-table-header">
-
-            <strong>
-                Danh sách tồn kho
-            </strong>
-
-            <span
-                class="inventory-count"
-                id="inventory-count"
-            >
-                0 sản phẩm
-            </span>
-
-        </div>
-
-
+        <div class="inventory-table-header"><strong>Danh sách tồn kho</strong><span class="inventory-count" id="inventory-count">0 sản phẩm</span></div>
         <div class="inventory-table-wrapper">
-
             <table class="inventory-table">
-
-                <thead>
-
-                    <tr>
-
-                        <th>
-                            STT
-                        </th>
-
-                        <th>
-                            MÃ SP
-                        </th>
-
-                        <th>
-                            TÊN SẢN PHẨM
-                        </th>
-
-                        <th>
-                            DANH MỤC
-                        </th>
-
-                        <th>
-                            ĐƠN VỊ
-                        </th>
-
-                        <th>
-                            TỒN KHO
-                        </th>
-
-                        <th>
-                            TỒN TỐI THIỂU
-                        </th>
-
-                        <th>
-                            TRẠNG THÁI
-                        </th>
-
-                    </tr>
-
-                </thead>
-
-
-                <tbody
-                    id="inventory-table-body"
-                >
-
-                </tbody>
-
+                <thead><tr><th>STT</th><th>MÃ SP</th><th>SẢN PHẨM</th><th>DANH MỤC</th><th>ĐƠN VỊ</th><th>TỒN KHO</th><th>TỒN TỐI THIỂU</th><th>TRẠNG THÁI</th><th>THAO TÁC</th></tr></thead>
+                <tbody id="inventory-table-body"></tbody>
             </table>
-
         </div>
-
-
-        <!-- PAGINATION -->
         <div class="inventory-pagination">
-
-            <span
-                class="inventory-pagination-info"
-                id="inventory-pagination-info"
-            >
-                Không có sản phẩm
-            </span>
-
-            <div
-                class="inventory-pagination-buttons"
-                id="inventory-pagination-buttons"
-            >
-
-            </div>
-
+            <span class="inventory-pagination-info" id="inventory-pagination-info">Không có sản phẩm</span>
+            <div class="inventory-pagination-buttons" id="inventory-pagination-buttons"></div>
         </div>
-
     </div>
 
 </section>
+
+<div class="inventory-adjust-modal" id="inventory-adjust-modal" aria-hidden="true">
+    <form class="inventory-adjust-dialog" id="inventory-adjust-form">
+        <header><div><span>ĐIỀU CHỈNH TỒN KHO</span><h3 id="inventory-adjust-title">Cập nhật sản phẩm</h3></div><button type="button" id="inventory-adjust-close" aria-label="Đóng">×</button></header>
+        <div class="inventory-adjust-product" id="inventory-adjust-product"></div>
+        <div class="inventory-adjust-fields">
+            <label>Số lượng hiện có<input type="number" min="0" step="1" id="inventory-adjust-quantity" required></label>
+            <label>Mức tồn tối thiểu<input type="number" min="0" step="1" id="inventory-adjust-minimum" required></label>
+        </div>
+        <footer><button type="button" class="inventory-adjust-cancel" id="inventory-adjust-cancel">Hủy</button><button type="submit" class="inventory-adjust-save">✓ Lưu thay đổi</button></footer>
+    </form>
+</div>
 <!-- =========================================================
      HISTORY MANAGEMENT PHẦN THÊM
      ========================================================= -->
@@ -2865,12 +3171,18 @@
             <h2 id="history-hero-title">Lịch sử hoạt động</h2>
             <p id="history-hero-description">Theo dõi các thao tác và sự kiện phát sinh trong hệ thống.</p>
         </div>
+        <div class="history-hero-visual" aria-hidden="true">
+            <img src="./assets/illustrations/history-activity-v1.png?v=20260925-1" alt="">
+        </div>
+        <p class="history-hero-quote">“Mọi hoạt động đều được ghi lại để đảm bảo minh bạch và dễ dàng truy xuất.”</p>
         <button
             type="button"
             class="history-refresh-button"
             id="history-refresh-button"
+            aria-label="Làm mới dữ liệu"
+            title="Làm mới dữ liệu"
         >
-            <span aria-hidden="true">↻</span> Làm mới dữ liệu
+            <span aria-hidden="true">↻</span><span class="history-refresh-label">Làm mới dữ liệu</span>
         </button>
     </div>
 
@@ -2884,23 +3196,28 @@
         <button type="button" class="history-view-tab" id="history-ai-tab"
             data-history-tab="ai" data-permission="ai_log_view" role="tab" aria-selected="false">
             <span class="history-tab-icon">✦</span>
-            <span><strong>Nhật ký AI</strong><small>Câu hỏi, phản hồi và token</small></span>
+            <span><strong>Nhật ký AI</strong><small>Câu hỏi, phản hồi và mức tiêu thụ token</small></span>
         </button>
     </div>
 
     <div class="history-tab-panel active" id="history-activity-panel" role="tabpanel">
         <div class="history-summary-grid">
             <article class="history-summary-card total">
-                <span class="history-summary-icon">≋</span>
-                <div><small>Tổng hoạt động</small><strong id="history-total-count">0</strong></div>
-            </article>
-            <article class="history-summary-card today">
-                <span class="history-summary-icon">◷</span>
-                <div><small>Hoạt động hôm nay</small><strong id="history-today-count">0</strong></div>
+                <span class="history-summary-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12"/><path d="M4 6h.01M4 12h.01M4 18h.01"/></svg></span>
+                <div class="history-summary-content"><small id="history-total-label">Tổng hoạt động</small><strong id="history-total-count">0</strong><div class="history-summary-meta"><b id="history-total-trend">↑ 0%</b><span>So với tháng trước</span></div></div>
+                <span class="history-summary-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
             </article>
             <article class="history-summary-card users">
-                <span class="history-summary-icon">♙</span>
-                <div><small>Người thực hiện</small><strong id="history-user-count">0</strong></div>
+                <span class="history-summary-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3"/><path d="M6 20c.6-4 2.6-6 6-6s5.4 2 6 6"/></svg></span>
+                <div class="history-summary-content"><small id="history-user-label">Người thực hiện</small><strong id="history-user-count">0</strong><div class="history-user-avatars" id="history-user-avatars"></div></div>
+            </article>
+            <article class="history-summary-card frequent">
+                <span class="history-summary-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 12h7M9 16h7"/></svg></span>
+                <div class="history-summary-content"><small id="history-extra-label">Thao tác nhiều nhất</small><strong id="history-extra-value">—</strong><div class="history-summary-meta"><b class="neutral" id="history-extra-meta">0 lượt (0%)</b></div></div>
+            </article>
+            <article class="history-summary-card today">
+                <span class="history-summary-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/><path d="M12 14v3m-1.5-1.5h3"/></svg></span>
+                <div class="history-summary-content"><small id="history-today-label">Hoạt động hôm nay</small><strong id="history-today-count">0</strong><div class="history-summary-meta"><b id="history-today-trend">↑ 0%</b><span>So với hôm qua</span></div></div>
             </article>
         </div>
 
@@ -3023,7 +3340,8 @@
          HISTORY TABLE
          ========================= -->
 
-    <div class="history-table-card">
+    <div class="history-content-grid">
+    <div class="history-table-card" data-title="Danh sách hoạt động">
 
         <div class="history-table-wrapper">
 
@@ -3072,6 +3390,23 @@
 
     </div>
 
+    <aside class="history-insights" aria-label="Thống kê hoạt động">
+        <section class="history-insight-card history-chart-card">
+            <h3>Thống kê theo loại hoạt động</h3>
+            <div class="history-chart-layout">
+                <div class="history-donut-chart" id="history-donut-chart">
+                    <span><strong id="history-donut-total">0</strong><small>hoạt động</small></span>
+                </div>
+                <div class="history-chart-legend" id="history-chart-legend"></div>
+            </div>
+        </section>
+        <section class="history-insight-card history-recent-card">
+            <h3>Hoạt động gần đây</h3>
+            <div class="history-recent-list" id="history-recent-list"></div>
+        </section>
+    </aside>
+    </div>
+
     </div>
 
     <div class="history-tab-panel history-ai-panel" id="history-ai-panel" role="tabpanel"></div>
@@ -3083,13 +3418,28 @@
      ========================================================= -->
 <section class="statistics-page" id="statistics-page">
     <div class="statistics-page-header">
-        <div>
-            <h2>
-                Thống kê doanh thu
-            </h2>
-            <p>
-                Theo dõi doanh thu và tình hình bán hàng
-            </p>
+        <div class="statistics-hero-copy">
+            <span class="statistics-hero-kicker"><i></i> THỐNG KÊ DOANH THU</span>
+            <h2>Thống kê doanh thu</h2>
+            <p>Theo dõi doanh thu, phân tích xu hướng và tình hình bán hàng trong cửa hàng.</p>
+        </div>
+        <div class="statistics-hero-visual" aria-hidden="true">
+            <span class="statistics-visual-coin">₫</span>
+            <div class="statistics-visual-board">
+                <span class="statistics-visual-board-dot"></span>
+                <span class="statistics-visual-board-dot"></span>
+                <span class="statistics-visual-board-dot"></span>
+                <div class="statistics-visual-bars"><i></i><i></i><i></i><i></i></div>
+                <svg viewBox="0 0 150 74" focusable="false">
+                    <path d="M12 59 L48 45 L76 50 L106 25 L139 11"></path>
+                    <circle cx="139" cy="11" r="5"></circle>
+                </svg>
+            </div>
+            <span class="statistics-visual-card"><i></i><b></b><b></b></span>
+        </div>
+        <div class="statistics-hero-slogan">
+            <span>“Dữ liệu hôm nay</span>
+            <strong>Cho quyết định tốt hơn ngày mai”</strong>
         </div>
     </div>
 
@@ -3098,127 +3448,93 @@
 
     <div class="statistics-filter" data-permission="revenue_statistics">
         <div class="statistics-filter-group">
-
-            <label>
-                Từ ngày
-            </label>
-            <input
-                type="date"
-                id="statistics-from-date"
-                value="2026-09-01"
-            >
+            <label for="statistics-from-date">Từ ngày</label>
+            <input type="date" id="statistics-from-date">
         </div>
-
-
         <div class="statistics-filter-group">
-            <label>Đến ngày</label>
-            <input type="date" id="statistics-to-date" value="2026-09-07">
+            <label for="statistics-to-date">Đến ngày</label>
+            <input type="date" id="statistics-to-date">
         </div>
-
-        <button
-            type="button"
-            class="statistics-filter-button"
-            id="statistics-filter-button"
-        >
-            Thống kê
-        </button>
+        <div class="statistics-quick-periods" aria-label="Chọn nhanh khoảng thời gian">
+            <button type="button" data-statistics-period="today">Hôm nay</button>
+            <button type="button" data-statistics-period="7">7 ngày</button>
+            <button type="button" data-statistics-period="30">30 ngày</button>
+            <button type="button" data-statistics-period="90">3 tháng</button>
+            <button type="button" data-statistics-period="365">1 năm</button>
+        </div>
+        <div class="statistics-filter-group statistics-select-group">
+            <label for="statistics-category">Danh mục</label>
+            <select id="statistics-category">
+                <option value="">Tất cả danh mục</option>
+            </select>
+        </div>
+        <button type="button" class="statistics-filter-button" id="statistics-filter-button" aria-label="Áp dụng bộ lọc">↻</button>
     </div>
 
 
     <!-- KPI -->
     <div class="statistics-kpi-grid">
-        <div class="statistics-kpi-card">
-            <div class="statistics-kpi-title">
-                Tổng doanh thu
+        <div class="statistics-kpi-card is-revenue">
+            <span class="statistics-kpi-icon" aria-hidden="true">▤</span>
+            <div class="statistics-kpi-content">
+                <div class="statistics-kpi-title">Tổng doanh thu</div>
+                <div class="statistics-kpi-value" id="statistics-total-revenue">0 ₫</div>
+                <div class="statistics-kpi-note"><b id="statistics-revenue-change">—</b><span>so với kỳ trước</span></div>
             </div>
-            <div
-                class="statistics-kpi-value"
-                id="statistics-total-revenue"
-            >
-                0 ₫
-            </div>
-            <div class="statistics-kpi-note">
-                Trong khoảng thời gian đã chọn
-            </div>
+            <span class="statistics-kpi-spark" id="statistics-revenue-spark" aria-hidden="true"></span>
         </div>
-
-
-        <div class="statistics-kpi-card">
-            <div class="statistics-kpi-title">
-                Số hóa đơn
+        <div class="statistics-kpi-card is-invoices">
+            <span class="statistics-kpi-icon" aria-hidden="true">▧</span>
+            <div class="statistics-kpi-content">
+                <div class="statistics-kpi-title">Số hóa đơn</div>
+                <div class="statistics-kpi-value" id="statistics-total-invoices">0</div>
+                <div class="statistics-kpi-note"><b id="statistics-invoice-change">—</b><span>so với kỳ trước</span></div>
             </div>
-            <div
-                class="statistics-kpi-value"
-                id="statistics-total-invoices"
-            >
-                0
-            </div>
-            <div class="statistics-kpi-note">
-                Hóa đơn bán hàng
-            </div>
+            <span class="statistics-kpi-spark" id="statistics-invoice-spark" aria-hidden="true"></span>
         </div>
-
-
-        <div class="statistics-kpi-card">
-            <div class="statistics-kpi-title">
-                Giá trị trung bình
+        <div class="statistics-kpi-card is-average">
+            <span class="statistics-kpi-icon" aria-hidden="true">₫</span>
+            <div class="statistics-kpi-content">
+                <div class="statistics-kpi-title">Giá trị trung bình / hóa đơn</div>
+                <div class="statistics-kpi-value" id="statistics-average-revenue">0 ₫</div>
+                <div class="statistics-kpi-note"><b id="statistics-average-change">—</b><span>so với kỳ trước</span></div>
             </div>
-            <div
-                class="statistics-kpi-value"
-                id="statistics-average-revenue"
-            >
-                0 ₫
-            </div>
-            <div class="statistics-kpi-note">
-                Doanh thu trung bình / hóa đơn
-            </div>
+            <span class="statistics-kpi-spark" id="statistics-average-spark" aria-hidden="true"></span>
         </div>
-        <div class="statistics-kpi-card">
-            <div class="statistics-kpi-title">
-                Ngày doanh thu cao nhất
+        <div class="statistics-kpi-card is-highest">
+            <span class="statistics-kpi-icon" aria-hidden="true">▣</span>
+            <div class="statistics-kpi-content">
+                <div class="statistics-kpi-title">Ngày doanh thu cao nhất</div>
+                <div class="statistics-kpi-value" id="statistics-highest-revenue">0 ₫</div>
+                <div class="statistics-kpi-note"><b id="statistics-highest-revenue-note">—</b></div>
             </div>
-            <div
-                class="statistics-kpi-value"
-                id="statistics-highest-revenue"
-            >
-                0 ₫
-            </div>
-            <div
-                class="statistics-kpi-note"
-                id="statistics-highest-revenue-note"
-            >
-                Doanh thu trong ngày cao nhất
-            </div>
+            <span class="statistics-kpi-spark" id="statistics-highest-spark" aria-hidden="true"></span>
         </div>
     </div>
 
 
     <!-- CHART + TOP PRODUCTS -->
     <div class="statistics-content-grid">
-        <div class="statistics-card">
+        <div class="statistics-card statistics-chart-card">
             <div class="statistics-card-header">
-                <h3>
-                    Biểu đồ doanh thu
-                </h3>
+                <div><h3>Biểu đồ doanh thu</h3><p>Doanh thu và số hóa đơn theo thời gian</p></div>
+                <div class="statistics-chart-controls" aria-label="Tùy chọn biểu đồ">
+                    <select aria-label="Nhóm dữ liệu"><option>Theo ngày</option></select>
+                    <select aria-label="Chỉ số"><option>Doanh thu</option></select>
+                </div>
             </div>
             <div class="statistics-card-body">
-                <div
-                    class="statistics-chart"
-                    id="statistics-revenue-chart"
-                ></div>
+                <div class="statistics-chart-legend"><span class="is-column"><i></i>Doanh thu</span><span class="is-line"><i></i>Số hóa đơn</span></div>
+                <div class="statistics-chart" id="statistics-revenue-chart"></div>
             </div>
         </div>
-        <div class="statistics-card">
+        <div class="statistics-card statistics-top-card">
             <div class="statistics-card-header">
-                <h3>
-                    Sản phẩm doanh thu cao
-                </h3>
+                <div><h3>Top sản phẩm bán chạy</h3><p>Xếp hạng theo doanh thu trong kỳ</p></div>
+                <span class="statistics-card-period" id="statistics-top-period">Đã chọn</span>
             </div>
             <div class="statistics-card-body">
-                <div
-                    class="statistics-product-list"
-                    id="statistics-top-products"
-                ></div>
+                <div class="statistics-product-list" id="statistics-top-products"></div>
             </div>
         </div>
     </div>
@@ -3227,37 +3543,32 @@
     <!-- BẢNG DOANH THU -->
     <div class="statistics-card">
         <div class="statistics-card-header">
-            <h3>
-                Chi tiết doanh thu theo ngày
-            </h3>
+            <div><h3>Chi tiết doanh thu theo ngày</h3><p id="statistics-table-period">Dữ liệu trong khoảng thời gian đã chọn</p></div>
         </div>
-
         <div class="statistics-card-body">
             <table class="statistics-table">
-             <thead>
+                <thead>
                     <tr>
-                        <th>
-                            Ngày
-                        </th>
-
-                        <th>
-                            Số hóa đơn
-                        </th>
-
-                        <th>
-                            Doanh thu
-                        </th>
-
-                        <th>
-                            Trung bình / hóa đơn
-                        </th>
+                        <th>STT</th>
+                        <th>Ngày</th>
+                        <th>Số hóa đơn</th>
+                        <th>Doanh thu</th>
+                        <th>Trung bình / hóa đơn</th>
+                        <th>Thao tác</th>
                     </tr>
                 </thead>
-                <tbody
-                    id="statistics-daily-table-body"
-                >
-                </tbody>
+                <tbody id="statistics-daily-table-body"></tbody>
             </table>
+        </div>
+    </div>
+
+    <div class="statistics-detail-modal" id="statistics-detail-modal" aria-hidden="true">
+        <div class="statistics-detail-dialog" role="dialog" aria-modal="true" aria-labelledby="statistics-detail-title">
+            <div class="statistics-detail-header">
+                <div><span>CHI TIẾT DOANH THU</span><h3 id="statistics-detail-title">Hóa đơn trong ngày</h3></div>
+                <button type="button" id="statistics-detail-close" aria-label="Đóng">×</button>
+            </div>
+            <div class="statistics-detail-body" id="statistics-detail-body"></div>
         </div>
     </div>
 </section>
@@ -3270,17 +3581,24 @@
     id="reports-page"
 >
     <div class="reports-page-header">
-
-        <div>
-            <h2>
-                Báo cáo
-            </h2>
-
-            <p>
-                Tổng hợp tình hình kinh doanh và tồn kho
-            </p>
+        <div class="reports-hero-copy">
+            <span class="reports-hero-kicker">THỐNG KÊ VÀ PHÂN TÍCH</span>
+            <h2>Báo <em>cáo</em></h2>
+            <p>Tổng hợp tình hình kinh doanh, sản phẩm bán chạy, tồn kho và các chỉ số quan trọng</p>
         </div>
 
+        <div class="reports-hero-visual" aria-hidden="true">
+            <span class="reports-visual-orbit"></span>
+            <span class="reports-visual-check">✓</span>
+            <span class="reports-visual-sheet">
+                <i class="reports-sheet-line"></i>
+                <i class="reports-sheet-bars"><b></b><b></b><b></b><b></b></i>
+                <i class="reports-sheet-pie"></i>
+            </span>
+            <span class="reports-visual-profile"><i></i><b></b><b></b></span>
+        </div>
+
+        <p class="reports-hero-note"><i>✦</i><span>Dữ liệu cụ thể · Biểu đồ trực quan<strong>Hỗ trợ ra quyết định chính xác</strong></span></p>
     </div>
 
 
@@ -3347,44 +3665,36 @@
         >
             Xem báo cáo
         </button>
-    </div>
 
-
-    <!-- ACTIONS -->
-    <div class="reports-actions" data-permission="report_export">
-        <div class="report-export-wrap">
-            <button
-                type="button"
-                class="reports-action-button report-export-main"
-                id="report-export-button"
-                aria-haspopup="menu"
-                aria-expanded="false"
-            >
-                Xuất báo cáo
-                <span class="report-export-arrow" aria-hidden="true">⌄</span>
-            </button>
-
-            <div
-                class="report-export-menu"
-                id="report-export-menu"
-                role="menu"
-                hidden
-            >
-                <button type="button" role="menuitem" data-report-format="excel">
-                    <span class="report-export-format">X</span>
-                    <span>
-                        <strong>Xuất Excel</strong>
-                        <small>Tải tệp bảng tính .xls</small>
-                    </span>
+        <div class="reports-actions" data-permission="report_export">
+            <div class="report-export-wrap">
+                <button
+                    type="button"
+                    class="reports-action-button report-export-main"
+                    id="report-export-button"
+                    aria-haspopup="menu"
+                    aria-expanded="false"
+                >
+                    <span aria-hidden="true">⇩</span>
+                    Xuất báo cáo
+                    <span class="report-export-arrow" aria-hidden="true">⌄</span>
                 </button>
 
-                <button type="button" role="menuitem" data-report-format="pdf">
-                    <span class="report-export-format pdf">P</span>
-                    <span>
-                        <strong>Xuất PDF</strong>
-                        <small>Mở bản in để lưu PDF</small>
-                    </span>
-                </button>
+                <div
+                    class="report-export-menu"
+                    id="report-export-menu"
+                    role="menu"
+                    hidden
+                >
+                    <button type="button" role="menuitem" data-report-format="excel">
+                        <span class="report-export-format">X</span>
+                        <span><strong>Xuất Excel</strong><small>Tải tệp bảng tính .xls</small></span>
+                    </button>
+                    <button type="button" role="menuitem" data-report-format="pdf">
+                        <span class="report-export-format pdf">P</span>
+                        <span><strong>Xuất PDF</strong><small>Tải trực tiếp tệp .pdf</small></span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -3392,46 +3702,65 @@
 
     <!-- SUMMARY -->
     <div class="reports-summary-grid">
-        <div class="reports-summary-card">
-            <div class="reports-summary-title">
-                Tổng doanh thu
+        <div class="reports-summary-card is-revenue">
+            <span class="reports-summary-icon" aria-hidden="true">▤</span>
+            <div class="reports-summary-content">
+                <div class="reports-summary-title">Tổng doanh thu</div>
+                <div class="reports-summary-value" id="report-total-revenue">0 ₫</div>
+                <small><b>Dữ liệu thật</b><span>trong kỳ đã chọn</span></small>
             </div>
-            <div
-                class="reports-summary-value"
-                id="report-total-revenue"
-            >
-                0 ₫
-            </div>
+            <span class="reports-summary-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
         </div>
 
-        <div class="reports-summary-card">
-            <div class="reports-summary-title">
-                Tổng số hóa đơn
+        <div class="reports-summary-card is-invoices">
+            <span class="reports-summary-icon" aria-hidden="true">▧</span>
+            <div class="reports-summary-content">
+                <div class="reports-summary-title">Tổng số hóa đơn</div>
+                <div class="reports-summary-value" id="report-total-invoices">0</div>
+                <small><b>Đã ghi nhận</b><span>hóa đơn trong kỳ</span></small>
             </div>
-            <div
-                class="reports-summary-value"
-                id="report-total-invoices"
-            >
-                0
-            </div>
+            <span class="reports-summary-trend" aria-hidden="true"></span>
         </div>
 
-
-        <div class="reports-summary-card">
-
-            <div class="reports-summary-title">
-                Số sản phẩm đã bán
+        <div class="reports-summary-card is-products">
+            <span class="reports-summary-icon" aria-hidden="true">🛒</span>
+            <div class="reports-summary-content">
+                <div class="reports-summary-title">Số sản phẩm đã bán</div>
+                <div class="reports-summary-value" id="report-products-sold">0</div>
+                <small><b>Theo số lượng</b><span>trong kỳ đã chọn</span></small>
             </div>
-
-            <div
-                class="reports-summary-value"
-                id="report-products-sold"
-            >
-                0
-            </div>
-
+            <span class="reports-summary-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
         </div>
 
+        <div class="reports-summary-card is-inventory">
+            <span class="reports-summary-icon" aria-hidden="true">◇</span>
+            <div class="reports-summary-content">
+                <div class="reports-summary-title">Giá trị tồn kho</div>
+                <div class="reports-summary-value" id="report-inventory-value">0 ₫</div>
+                <small><b>Giá nhập</b><span>theo tồn kho hiện tại</span></small>
+            </div>
+            <span class="reports-summary-trend is-down" aria-hidden="true"></span>
+        </div>
+    </div>
+
+    <div class="reports-analytics-grid">
+        <article class="reports-analytics-card reports-revenue-chart-card">
+            <div class="reports-analytics-header"><h3>Biểu đồ doanh thu theo ngày</h3><span>Doanh thu</span></div>
+            <div class="reports-revenue-chart" id="report-revenue-chart" aria-label="Biểu đồ doanh thu theo ngày"></div>
+        </article>
+
+        <article class="reports-analytics-card reports-category-card">
+            <div class="reports-analytics-header"><h3>Tỷ lệ doanh thu theo danh mục</h3></div>
+            <div class="reports-category-layout">
+                <div class="reports-category-donut" id="report-category-donut"><span><strong id="report-category-total">0 ₫</strong><small>Tổng doanh thu</small></span></div>
+                <div class="reports-category-legend" id="report-category-legend"></div>
+            </div>
+        </article>
+
+        <article class="reports-analytics-card reports-top-products-card">
+            <div class="reports-analytics-header"><h3>Top 5 sản phẩm bán chạy</h3><span>Theo doanh thu</span></div>
+            <div class="reports-top-products" id="report-top-products"></div>
+        </article>
     </div>
 
 
@@ -3574,17 +3903,58 @@
 >
 
     <div class="users-page-header">
-
-        <div>
-            <h2>
-                Người dùng
-            </h2>
-
-            <p>
-                Quản lý tài khoản và người dùng trong hệ thống
-            </p>
+        <div class="users-hero-copy">
+            <span class="users-hero-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                    <circle cx="9" cy="8" r="3"></circle>
+                    <circle cx="17" cy="10" r="2.4"></circle>
+                    <path d="M3.5 19c.5-3.7 2.4-5.6 5.5-5.6s5 1.9 5.5 5.6M14 14.2c2.9-.8 5.1.8 5.8 3.8"></path>
+                </svg>
+            </span>
+            <div>
+                <span class="users-hero-kicker">QUẢN LÝ HỆ THỐNG</span>
+                <h2>Người <em>dùng</em></h2>
+                <p>Quản lý tài khoản và người dùng trong hệ thống</p>
+            </div>
         </div>
+        <div class="users-hero-visual" aria-hidden="true">
+            <img src="./assets/illustrations/customer-management-v1.png?v=20260925-1" alt="">
+        </div>
+        <p class="users-hero-note">
+            <i aria-hidden="true">✦</i>
+            <span>Quản lý người dùng hiệu quả<strong>Bảo mật · Phân quyền · An toàn</strong></span>
+        </p>
+    </div>
 
+    <div class="users-summary-grid" aria-label="Tổng quan tài khoản">
+        <article class="users-summary-card is-total">
+            <span class="users-summary-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"></circle><circle cx="17" cy="10" r="2.3"></circle><path d="M3.5 19c.5-3.7 2.4-5.6 5.5-5.6s5 1.9 5.5 5.6M14 14.2c2.9-.8 5.1.8 5.8 3.8"></path></svg>
+            </span>
+            <span class="users-summary-copy"><span>Tổng người dùng</span><strong id="users-stat-total">0</strong><small><b>Hiện có</b><span>tài khoản hệ thống</span></small></span>
+            <span class="users-summary-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        </article>
+        <article class="users-summary-card is-active">
+            <span class="users-summary-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"></circle><path d="M5.5 19c.7-3.8 2.9-5.7 6.5-5.7s5.8 1.9 6.5 5.7"></path></svg>
+            </span>
+            <span class="users-summary-copy"><span>Đang hoạt động</span><strong id="users-stat-active">0</strong><small><b id="users-stat-active-percent">0%</b><span>tài khoản hoạt động</span></small></span>
+            <span class="users-summary-trend" aria-hidden="true"><i></i></span>
+        </article>
+        <article class="users-summary-card is-temporary">
+            <span class="users-summary-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M9.5 8.5v7M14.5 8.5v7"></path></svg>
+            </span>
+            <span class="users-summary-copy"><span>Tạm khóa</span><strong id="users-stat-temporary">0</strong><small><b>0%</b><span>không thay đổi</span></small></span>
+            <span class="users-summary-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        </article>
+        <article class="users-summary-card is-locked">
+            <span class="users-summary-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"></circle><path d="M3.5 19c.5-3.7 2.4-5.6 5.5-5.6 1.5 0 2.7.4 3.6 1.1M16 14l5 5M21 14l-5 5"></path></svg>
+            </span>
+            <span class="users-summary-copy"><span>Đã khóa</span><strong id="users-stat-locked">0</strong><small><b id="users-stat-locked-percent">0%</b><span>tổng tài khoản</span></small></span>
+            <span class="users-summary-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        </article>
     </div>
 
 
@@ -3617,6 +3987,10 @@
 
                 <option value="all">
                     Tất cả vai trò
+                </option>
+
+                <option value="admin">
+                    Quản trị viên
                 </option>
 
                 <option value="owner">
@@ -3700,11 +4074,11 @@
                     <tr>
 
                         <th>
-                            ID
+                            #
                         </th>
 
                         <th>
-                            Họ tên
+                            Người dùng
                         </th>
 
                         <th>
@@ -3949,15 +4323,29 @@
     id="permissions-page"
 >
 
-    <div class="permissions-page-header">
-
-        <h2>Phân quyền</h2>
-
-        <p>
-            Quản lý quyền truy cập và chức năng theo vai trò
-        </p>
-
-    </div>
+    <header class="permissions-page-header">
+        <span class="permissions-header-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+                <circle cx="9" cy="8" r="3"></circle>
+                <path d="M3.5 19v-1.3A4.7 4.7 0 0 1 8.2 13h1.6a4.7 4.7 0 0 1 4.7 4.7V19"></path>
+                <circle cx="17" cy="9" r="2.4"></circle>
+                <path d="M15.4 13.8h1.9a3.7 3.7 0 0 1 3.7 3.7V19"></path>
+            </svg>
+        </span>
+        <div class="permissions-header-copy">
+            <h2>Phân quyền</h2>
+            <p>Quản lý quyền truy cập và chức năng theo vai trò</p>
+        </div>
+        <div class="permissions-header-visual" aria-hidden="true">
+            <span class="permissions-visual-user">
+                <svg viewBox="0 0 24 24">
+                    <circle cx="12" cy="8" r="3"></circle>
+                    <path d="M6 19v-1.3A5.7 5.7 0 0 1 11.7 12h.6a5.7 5.7 0 0 1 5.7 5.7V19"></path>
+                </svg>
+            </span>
+            <span class="permissions-visual-gear">⚙</span>
+        </div>
+    </header>
 
 
     <!-- KHÔNG CÓ QUYỀN -->
@@ -3983,212 +4371,116 @@
     </div>
 
 
-    <!-- NỘI DUNG PHÂN QUYỀN -->
-
     <div
         class="permission-content"
         id="permission-content"
     >
 
-        <!-- Tài khoản hiện tại -->
+        <aside class="permission-role-list-card">
+            <div class="permission-panel-heading">
+                <div>
+                    <h3>Danh sách vai trò</h3>
+                    <p>Các vai trò đang sử dụng trong hệ thống</p>
+                </div>
+                <span class="permission-role-total">4 vai trò</span>
+            </div>
 
-        <div class="permission-account-card">
-            <div class="permission-card-heading">
-                <span class="permission-card-heading-icon" aria-hidden="true">
-                    <img
-                        id="permission-current-avatar-image"
-                        alt=""
-                        hidden
-                    >
+            <select
+                class="permission-role-select"
+                id="permission-role-select"
+                aria-label="Vai trò cần cấu hình"
+            >
+                <option value="ADMIN">Quản trị viên</option>
+                <option value="OWNER">Chủ cửa hàng</option>
+                <option value="SALES">Nhân viên bán hàng</option>
+                <option value="CUSTOMER">Khách hàng</option>
+            </select>
+
+            <div class="permission-role-list" id="permission-role-list">
+                <button type="button" class="permission-role-item active" data-permission-role="ADMIN" aria-pressed="true">
+                    <span class="permission-role-item-icon is-admin">♛</span>
+                    <span class="permission-role-item-copy"><strong>Quản trị viên</strong><small>Toàn quyền quản lý hệ thống</small></span>
+                    <span class="permission-role-item-meta"><b>ADMIN</b></span>
+                </button>
+                <button type="button" class="permission-role-item" data-permission-role="OWNER" aria-pressed="false">
+                    <span class="permission-role-item-icon is-owner">♣</span>
+                    <span class="permission-role-item-copy"><strong>Chủ cửa hàng</strong><small>Thống kê, báo cáo và quản lý</small></span>
+                    <span class="permission-role-item-meta"><b>OWNER</b></span>
+                </button>
+                <button type="button" class="permission-role-item" data-permission-role="SALES" aria-pressed="false">
+                    <span class="permission-role-item-icon is-sales">♟</span>
+                    <span class="permission-role-item-copy"><strong>Nhân viên bán hàng</strong><small>Bán hàng và chăm sóc khách hàng</small></span>
+                    <span class="permission-role-item-meta"><b>SALES</b></span>
+                </button>
+                <button type="button" class="permission-role-item" data-permission-role="CUSTOMER" aria-pressed="false">
+                    <span class="permission-role-item-icon is-customer">●</span>
+                    <span class="permission-role-item-copy"><strong>Khách hàng</strong><small>Sử dụng chức năng được cấp</small></span>
+                    <span class="permission-role-item-meta"><b>CUSTOMER</b></span>
+                </button>
+            </div>
+
+            <div class="permission-current-session">
+                <span class="permission-current-avatar" aria-hidden="true">
+                    <img id="permission-current-avatar-image" alt="" hidden>
                     <svg id="permission-current-avatar-fallback" viewBox="0 0 24 24" role="img">
-                        <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm7 8a7 7 0 0 0-14 0" />
+                        <circle cx="12" cy="8" r="3"></circle>
+                        <path d="M6 19v-1.2a5.8 5.8 0 0 1 5.8-5.8h.4a5.8 5.8 0 0 1 5.8 5.8V19"></path>
                     </svg>
                 </span>
-                <div>
-                    <span class="permission-eyebrow">PHIÊN ĐĂNG NHẬP</span>
-                    <h3>Tài khoản hiện tại</h3>
-                    <p>Thông tin người đang thực hiện cấu hình phân quyền.</p>
-                </div>
+                <span class="permission-current-session-copy">
+                    <small>Phiên đăng nhập</small>
+                    <strong id="permission-current-fullname"></strong>
+                    <span><b id="permission-current-username"></b> · <b id="permission-current-role"></b></span>
+                </span>
+                <span class="permission-current-status" id="permission-current-status"></span>
             </div>
+        </aside>
 
-            <div class="permission-account-info">
-
-                <div class="permission-info-item">
-
-                    <span class="permission-info-label">
-                        Họ tên
-                    </span>
-
-                    <span
-                        class="permission-info-value"
-                        id="permission-current-fullname"
-                    >
-                    </span>
-
-                </div>
-
-
-                <div class="permission-info-item">
-
-                    <span class="permission-info-label">
-                        Tài khoản
-                    </span>
-
-                    <span
-                        class="permission-info-value"
-                        id="permission-current-username"
-                    >
-                    </span>
-
-                </div>
-
-
-                <div class="permission-info-item">
-
-                    <span class="permission-info-label">
-                        Vai trò
-                    </span>
-
-                    <span
-                        class="permission-info-value"
-                        id="permission-current-role"
-                    >
-                    </span>
-
-                </div>
-
-
-                <div class="permission-info-item">
-
-                    <span class="permission-info-label">
-                        Trạng thái
-                    </span>
-
-                    <span
-                        class="permission-info-value"
-                        id="permission-current-status"
-                    >
-                    </span>
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <!-- Chọn vai trò -->
-
-        <div class="permission-role-card">
-
+        <section class="permission-role-card">
             <div class="permission-role-header">
                 <div class="permission-role-heading">
-                    <span class="permission-eyebrow">THIẾT LẬP TRUY CẬP</span>
-                    <h3>Quyền theo vai trò</h3>
-                    <p>Chọn vai trò và bật các chức năng được phép sử dụng.</p>
+                    <h3>Thông tin vai trò</h3>
+                    <p>Thông tin chi tiết về vai trò và quyền hạn</p>
                 </div>
-
-                <div class="permission-role-picker">
-                    <label for="permission-role-select">Vai trò cần cấu hình</label>
-                    <select
-                        class="permission-role-select"
-                        id="permission-role-select"
-                    >
-
-                    <option value="ADMIN">
-                        Quản trị viên
-                    </option>
-
-                    <option value="OWNER">
-                        Chủ cửa hàng
-                    </option>
-
-                    <option value="SALES">
-                        Nhân viên bán hàng
-                    </option>
-
-                    <option value="CUSTOMER">
-                        Khách hàng
-                    </option>
-
-                    </select>
-                </div>
-
             </div>
 
-
-            <div
-                class="permission-role-description"
-                id="permission-role-description"
-            >
+            <div class="permission-role-summary">
+                <span class="permission-selected-role-icon is-admin" id="permission-selected-role-icon">♛</span>
+                <div class="permission-selected-role-copy">
+                    <div class="permission-selected-role-title">
+                        <h4 id="permission-selected-role-name">Quản trị viên</h4>
+                        <span id="permission-selected-role-code">ADMIN</span>
+                    </div>
+                    <p class="permission-role-description" id="permission-role-description"></p>
+                </div>
             </div>
 
-
-            <!-- Bảng quyền -->
+            <div class="permission-function-toolbar">
+                <div>
+                    <h3>Danh sách chức năng</h3>
+                    <p>Thiết lập quyền truy cập cho vai trò này</p>
+                </div>
+            </div>
 
             <div class="permission-table-wrapper">
-
                 <table class="permission-table">
-
                     <thead>
-
                         <tr>
-
-                            <th>
-                                Chức năng
-                            </th>
-
-                            <th>
-                                Được phép
-                            </th>
-
+                            <th>STT</th>
+                            <th>Chức năng</th>
+                            <th>Mô tả</th>
+                            <th>Trạng thái</th>
                         </tr>
-
                     </thead>
-
-
-                    <tbody
-                        id="permission-table-body"
-                    >
-                    </tbody>
-
+                    <tbody id="permission-table-body"></tbody>
                 </table>
-
             </div>
-
 
             <div class="permission-actions">
-
-                <button
-                    type="button"
-                    class="permission-reset-button"
-                    id="permission-reset-button"
-                >
-                    Làm mới
-                </button>
-
-                <button
-                    type="button"
-                    class="permission-save-button"
-                    id="permission-save-button"
-                >
-                    Lưu thay đổi
-                </button>
-
+                <button type="button" class="permission-reset-button" id="permission-reset-button">Hủy</button>
+                <button type="button" class="permission-save-button" id="permission-save-button">Lưu thay đổi</button>
             </div>
-
-
-            <div class="permission-note">
-
-                <strong>Lưu ý:</strong>
-                Quyền truy cập được xác định dựa trên
-                tài khoản, trạng thái tài khoản và vai trò.
-                Tài khoản bị khóa sẽ không được phép sử dụng
-                các chức năng của hệ thống.
-
-            </div>
-
-        </div>
+        </section>
 
     </div>
 
@@ -4345,7 +4637,12 @@
         >
             <header class="account-dialog-header">
                 <div class="account-dialog-heading">
-                    <span class="account-dialog-icon" aria-hidden="true">♙</span>
+                    <span class="account-dialog-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <circle cx="12" cy="8" r="3.5"/>
+                            <path d="M5.5 19.5c.6-3.8 3-6 6.5-6s5.9 2.2 6.5 6"/>
+                        </svg>
+                    </span>
                     <div>
                         <h2 id="account-dialog-title">Tài khoản của tôi</h2>
                         <p>Quản lý hồ sơ, bảo mật và giao diện cá nhân</p>
@@ -4369,16 +4666,64 @@
 
                     <nav class="account-tabs" role="tablist" aria-label="Cài đặt tài khoản">
                         <button type="button" class="account-tab active" data-account-tab="profile" role="tab">
-                            <span class="account-tab-icon">♙</span>
-                            Hồ sơ
+                            <span class="account-tab-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <circle cx="12" cy="8" r="3.25"/>
+                                    <path d="M6 19c.7-3.5 2.8-5.3 6-5.3s5.3 1.8 6 5.3"/>
+                                </svg>
+                            </span>
+                            <span class="account-tab-copy">
+                                <strong>Hồ sơ cá nhân</strong>
+                                <small>Thông tin cá nhân, liên hệ</small>
+                            </span>
                         </button>
                         <button type="button" class="account-tab" data-account-tab="security" role="tab">
-                            <span class="account-tab-icon">⚿</span>
-                            Bảo mật
+                            <span class="account-tab-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M12 3.5 19 6v5.2c0 4.3-2.7 7.5-7 9.3-4.3-1.8-7-5-7-9.3V6l7-2.5Z"/>
+                                    <path d="m9.2 12 1.8 1.8 3.8-4"/>
+                                </svg>
+                            </span>
+                            <span class="account-tab-copy">
+                                <strong>Bảo mật</strong>
+                                <small>Đổi mật khẩu tài khoản</small>
+                            </span>
                         </button>
                         <button type="button" class="account-tab" data-account-tab="appearance" role="tab">
-                            <span class="account-tab-icon">◐</span>
-                            Giao diện
+                            <span class="account-tab-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <circle cx="12" cy="12" r="8"/>
+                                    <path d="M12 4v16M12 4a8 8 0 0 1 0 16"/>
+                                </svg>
+                            </span>
+                            <span class="account-tab-copy">
+                                <strong>Giao diện</strong>
+                                <small>Tùy chỉnh màu và hiển thị</small>
+                            </span>
+                        </button>
+                        <button type="button" class="account-tab" data-account-tab="notifications" role="tab">
+                            <span class="account-tab-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M6.5 10a5.5 5.5 0 0 1 11 0v4l1.5 2.5H5L6.5 14v-4Z"/>
+                                    <path d="M10 19h4"/>
+                                </svg>
+                            </span>
+                            <span class="account-tab-copy">
+                                <strong>Thông báo</strong>
+                                <small>Quản lý các cảnh báo</small>
+                            </span>
+                        </button>
+                        <button type="button" class="account-tab" data-account-tab="general" role="tab">
+                            <span class="account-tab-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <circle cx="12" cy="12" r="3"/>
+                                    <path d="M19 13.5v-3l-2-.7a7 7 0 0 0-.7-1.6l.9-1.9-2.1-2.1-1.9.9a7 7 0 0 0-1.7-.7l-.7-2h-3l-.7 2a7 7 0 0 0-1.6.7l-1.9-.9-2.1 2.1.9 1.9a7 7 0 0 0-.7 1.6l-2 .7v3l2 .7a7 7 0 0 0 .7 1.6l-.9 1.9 2.1 2.1 1.9-.9a7 7 0 0 0 1.6.7l.7 2h3l.7-2a7 7 0 0 0 1.7-.7l1.9.9 2.1-2.1-.9-1.9a7 7 0 0 0 .7-1.6l2-.7Z"/>
+                                </svg>
+                            </span>
+                            <span class="account-tab-copy">
+                                <strong>Cài đặt khác</strong>
+                                <small>Ngày giờ và chuyển động</small>
+                            </span>
                         </button>
                     </nav>
                 </aside>
@@ -4391,10 +4736,60 @@
                         </div>
 
                         <form id="account-profile-form">
+                            <section class="account-personal-card" aria-labelledby="account-personal-title">
+                                <div class="account-card-heading">
+                                    <span class="account-card-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none">
+                                            <circle cx="12" cy="8" r="3.25"/>
+                                            <path d="M6 19c.7-3.5 2.8-5.3 6-5.3s5.3 1.8 6 5.3"/>
+                                        </svg>
+                                    </span>
+                                    <div>
+                                        <h4 id="account-personal-title">Thông tin cá nhân</h4>
+                                        <p>Thông tin nhận diện và quyền hiện tại của tài khoản.</p>
+                                    </div>
+                                </div>
+                                <div class="account-personal-summary">
+                                    <div class="account-personal-avatar" id="account-personal-avatar">A</div>
+                                    <div class="account-personal-copy">
+                                        <strong id="account-personal-name">Tài khoản</strong>
+                                        <span id="account-personal-username">@username</span>
+                                        <small>Thông tin hồ sơ đang được sử dụng trong hệ thống.</small>
+                                    </div>
+                                    <span class="account-role-badge" id="account-personal-role">-</span>
+                                    <div class="account-personal-details">
+                                        <div>
+                                            <span>Tên tài khoản</span>
+                                            <strong id="account-summary-username">-</strong>
+                                        </div>
+                                        <div>
+                                            <span>Vai trò</span>
+                                            <strong id="account-summary-role">-</strong>
+                                        </div>
+                                        <div>
+                                            <span>Trạng thái</span>
+                                            <strong class="is-active" id="account-summary-status">-</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
                             <div class="account-avatar-editor">
+                                <div class="account-card-heading">
+                                    <span class="account-card-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none">
+                                            <circle cx="9" cy="8" r="3"/>
+                                            <path d="M3.5 18c.5-3.5 2.4-5.3 5.5-5.3s5 1.8 5.5 5.3"/>
+                                            <path d="M16 8.5h5M18.5 6v5"/>
+                                        </svg>
+                                    </span>
+                                    <div>
+                                        <h4>Ảnh đại diện</h4>
+                                        <p>Ảnh hiển thị của tài khoản.</p>
+                                    </div>
+                                </div>
                                 <div class="account-avatar-preview" id="account-avatar-form-preview">A</div>
                                 <div class="account-avatar-actions">
-                                    <strong>Ảnh đại diện</strong>
                                     <small>PNG, JPG hoặc WebP · Tối đa 5MB</small>
                                     <div class="account-inline-actions">
                                         <label class="account-secondary-button" for="account-avatar-input">Chọn ảnh</label>
@@ -4405,7 +4800,53 @@
                                 </div>
                             </div>
 
-                            <div class="account-form-grid">
+                            <section class="account-quick-card" aria-labelledby="account-quick-title">
+                                <div class="account-card-heading">
+                                    <span class="account-card-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none">
+                                            <path d="M12 3.5 19 6v5.2c0 4.3-2.7 7.5-7 9.3-4.3-1.8-7-5-7-9.3V6l7-2.5Z"/>
+                                            <path d="m9.2 12 1.8 1.8 3.8-4"/>
+                                        </svg>
+                                    </span>
+                                    <div>
+                                        <h4 id="account-quick-title">Thiết lập nhanh</h4>
+                                        <p>Truy cập nhanh các cài đặt đang có.</p>
+                                    </div>
+                                </div>
+                                <div class="account-quick-links">
+                                    <button type="button" data-open-account-tab="security">
+                                        <span>Đổi mật khẩu</span>
+                                        <small>Cập nhật bảo mật tài khoản</small>
+                                    </button>
+                                    <button type="button" data-open-account-tab="notifications">
+                                        <span>Tùy chọn thông báo</span>
+                                        <small>Cảnh báo kho, hóa đơn và bảo mật</small>
+                                    </button>
+                                    <button type="button" data-open-account-tab="appearance">
+                                        <span>Giao diện cá nhân</span>
+                                        <small>Chế độ sáng tối và màu chủ đạo</small>
+                                    </button>
+                                    <button type="button" data-open-account-tab="general">
+                                        <span>Cài đặt khác</span>
+                                        <small>Múi giờ, ngày tháng và chuyển động</small>
+                                    </button>
+                                </div>
+                            </section>
+
+                            <section class="account-contact-card" aria-labelledby="account-contact-title">
+                                <div class="account-card-heading">
+                                    <span class="account-card-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none">
+                                            <path d="M5 4.5h14v15H5z"/>
+                                            <path d="M8 8h8M8 12h5M8 16h3"/>
+                                        </svg>
+                                    </span>
+                                    <div>
+                                        <h4 id="account-contact-title">Thông tin liên hệ</h4>
+                                        <p>Cập nhật thông tin để nhận thông báo quan trọng.</p>
+                                    </div>
+                                </div>
+                                <div class="account-form-grid">
                                 <div class="account-field">
                                     <label for="account-username">Tên đăng nhập</label>
                                     <input id="account-username" type="text" disabled>
@@ -4422,10 +4863,27 @@
                                     <label for="account-email">Email</label>
                                     <input id="account-email" type="email" maxlength="100" placeholder="Nhập email">
                                 </div>
-                            </div>
+                                </div>
+
+                                <div class="account-form-footer">
+                                    <p class="account-message" id="account-profile-message" aria-live="polite"></p>
+                                    <button type="submit" class="account-primary-button">Lưu thay đổi</button>
+                                </div>
+                            </section>
 
                             <div class="account-info-card">
-                                <h4>Thông tin tài khoản</h4>
+                                <div class="account-card-heading">
+                                    <span class="account-card-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none">
+                                            <path d="M6 4.5h12v15H6z"/>
+                                            <path d="M9 8h6M9 12h6M9 16h3"/>
+                                        </svg>
+                                    </span>
+                                    <div>
+                                        <h4>Thông tin tài khoản</h4>
+                                        <p>Thông tin chi tiết về vai trò và quyền hạn trong hệ thống.</p>
+                                    </div>
+                                </div>
                                 <div class="account-info-row">
                                     <span>Vai trò</span>
                                     <strong id="account-role-value">-</strong>
@@ -4436,10 +4894,6 @@
                                 </div>
                             </div>
 
-                            <div class="account-form-footer">
-                                <p class="account-message" id="account-profile-message" aria-live="polite"></p>
-                                <button type="submit" class="account-primary-button">Lưu thay đổi</button>
-                            </div>
                         </form>
                     </section>
 
@@ -4531,7 +4985,193 @@
                             </div>
                         </div>
 
+                        <div class="account-appearance-group">
+                            <label>Màu thanh bên</label>
+                            <p class="account-appearance-hint">Chỉ thay đổi sidebar, không ảnh hưởng màu nền và nội dung của các trang.</p>
+                            <div class="account-sidebar-options" aria-label="Chọn màu thanh bên">
+                                <label class="account-sidebar-option">
+                                    <input type="radio" name="account-sidebar-theme" value="auto">
+                                    <span>
+                                        <i class="account-sidebar-preview is-auto" aria-hidden="true"><b></b><b></b><b></b></i>
+                                        <strong>Theo giao diện</strong>
+                                    </span>
+                                </label>
+                                <label class="account-sidebar-option">
+                                    <input type="radio" name="account-sidebar-theme" value="light">
+                                    <span>
+                                        <i class="account-sidebar-preview is-light" aria-hidden="true"><b></b><b></b><b></b></i>
+                                        <strong>Sáng</strong>
+                                    </span>
+                                </label>
+                                <label class="account-sidebar-option">
+                                    <input type="radio" name="account-sidebar-theme" value="midnight">
+                                    <span>
+                                        <i class="account-sidebar-preview is-midnight" aria-hidden="true"><b></b><b></b><b></b></i>
+                                        <strong>Xanh navy</strong>
+                                    </span>
+                                </label>
+                                <label class="account-sidebar-option">
+                                    <input type="radio" name="account-sidebar-theme" value="charcoal">
+                                    <span>
+                                        <i class="account-sidebar-preview is-charcoal" aria-hidden="true"><b></b><b></b><b></b></i>
+                                        <strong>Đen than</strong>
+                                    </span>
+                                </label>
+                                <label class="account-sidebar-option">
+                                    <input type="radio" name="account-sidebar-theme" value="indigo">
+                                    <span>
+                                        <i class="account-sidebar-preview is-indigo" aria-hidden="true"><b></b><b></b><b></b></i>
+                                        <strong>Tím chàm</strong>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+
                         <p class="account-message" id="account-appearance-message" aria-live="polite"></p>
+                    </section>
+
+                    <section class="account-pane" data-account-pane="notifications">
+                        <div class="account-section-heading">
+                            <h3>Thông báo</h3>
+                            <p>Chọn những cảnh báo cần hiển thị cho tài khoản này.</p>
+                        </div>
+
+                        <form id="account-notification-form" class="account-settings-form">
+                            <div class="account-settings-card">
+                                <div class="account-card-heading">
+                                    <span class="account-card-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none">
+                                            <path d="M6.5 10a5.5 5.5 0 0 1 11 0v4l1.5 2.5H5L6.5 14v-4Z"/>
+                                            <path d="M10 19h4"/>
+                                        </svg>
+                                    </span>
+                                    <div>
+                                        <h4>Cảnh báo trong hệ thống</h4>
+                                        <p>Các lựa chọn được lưu riêng cho tài khoản đang đăng nhập.</p>
+                                    </div>
+                                </div>
+
+                                <label class="account-setting-row">
+                                    <span class="account-setting-copy">
+                                        <strong>Tồn kho thấp và hết hàng</strong>
+                                        <small>Nhận cảnh báo khi sản phẩm chạm mức tồn tối thiểu.</small>
+                                    </span>
+                                    <span class="account-switch">
+                                        <input id="account-notify-stock" type="checkbox">
+                                        <i aria-hidden="true"></i>
+                                    </span>
+                                </label>
+
+                                <label class="account-setting-row">
+                                    <span class="account-setting-copy">
+                                        <strong>Hóa đơn và giao dịch</strong>
+                                        <small>Nhận thông báo khi có hóa đơn hoặc giao dịch mới.</small>
+                                    </span>
+                                    <span class="account-switch">
+                                        <input id="account-notify-invoice" type="checkbox">
+                                        <i aria-hidden="true"></i>
+                                    </span>
+                                </label>
+
+                                <label class="account-setting-row">
+                                    <span class="account-setting-copy">
+                                        <strong>Đăng nhập và bảo mật</strong>
+                                        <small>Hiển thị cảnh báo liên quan đến tài khoản và mật khẩu.</small>
+                                    </span>
+                                    <span class="account-switch">
+                                        <input id="account-notify-security" type="checkbox">
+                                        <i aria-hidden="true"></i>
+                                    </span>
+                                </label>
+
+                                <label class="account-setting-row">
+                                    <span class="account-setting-copy">
+                                        <strong>Âm thanh thông báo</strong>
+                                        <small>Phát âm thanh ngắn khi xuất hiện cảnh báo mới.</small>
+                                    </span>
+                                    <span class="account-switch">
+                                        <input id="account-notify-sound" type="checkbox">
+                                        <i aria-hidden="true"></i>
+                                    </span>
+                                </label>
+                            </div>
+
+                            <div class="account-settings-footer">
+                                <p class="account-message" id="account-notification-message" aria-live="polite"></p>
+                                <button type="submit" class="account-primary-button">Lưu thông báo</button>
+                            </div>
+                        </form>
+                    </section>
+
+                    <section class="account-pane" data-account-pane="general">
+                        <div class="account-section-heading">
+                            <h3>Cài đặt khác</h3>
+                            <p>Điều chỉnh ngày giờ và chuyển động của giao diện.</p>
+                        </div>
+
+                        <form id="account-general-form" class="account-settings-form">
+                            <div class="account-settings-card">
+                                <div class="account-card-heading">
+                                    <span class="account-card-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none">
+                                            <circle cx="12" cy="12" r="8"/>
+                                            <path d="M12 7v5l3 2M4 12h2M18 12h2"/>
+                                        </svg>
+                                    </span>
+                                    <div>
+                                        <h4>Ngày giờ và hiển thị</h4>
+                                        <p>Thay đổi được áp dụng ngay trên thanh header.</p>
+                                    </div>
+                                </div>
+
+                                <div class="account-setting-fields">
+                                    <label class="account-select-field" for="account-timezone">
+                                        <span>Múi giờ</span>
+                                        <select id="account-timezone">
+                                            <option value="Asia/Ho_Chi_Minh">Việt Nam (UTC+7)</option>
+                                            <option value="Asia/Bangkok">Bangkok (UTC+7)</option>
+                                            <option value="Asia/Tokyo">Tokyo (UTC+9)</option>
+                                            <option value="UTC">UTC</option>
+                                        </select>
+                                    </label>
+
+                                    <label class="account-select-field" for="account-date-format">
+                                        <span>Định dạng ngày</span>
+                                        <select id="account-date-format">
+                                            <option value="dd/mm/yyyy">DD/MM/YYYY</option>
+                                            <option value="yyyy-mm-dd">YYYY-MM-DD</option>
+                                        </select>
+                                    </label>
+                                </div>
+
+                                <label class="account-setting-row">
+                                    <span class="account-setting-copy">
+                                        <strong>Hiển thị giây trên đồng hồ</strong>
+                                        <small>Bổ sung số giây vào thời gian trên thanh header.</small>
+                                    </span>
+                                    <span class="account-switch">
+                                        <input id="account-show-seconds" type="checkbox">
+                                        <i aria-hidden="true"></i>
+                                    </span>
+                                </label>
+
+                                <label class="account-setting-row">
+                                    <span class="account-setting-copy">
+                                        <strong>Giảm chuyển động</strong>
+                                        <small>Hạn chế hiệu ứng xoay và chuyển động trong giao diện.</small>
+                                    </span>
+                                    <span class="account-switch">
+                                        <input id="account-reduce-motion" type="checkbox">
+                                        <i aria-hidden="true"></i>
+                                    </span>
+                                </label>
+                            </div>
+
+                            <div class="account-settings-footer">
+                                <p class="account-message" id="account-general-message" aria-live="polite"></p>
+                                <button type="submit" class="account-primary-button">Lưu cài đặt</button>
+                            </div>
+                        </form>
                     </section>
                 </div>
             </div>
@@ -4541,23 +5181,25 @@
     <!-- JS -->
     <script src="./js/api.js?v=20260922-1"></script>
 <script src="./js/data-api.js?v=20260921-1"></script>
-    <script src="js/dashboard.js?v=20260922-2"></script>
-    <script src="./js/products.js?v=20260922-2"></script>
-    <script src="./js/categories.js?v=20260922-1"></script>
-    <script src="./js/customers.js?v=20260910-1"></script>
-    <script src="./js/invoices.js?v=20260922-3"></script>
-<script src="./js/purchases.js?v=20260922-1"></script>
-    <script src="./js/inventory.js?v=20260922-1"></script>
-    <script src="./js/history.js?v=20260910-3"></script>
-    <script src="./js/statistics.js?v=20260922-1"></script>
-    <script src="./js/reports.js?v=20260922-1"></script>
-    <script src="./js/users.js?v=20260922-1"></script>
-    <script src="./js/permissions.js?v=20260922-3"></script>
-    <script src="./js/auth.js?v=20260922-1"></script>
-    <script src="./js/account.js?v=20260922-3"></script>
+    <script src="js/dashboard.js?v=20260928-1"></script>
+    <script src="./js/products.js?v=20260924-3"></script>
+    <script src="./js/categories.js?v=20260924-2"></script>
+    <script src="./js/customers.js?v=20260930-2"></script>
+    <script src="./js/invoices.js?v=20260929-1"></script>
+<script src="./js/purchases.js?v=20260925-4"></script>
+    <script src="./js/inventory.js?v=20260925-5"></script>
+    <script src="./js/history.js?v=20260925-4"></script>
+    <script src="./js/statistics.js?v=20260928-4"></script>
+    <script src="./js/reports.js?v=20260930-1"></script>
+    <script src="./js/users.js?v=20260925-2"></script>
+    <script src="./js/permissions.js?v=20260928-1"></script>
+    <script src="./js/auth.js?v=20260924-3"></script>
+    <script src="./js/account.js?v=20261003-1"></script>
+    <script src="./js/sidebar.js?v=20260924-1"></script>
+    <script src="./js/notifications.js?v=20260930-1"></script>
     <script src="js/ai-product.js?v=20260922-1"></script>
     <script src="./js/ai-assistant.js?v=20260922-1"></script>
-    <script src="./js/ai-logs.js?v=20260910-2"></script>
+    <script src="./js/ai-logs.js?v=20260925-3"></script>
 
     <script>
 
@@ -5259,6 +5901,11 @@ function showSalesInvoicePage(mode = "create") {
         "invoice-list-mode",
         listOnly
     );
+    invoicePage.querySelectorAll("[data-invoice-mode]").forEach(button => {
+        const selected = button.dataset.invoiceMode === (listOnly ? "list" : "create");
+        button.classList.toggle("active", selected);
+        button.setAttribute("aria-selected", String(selected));
+    });
     if (purchasePage) {
         purchasePage.classList.remove("active");
     }
@@ -5313,10 +5960,10 @@ function showSalesInvoicePage(mode = "create") {
     }
 
     if (invoicePageTitle) {
-        invoicePageTitle.textContent =
+        invoicePageTitle.innerHTML =
             listOnly
-                ? "Danh sách hóa đơn"
-                : "Lập hóa đơn bán hàng";
+                ? "Danh sách <em>hóa đơn</em>"
+                : "Lập hóa đơn <em>bán hàng</em>";
     }
 
     if (invoicePageDescription) {

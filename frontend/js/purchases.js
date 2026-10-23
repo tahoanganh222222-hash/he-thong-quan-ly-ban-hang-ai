@@ -593,9 +593,24 @@ function updatePurchaseSummary() {
             "purchase-total"
         );
 
+    const summaryTotalElement =
+        document.getElementById(
+            "purchase-summary-total"
+        );
+
     const countElement =
         document.getElementById(
             "purchase-item-count"
+        );
+
+    const lineCountElement =
+        document.getElementById(
+            "purchase-line-count"
+        );
+
+    const averageElement =
+        document.getElementById(
+            "purchase-average-price"
         );
 
     if (totalElement) {
@@ -603,10 +618,46 @@ function updatePurchaseSummary() {
             formatPurchaseMoney(total);
     }
 
+    if (summaryTotalElement) {
+        summaryTotalElement.textContent =
+            formatPurchaseMoney(total);
+    }
+
     if (countElement) {
         countElement.textContent =
             itemCount;
     }
+
+    if (lineCountElement) {
+        lineCountElement.textContent =
+            purchaseItems.length.toLocaleString("vi-VN");
+    }
+
+    if (averageElement) {
+        averageElement.textContent =
+            formatPurchaseMoney(itemCount ? total / itemCount : 0);
+    }
+}
+
+function setupPurchaseViews() {
+    const buttons = document.querySelectorAll("[data-purchase-view]");
+    if (!buttons.length) return;
+
+    buttons.forEach(button => {
+        if (button.dataset.initialized === "true") return;
+        button.dataset.initialized = "true";
+        button.addEventListener("click", () => {
+            const view = button.dataset.purchaseView === "history" ? "history" : "create";
+            buttons.forEach(item => {
+                const selected = item.dataset.purchaseView === view;
+                item.classList.toggle("active", selected);
+                item.setAttribute("aria-selected", String(selected));
+            });
+            document.getElementById("purchase-create-panel")?.classList.toggle("active", view === "create");
+            document.getElementById("purchase-history-panel")?.classList.toggle("active", view === "history");
+            if (view === "history") renderPurchaseHistory();
+        });
+    });
 }
 
 async function createPurchaseReceipt() {
@@ -841,6 +892,7 @@ async function initPurchaseManagement() {
     }
 
     setupPurchaseHistoryFilters();
+    setupPurchaseViews();
 
     await Promise.all([
         fetchPurchaseProducts(),
@@ -859,6 +911,7 @@ document.addEventListener(
     function () {
 
         setupPurchaseHistoryFilters();
+        setupPurchaseViews();
 
         const addButton =
             document.getElementById(

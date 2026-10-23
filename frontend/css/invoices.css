@@ -10,6 +10,10 @@
     display: block;
 }
 
+html:has(#sales-invoice-page.active) {
+    scrollbar-gutter: stable;
+}
+
 .sales-invoice-page-header {
     margin-bottom: 24px;
 }
@@ -442,4 +446,500 @@ html[data-app-theme="dark"] .invoice-summary-row .invoice-product-discount-total
 
 .sales-invoice-page.invoice-list-mode #invoice-search-filter-container {
     margin-bottom: 0;
+}
+
+/* ============================================================
+   INVOICE HERO — tỷ lệ compact đồng bộ các trang quản lý
+   ============================================================ */
+
+html .main-content #sales-invoice-page .sales-invoice-page-header {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 130px;
+    min-height: 130px;
+    align-items: center;
+    justify-content: flex-start;
+    box-sizing: border-box;
+    margin-bottom: 14px;
+    padding: 14px 28px;
+    overflow: hidden;
+    border: 1px solid #aebfd5;
+    border-radius: 18px;
+    background:
+        radial-gradient(ellipse at 67% 42%, rgba(188, 218, 255, .59), transparent 34%),
+        radial-gradient(ellipse at 53% 108%, rgba(174, 204, 251, .24), transparent 43%),
+        linear-gradient(108deg, #fff 0%, #fbfdff 34%, #edf5ff 66%, #ddecff 84%, #f8fbff 100%);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, .92),
+        0 16px 38px rgba(52, 92, 150, .16);
+    color: #17233a;
+}
+
+html .main-content #sales-invoice-page .sales-invoice-page-header::before {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border: 0;
+    border-radius: 0;
+    background:
+        radial-gradient(circle at 65% 50%, transparent 0 88px, rgba(105, 128, 245, .12) 89px 91px, transparent 92px 139px, rgba(83, 116, 236, .08) 140px 142px, transparent 143px),
+        linear-gradient(151deg, transparent 0 42%, rgba(255, 255, 255, .42) 42.2% 55%, transparent 55.2%),
+        linear-gradient(28deg, transparent 0 63%, rgba(255, 255, 255, .28) 63.2% 75%, transparent 75.2%);
+    content: "";
+    opacity: 1;
+    transform: none;
+    animation: none;
+    pointer-events: none;
+}
+
+html .main-content #sales-invoice-page .sales-invoice-page-header::after {
+    display: none;
+    content: none;
+    animation: none;
+}
+
+.invoice-hero-copy {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    width: 40%;
+    min-width: 0;
+    align-items: center;
+    gap: 15px;
+}
+
+.invoice-hero-copy > div {
+    min-width: 0;
+}
+
+.invoice-hero-icon {
+    display: grid;
+    width: 56px;
+    height: 56px;
+    flex: 0 0 56px;
+    place-items: center;
+    border: 1px solid rgba(109, 123, 245, .12);
+    border-radius: 17px;
+    background: linear-gradient(145deg, rgba(239, 243, 255, .98), rgba(249, 251, 255, .85));
+    box-shadow: 0 9px 20px rgba(80, 91, 199, .13), inset 0 1px 0 #fff;
+    color: #5555e9;
+}
+
+.invoice-hero-icon svg {
+    width: 29px;
+    height: 29px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+html .main-content #sales-invoice-page .sales-invoice-page-header h2 {
+    display: block;
+    width: auto;
+    margin: 0;
+    color: #15213a;
+    background: none;
+    font-size: clamp(28px, 2.05vw, 34px);
+    font-weight: 820;
+    line-height: 1.08;
+    letter-spacing: -.052em;
+    -webkit-background-clip: initial;
+    background-clip: initial;
+    -webkit-text-fill-color: #15213a;
+}
+
+html .main-content #sales-invoice-page .sales-invoice-page-header h2 em {
+    color: transparent;
+    background: linear-gradient(92deg, #5149df 0%, #3566f2 56%, #078bd4 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    font-style: normal;
+    -webkit-text-fill-color: transparent;
+}
+
+html .main-content #sales-invoice-page .sales-invoice-page-header .invoice-hero-copy p {
+    margin: 7px 0 0;
+    overflow: hidden;
+    color: #6e7f99;
+    font-size: clamp(12px, .95vw, 14px);
+    line-height: 1.45;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.invoice-hero-visual {
+    position: absolute !important;
+    top: 50%;
+    left: 63%;
+    z-index: 2 !important;
+    display: flex;
+    width: min(37vw, 540px);
+    height: 158px;
+    align-items: center;
+    justify-content: center;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.invoice-hero-visual img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 14px 16px rgba(57, 74, 179, .15));
+}
+
+html .main-content #sales-invoice-page .sales-invoice-page-header .invoice-hero-note {
+    position: absolute;
+    top: 50%;
+    right: 25px;
+    z-index: 3;
+    display: grid;
+    width: 230px;
+    grid-template-columns: 22px minmax(0, 1fr);
+    align-items: center;
+    gap: 7px;
+    margin: 0;
+    color: #52709e;
+    font-size: 11px;
+    line-height: 1.45;
+    transform: translateY(-50%);
+}
+
+.invoice-hero-note i {
+    color: #5c5ce8;
+    font-size: 22px;
+    font-style: normal;
+    line-height: 1;
+}
+
+.invoice-hero-note span,
+.invoice-hero-note strong {
+    display: block;
+}
+
+.invoice-hero-note strong {
+    margin-top: 2px;
+    color: #214d9c;
+    font-weight: 760;
+}
+
+/* Hai chế độ Hóa đơn dùng chung hero và cùng vị trí nội dung. */
+.invoice-view-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+    margin-bottom: 14px;
+    padding: 7px;
+    border: 1px solid #aabbd1;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, .96);
+    box-shadow: 0 9px 24px rgba(31, 45, 75, .10);
+}
+
+.invoice-view-tab {
+    display: flex;
+    min-width: 0;
+    min-height: 62px;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    background: transparent;
+    color: #64748b;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color .2s ease, background .2s ease, box-shadow .2s ease, color .2s ease;
+}
+
+.invoice-view-tab:hover {
+    border-color: #c2cce8;
+    background: #f5f7ff;
+    color: #4f46e5;
+}
+
+.invoice-view-tab.active {
+    border-color: #9eaee5;
+    background: linear-gradient(135deg, #eef2ff, #fff);
+    color: #4f46e5;
+    box-shadow: 0 7px 18px rgba(79, 70, 229, .13);
+}
+
+.invoice-tab-icon {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+    place-items: center;
+    border: 1px solid #d0d9f5;
+    border-radius: 11px;
+    background: #eef2ff;
+    color: #4f46e5;
+    font-size: 19px;
+    font-weight: 900;
+}
+
+.invoice-view-tab.active .invoice-tab-icon {
+    border-color: #4f46e5;
+    background: linear-gradient(135deg, #554be8, #2563eb);
+    color: #fff;
+    box-shadow: 0 7px 14px rgba(79, 70, 229, .24);
+}
+
+.invoice-view-tab strong,
+.invoice-view-tab small {
+    display: block;
+}
+
+.invoice-view-tab strong {
+    margin-bottom: 3px;
+    color: #29354a;
+    font-size: 13.5px;
+}
+
+.invoice-view-tab.active strong {
+    color: #3730a3;
+}
+
+.invoice-view-tab small {
+    overflow: hidden;
+    color: #8390a3;
+    font-size: 11px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Chỉ hiển thị tra cứu khi mở danh sách; ép sát hero và thu gọn bộ lọc. */
+html .main-content #sales-invoice-page:not(.invoice-list-mode) #invoice-search-filter-container {
+    display: none;
+}
+
+html .main-content #sales-invoice-page.invoice-list-mode #invoice-search-filter-container {
+    display: block;
+    margin: 0 0 14px !important;
+}
+
+html .main-content #sales-invoice-page #invoice-search-filter-container .invoice-search-box {
+    border: 1.5px solid #9eafc6;
+    border-radius: 16px;
+    box-shadow: 0 9px 23px rgba(42, 66, 99, .09);
+}
+
+html .main-content #sales-invoice-page #invoice-search-filter-container .invoice-search-title {
+    min-height: 56px;
+    box-sizing: border-box;
+    padding: 10px 16px;
+    border-bottom-color: #b7c4d5;
+}
+
+html .main-content #sales-invoice-page #invoice-search-filter-container .invoice-search-heading {
+    gap: 10px;
+}
+
+html .main-content #sales-invoice-page #invoice-search-filter-container .invoice-search-heading-icon {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+    border-radius: 10px;
+    font-size: 18px;
+}
+
+html .main-content #sales-invoice-page #invoice-search-filter-container .invoice-search-title h3 {
+    font-size: 15px;
+}
+
+html .main-content #sales-invoice-page #invoice-search-filter-container .invoice-search-title p {
+    margin-top: 2px;
+    font-size: 10.5px;
+}
+
+html .main-content #sales-invoice-page #invoice-search-filter-container #invoice-search-result-count {
+    padding: 7px 11px;
+    font-size: 11px;
+}
+
+html .main-content #sales-invoice-page #invoice-search-filter-container .invoice-search-form {
+    gap: 10px;
+    padding: 12px 16px 14px;
+    border-bottom-color: #b7c4d5;
+}
+
+html .main-content #sales-invoice-page #invoice-search-filter-container .invoice-search-field {
+    gap: 5px;
+}
+
+html .main-content #sales-invoice-page #invoice-search-filter-container .invoice-search-field label,
+html .main-content #sales-invoice-page #invoice-search-filter-container .invoice-search-group-label {
+    font-size: 10.5px;
+}
+
+html .main-content #sales-invoice-page #invoice-search-filter-container .invoice-search-field input,
+html .main-content #sales-invoice-page #invoice-search-filter-container .invoice-search-field select {
+    height: 40px;
+    padding: 0 11px;
+    border-radius: 9px;
+    font-size: 12px;
+    border-color: #aebed2;
+}
+
+html .main-content #sales-invoice-page #invoice-search-filter-container .invoice-search-secondary-row {
+    gap: 12px;
+    margin-top: 0;
+    padding-top: 11px;
+}
+
+html .main-content #sales-invoice-page #invoice-search-filter-container .invoice-search-amount-group {
+    gap: 7px;
+}
+
+html .main-content #sales-invoice-page #invoice-search-filter-container .invoice-search-amount-control {
+    width: 185px;
+    height: 40px;
+    border-radius: 9px;
+    border-color: #aebed2;
+}
+
+html .main-content #sales-invoice-page #invoice-search-filter-container .invoice-search-button,
+html .main-content #sales-invoice-page #invoice-search-filter-container .invoice-search-reset-button {
+    height: 40px;
+    padding: 0 15px;
+    border-radius: 9px;
+    font-size: 12px;
+}
+
+html .main-content #sales-invoice-page #invoice-search-filter-container .invoice-search-table th,
+html .main-content #sales-invoice-page #invoice-search-filter-container .invoice-search-table td {
+    padding: 11px 12px;
+    border-color: #b7c4d5;
+}
+
+html .main-content #sales-invoice-page #invoice-search-filter-container .invoice-search-pagination {
+    padding: 12px 16px 14px;
+    border-top: 1px solid #b7c4d5;
+}
+
+/* Tăng độ rõ của viền và bo góc trong khu vực lập hóa đơn. */
+html:not([data-app-theme="dark"]) .main-content #sales-invoice-page .sales-invoice-card {
+    border: 1.5px solid #9eafc6 !important;
+    border-radius: 16px !important;
+    box-shadow: 0 10px 26px rgba(31, 45, 75, .12) !important;
+}
+
+html:not([data-app-theme="dark"]) .main-content #sales-invoice-page .sales-invoice-card-header {
+    border-bottom: 1px solid #b1bfd1 !important;
+}
+
+html:not([data-app-theme="dark"]) .main-content #sales-invoice-page :is(
+    .invoice-code-box,
+    .invoice-form-group input,
+    .invoice-form-group select,
+    .invoice-payment-option,
+    .invoice-item-discount-control
+) {
+    border-color: #aebed2;
+}
+
+html:not([data-app-theme="dark"]) .main-content #sales-invoice-page .invoice-product-table th,
+html:not([data-app-theme="dark"]) .main-content #sales-invoice-page .invoice-product-table td {
+    border-color: #b7c4d5;
+}
+
+html[data-app-theme="dark"] .main-content #sales-invoice-page .sales-invoice-page-header {
+    border-color: rgba(84, 110, 159, .7);
+    background:
+        radial-gradient(ellipse at 68% 42%, rgba(77, 103, 183, .33), transparent 34%),
+        linear-gradient(108deg, #132138 0%, #172842 58%, #1b3455 100%);
+    box-shadow: 0 16px 38px rgba(0, 0, 0, .24);
+}
+
+html[data-app-theme="dark"] .main-content #sales-invoice-page .sales-invoice-page-header h2 {
+    color: #f2f6ff;
+    -webkit-text-fill-color: #f2f6ff;
+}
+
+html[data-app-theme="dark"] .main-content #sales-invoice-page .sales-invoice-page-header .invoice-hero-copy p,
+html[data-app-theme="dark"] .main-content #sales-invoice-page .sales-invoice-page-header .invoice-hero-note {
+    color: #aebdd2;
+}
+
+html[data-app-theme="dark"] .invoice-hero-note strong {
+    color: #d9e7ff;
+}
+
+html[data-app-theme="dark"] .invoice-view-tabs {
+    border-color: #465a74;
+    background: #142136;
+    box-shadow: 0 9px 24px rgba(0, 0, 0, .22);
+}
+
+html[data-app-theme="dark"] .invoice-view-tab.active {
+    border-color: #526694;
+    background: #1d293d;
+}
+
+html[data-app-theme="dark"] .invoice-view-tab strong {
+    color: #e8eef8;
+}
+
+@media (max-width: 1280px) {
+    .invoice-hero-copy {
+        width: 48%;
+    }
+
+    .invoice-hero-visual {
+        left: 74%;
+        width: min(44vw, 540px);
+    }
+
+    html .main-content #sales-invoice-page .sales-invoice-page-header .invoice-hero-note {
+        display: none;
+    }
+}
+
+@media (max-width: 760px) {
+    html .main-content #sales-invoice-page .sales-invoice-page-header {
+        height: 140px;
+        min-height: 140px;
+        padding: 14px 18px;
+    }
+
+    .invoice-hero-copy {
+        width: 78%;
+        gap: 10px;
+    }
+
+    .invoice-hero-icon {
+        width: 46px;
+        height: 46px;
+        flex-basis: 46px;
+        border-radius: 14px;
+    }
+
+    .invoice-hero-icon svg {
+        width: 25px;
+        height: 25px;
+    }
+
+    html .main-content #sales-invoice-page .sales-invoice-page-header h2 {
+        font-size: clamp(23px, 6vw, 30px);
+    }
+
+    .invoice-hero-visual {
+        right: -74px;
+        left: auto;
+        width: 63%;
+        height: 126px;
+        opacity: .24;
+        transform: translateY(-50%);
+    }
+
+    .invoice-view-tabs {
+        grid-template-columns: 1fr;
+    }
 }

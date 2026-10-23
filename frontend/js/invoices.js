@@ -770,6 +770,11 @@ document.addEventListener(
                 "invoice-cancel-button"
             );
 
+        const modeButtons =
+            document.querySelectorAll(
+                "[data-invoice-mode]"
+            );
+
         if (addProductButton) {
             addProductButton.addEventListener(
                 "click",
@@ -790,6 +795,14 @@ document.addEventListener(
                 resetSalesInvoice
             );
         }
+
+        modeButtons.forEach(function (button) {
+            button.addEventListener("click", function () {
+                if (typeof window.showSalesInvoicePage === "function") {
+                    window.showSalesInvoicePage(button.dataset.invoiceMode);
+                }
+            });
+        });
 
     }
 );
@@ -1217,8 +1230,12 @@ const header = target.querySelector(
     ".sales-invoice-page-header"
 );
 
-if (header) {
-    header.insertAdjacentElement(
+const modeTabs = target.querySelector(
+    ".invoice-view-tabs"
+);
+
+if (modeTabs || header) {
+    (modeTabs || header).insertAdjacentElement(
         "afterend",
         container
     );
@@ -1867,6 +1884,13 @@ if (detailModal && detailModal.parentElement !== document.body) {
 
         if (!body) {
             return;
+        }
+
+        const title = document.getElementById(
+            "invoice-search-detail-title"
+        );
+        if (title) {
+            title.textContent = invoice.code || invoice.invoiceCode || "Thông tin hóa đơn";
         }
 
         const items = Array.isArray(invoice.items)
@@ -3478,6 +3502,9 @@ if (detailModal && detailModal.parentElement !== document.body) {
 
     window.initInvoiceSearchFeature =
         initInvoiceSearchFeature;
+
+    window.viewInvoiceSearchDetail =
+        viewInvoiceSearchDetail;
 
 
     console.log(

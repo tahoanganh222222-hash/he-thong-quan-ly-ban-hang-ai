@@ -83,12 +83,21 @@
                 ([date, revenue]) => ({ date, revenue })
             );
 
-            recentInvoicesData = invoices.slice(0, 4).map(invoice => ({
-                code: invoice.code,
-                customer: invoice.customerName,
-                total: invoice.finalAmount,
-                status: "Đã thanh toán"
-            }));
+            recentInvoicesData = [...invoices]
+                .sort((a, b) => {
+                    const firstDate = new Date(a.createdAt || a.date || 0);
+                    const secondDate = new Date(b.createdAt || b.date || 0);
+                    return secondDate - firstDate;
+                })
+                .slice(0, 4)
+                .map(invoice => ({
+                    id: invoice.id,
+                    code: invoice.code,
+                    customer: invoice.customerName || "Khách lẻ",
+                    total: invoice.finalAmount,
+                    status: invoice.status,
+                    createdAt: invoice.createdAt || invoice.date
+                }));
 
             inventoryWarningData = inventory
                 .filter(item => item.quantity <= item.minimum)
@@ -96,7 +105,10 @@
                 .map(item => ({
                     code: item.code,
                     name: item.name,
-                    stock: item.quantity
+                    stock: item.quantity,
+                    minimum: item.minimum,
+                    unit: item.unit,
+                    imageData: item.imageData
                 }));
 
             /*
@@ -162,6 +174,48 @@
 
         return product?.imageData ||
             "./assets/branding/sales-manager-logo.svg";
+    }
+
+
+    function formatDashboardInvoiceTime(value) {
+
+        if (!value) {
+            return "---";
+        }
+
+        const date = new Date(value);
+
+        if (Number.isNaN(date.getTime())) {
+            return escapeDashboardHtml(value);
+        }
+
+        const day = String(date.getDate()).padStart(2, "0");
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const year = date.getFullYear();
+        const hasTime = String(value).includes("T");
+
+        if (!hasTime) {
+            return `${day}/${month}/${year}`;
+        }
+
+        const hours = String(date.getHours()).padStart(2, "0");
+        const minutes = String(date.getMinutes()).padStart(2, "0");
+
+        return `${day}/${month}/${year} ${hours}:${minutes}`;
+    }
+
+
+    function getDashboardInvoiceStatus(status) {
+
+        if (status === "pending") {
+            return "Chờ thanh toán";
+        }
+
+        if (status === "cancelled") {
+            return "Đã hủy";
+        }
+
+        return "Đã thanh toán";
     }
 
 
@@ -504,7 +558,11 @@ function updateRevenue(period) {
 
 
             changeElement.textContent =
-                `${change >= 0 ? "+" : ""}${change.toFixed(1)}%`;
+                `${change >= 0 ? "↑" : "↓"} ${Math.abs(change).toFixed(1)}%`;
+            changeElement.classList.toggle(
+                "is-down",
+                change < 0
+            );
         }
 
 
@@ -638,22 +696,51 @@ function updateRevenue(period) {
                     document.createElement("tr");
 
 
+                const invoiceCode =
+                    escapeDashboardHtml(invoice.code || "---");
+                const customerName =
+                    escapeDashboardHtml(invoice.customer || "Khách lẻ");
+                const statusText =
+                    escapeDashboardHtml(getDashboardInvoiceStatus(invoice.status));
+
                 row.innerHTML = `
 
-                    <td>
-                        ${invoice.code}
+                    <td class="dashboard-invoice-code">
+                        ${invoiceCode}
                     </td>
 
                     <td>
-                        ${invoice.customer}
+                        ${customerName}
                     </td>
 
-                    <td>
+                    <td class="dashboard-invoice-amount">
                         ${formatMoney(invoice.total)}
                     </td>
 
                     <td>
-                        ${invoice.status}
+                        <span class="dashboard-paid-badge">
+                            <i aria-hidden="true"></i>
+                            ${statusText}
+                        </span>
+                    </td>
+
+                    <td class="dashboard-invoice-time">
+                        ${formatDashboardInvoiceTime(invoice.createdAt)}
+                    </td>
+
+                    <td class="dashboard-invoice-action-cell">
+                        <button
+                            type="button"
+                            class="dashboard-invoice-view"
+                            data-dashboard-invoice-id="${Number(invoice.id)}"
+                            aria-label="Xem hóa đơn ${invoiceCode}"
+                            title="Xem chi tiết"
+                        >
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M2.5 12s3.5-5.5 9.5-5.5 9.5 5.5 9.5 5.5-3.5 5.5-9.5 5.5S2.5 12 2.5 12Z"></path>
+                                <circle cx="12" cy="12" r="2.6"></circle>
+                            </svg>
+                        </button>
                     </td>
 
                 `;
@@ -666,7 +753,7 @@ function updateRevenue(period) {
         if (recentInvoicesData.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="4" class="dashboard-empty-state">
+                    <td colspan="6" class="dashboard-empty-state">
                         Chưa có hóa đơn
                     </td>
                 </tr>
@@ -704,24 +791,45 @@ function updateRevenue(period) {
                 item.className =
                     "inventory-warning-item";
 
+                const productName =
+                    escapeDashboardHtml(product.name || "Sản phẩm");
+                const productCode =
+                    escapeDashboardHtml(product.code || "---");
+                const productUnit =
+                    escapeDashboardHtml(product.unit || "sản phẩm");
+                const productImage =
+                    escapeDashboardHtml(getDashboardProductImage(product));
+                const isOutOfStock = Number(product.stock || 0) <= 0;
 
                 item.innerHTML = `
-
-                    <div>
-                        <strong>
-                            ${product.name}
-                        </strong>
-
-                        <small>
-                            ${product.code}
-                        </small>
+                    <div class="inventory-warning-media">
+                        <img
+                            src="${productImage}"
+                            alt="Ảnh ${productName}"
+                            loading="lazy"
+                        >
                     </div>
-
-                    <span>
-                        Còn ${product.stock}
-                    </span>
-
+                    <div class="inventory-warning-content">
+                        <div class="inventory-warning-title-row">
+                            <strong title="${productName}">${productName}</strong>
+                            <small>${productCode}</small>
+                        </div>
+                        <div class="inventory-warning-meta">
+                            <span class="inventory-warning-stock ${isOutOfStock ? "is-out" : "is-low"}">
+                                <i aria-hidden="true"></i>
+                                Còn <b>${Number(product.stock || 0).toLocaleString("vi-VN")}</b> ${productUnit}
+                            </span>
+                            <span class="inventory-warning-minimum">
+                                Tối thiểu ${Number(product.minimum || 0).toLocaleString("vi-VN")}
+                            </span>
+                        </div>
+                    </div>
                 `;
+
+                const image = item.querySelector("img");
+                image?.addEventListener("error", () => {
+                    image.src = "./assets/branding/sales-manager-logo.svg";
+                }, { once: true });
 
 
                 container.appendChild(item);
@@ -897,6 +1005,49 @@ function updateRevenue(period) {
             viewAllInvoices.addEventListener(
                 "click",
                 function () {
+                    openDashboardTarget("invoice-list");
+                }
+            );
+        }
+
+        const viewAllProducts =
+            getElement("dashboard-view-all-products");
+
+        if (viewAllProducts) {
+            viewAllProducts.addEventListener(
+                "click",
+                function () {
+                    openDashboardTarget("products");
+                }
+            );
+        }
+
+        const recentInvoices = getElement("recent-invoices");
+
+        if (recentInvoices) {
+            recentInvoices.addEventListener(
+                "click",
+                function (event) {
+                    const button = event.target.closest(
+                        ".dashboard-invoice-view"
+                    );
+
+                    if (!button) {
+                        return;
+                    }
+
+                    const invoiceId = Number(
+                        button.dataset.dashboardInvoiceId
+                    );
+
+                    if (
+                        invoiceId &&
+                        typeof window.viewInvoiceSearchDetail === "function"
+                    ) {
+                        window.viewInvoiceSearchDetail(invoiceId);
+                        return;
+                    }
+
                     openDashboardTarget("invoice-list");
                 }
             );

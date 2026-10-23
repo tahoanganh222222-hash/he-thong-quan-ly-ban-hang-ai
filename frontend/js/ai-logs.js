@@ -65,9 +65,60 @@
     function renderSummary() {
         const totalTokens = logs.reduce((sum, log) => sum + Number(log.tokenUsed || 0), 0);
         const users = new Set(logs.map(log => log.userId || log.username).filter(Boolean));
+        const currentDate = dateKey(new Date());
+        const todayRequests = logs.filter(log => dateKey(log.requestedAt) === currentDate).length;
         if (byId("ai-logs-total")) byId("ai-logs-total").textContent = logs.length.toLocaleString("vi-VN");
         if (byId("ai-logs-tokens")) byId("ai-logs-tokens").textContent = totalTokens.toLocaleString("vi-VN");
         if (byId("ai-logs-users")) byId("ai-logs-users").textContent = users.size.toLocaleString("vi-VN");
+        if (byId("ai-logs-today")) byId("ai-logs-today").textContent = todayRequests.toLocaleString("vi-VN");
+    }
+
+    function renderInsights() {
+        const chart = byId("ai-logs-donut-chart");
+        const totalElement = byId("ai-logs-donut-total");
+        const legend = byId("ai-logs-chart-legend");
+        const recent = byId("ai-logs-recent-list");
+        const palette = ["#22c783", "#f5a524", "#2397e5", "#4f63e8", "#8b5cf6", "#94a3b8"];
+        const counts = logs.reduce((map, log) => {
+            const key = log.feature || "other";
+            map.set(key, (map.get(key) || 0) + 1);
+            return map;
+        }, new Map());
+        const entries = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+        const total = logs.length;
+
+        if (totalElement) totalElement.textContent = total.toLocaleString("vi-VN");
+        if (chart) {
+            let cursor = 0;
+            const stops = entries.map(([, count], index) => {
+                const start = cursor;
+                cursor += total ? (count / total) * 100 : 0;
+                return `${palette[index % palette.length]} ${start.toFixed(2)}% ${cursor.toFixed(2)}%`;
+            });
+            chart.style.background = total
+                ? `conic-gradient(${stops.join(", ")})`
+                : "conic-gradient(#e2e8f0 0 100%)";
+        }
+
+        if (legend) {
+            legend.innerHTML = entries.slice(0, 6).map(([key, count], index) => {
+                const percent = total ? ((count / total) * 100).toFixed(1) : "0.0";
+                return `<div><i style="background:${palette[index % palette.length]}"></i><span>${escapeHtml(FEATURE_LABELS[key] || key || "Khác")}</span><strong>${count.toLocaleString("vi-VN")} (${percent}%)</strong></div>`;
+            }).join("") || '<p class="ai-logs-insight-empty">Chưa có dữ liệu.</p>';
+        }
+
+        if (recent) {
+            const newest = [...logs].sort((a, b) => new Date(b.requestedAt) - new Date(a.requestedAt)).slice(0, 5);
+            recent.innerHTML = newest.map((log, index) => {
+                const requested = formatDate(log.requestedAt);
+                const title = FEATURE_LABELS[log.feature] || log.feature || "Yêu cầu AI";
+                return `<article>
+                    <time>${escapeHtml(requested.time)}</time>
+                    <i style="--ai-logs-recent-color:${palette[index % palette.length]}"></i>
+                    <div><strong title="${escapeHtml(log.question || title)}">${escapeHtml(log.question || title)}</strong><small>${escapeHtml(log.userName || log.username || "Hệ thống")}</small></div>
+                </article>`;
+            }).join("") || '<p class="ai-logs-insight-empty">Chưa có hoạt động gần đây.</p>';
+        }
     }
 
     function pageButton(label, target, disabled, active, ariaLabel) {
@@ -177,10 +228,12 @@
             logs = await window.salesApi.ai.logs();
             currentPage = 1;
             renderSummary();
+            renderInsights();
             renderTable();
         } catch (error) {
             logs = [];
             renderSummary();
+            renderInsights();
             if (body) body.innerHTML = `<tr><td colspan="8" class="ai-logs-empty">${escapeHtml(error.message || "Không thể tải nhật ký AI.")}</td></tr>`;
             if (byId("ai-logs-count")) byId("ai-logs-count").textContent = "Không thể tải dữ liệu";
             renderPagination(0, 1);
@@ -236,6 +289,7 @@
             });
         });
         renderSummary();
+        renderInsights();
         renderTable();
     }
 

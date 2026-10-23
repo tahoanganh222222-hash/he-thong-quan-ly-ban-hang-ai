@@ -342,6 +342,35 @@ const roleDescriptions = {
 };
 
 
+const permissionRoleIcons = {
+    ADMIN: "♛",
+    OWNER: "♣",
+    SALES: "♟",
+    CUSTOMER: "●"
+};
+
+
+const permissionFunctionIcons = {
+    login: "↪",
+    permission: "◈",
+    user_manage: "♙",
+    product_manage: "▣",
+    customer_manage: "♣",
+    search_filter: "⌕",
+    invoice_create: "▤",
+    invoice_search: "⌕",
+    purchase_track: "⇩",
+    inventory_view: "□",
+    revenue_statistics: "▥",
+    top_products: "★",
+    report_export: "⇧",
+    sales_data_qa: "?",
+    ai_product_advice: "✦",
+    ai_log_view: "✧",
+    history_view: "◷"
+};
+
+
 /* =========================================================
    6. DỮ LIỆU QUYỀN
    ========================================================= */
@@ -359,7 +388,6 @@ let rolePermissions =
 
 let permissionDrafts =
     clonePermissions(defaultRolePermissions);
-
 
 /* =========================================================
    7. HELPER CLONE
@@ -740,6 +768,11 @@ function renderCurrentPermissionUser() {
                 ? "Đang hoạt động"
                 : "Đã khóa";
 
+        status.classList.toggle(
+            "is-inactive",
+            !currentPermissionUser.isActive
+        );
+
     }
 
     if (avatarImage && avatarFallback) {
@@ -793,6 +826,7 @@ function changePermissionRole() {
 
 
     renderRolePermissions(role);
+    updatePermissionSaveState();
 
 }
 
@@ -813,6 +847,20 @@ function renderRolePermissions(role) {
             "permission-role-description"
         );
 
+    const selectedName =
+        document.getElementById(
+            "permission-selected-role-name"
+        );
+
+    const selectedCode =
+        document.getElementById(
+            "permission-selected-role-code"
+        );
+
+    const selectedIcon =
+        document.getElementById(
+            "permission-selected-role-icon"
+        );
 
     if (!tbody) {
         return;
@@ -834,6 +882,27 @@ function renderRolePermissions(role) {
 
     }
 
+    if (selectedName) {
+        selectedName.textContent = getRoleName(role);
+    }
+
+    if (selectedCode) {
+        selectedCode.textContent = role;
+    }
+
+    if (selectedIcon) {
+        selectedIcon.textContent = permissionRoleIcons[role] || "●";
+        selectedIcon.className =
+            `permission-selected-role-icon is-${role.toLowerCase()}`;
+    }
+
+    document.querySelectorAll(
+        ".permission-role-item[data-permission-role]"
+    ).forEach(function (button) {
+        const active = button.dataset.permissionRole === role;
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-pressed", String(active));
+    });
 
     /*
         Đảm bảo draft tồn tại.
@@ -848,7 +917,6 @@ function renderRolePermissions(role) {
 
     const permissions =
         permissionDrafts[role];
-
 
     /*
         Tạo từng dòng.
@@ -879,18 +947,27 @@ function renderRolePermissions(role) {
 
             row.innerHTML = `
 
-                <td class="permission-name-cell">
-
-                    <div class="permission-name">
-                        ${escapeHTML(permission.name)}
-                    </div>
-
-                    <div class="permission-description">
-                        ${escapeHTML(permission.description)}
-                    </div>
-
+                <td class="permission-index-cell">
+                    ${index + 1}
                 </td>
 
+                <td class="permission-name-cell">
+                    <div class="permission-function-name">
+                        <span
+                            class="permission-function-icon"
+                            data-permission-key="${escapeHTML(permission.key)}"
+                            aria-hidden="true"
+                        >
+                            ${escapeHTML(permissionFunctionIcons[permission.key] || "•")}
+                        </span>
+                        <strong>${escapeHTML(permission.name)}</strong>
+                    </div>
+                </td>
+
+
+                <td class="permission-description-cell">
+                    ${escapeHTML(permission.description)}
+                </td>
 
                 <td class="permission-status-cell">
 
@@ -944,7 +1021,6 @@ function renderRolePermissions(role) {
 
         }
     );
-
 
     /*
         Áp dụng CSS đẹp cho bảng nếu project
@@ -1766,6 +1842,8 @@ function escapeHTML(value) {
 
 function injectPermissionStyles() {
 
+    return;
+
     if (
         document.getElementById(
             "permission-management-styles"
@@ -2111,6 +2189,10 @@ document.addEventListener(
                 "permission-table-body"
             );
 
+        const roleList =
+            document.getElementById(
+                "permission-role-list"
+            );
 
         /*
             Đổi role.
@@ -2125,6 +2207,23 @@ document.addEventListener(
 
         }
 
+        if (roleList) {
+            roleList.addEventListener(
+                "click",
+                function (event) {
+                    const roleButton = event.target.closest(
+                        ".permission-role-item[data-permission-role]"
+                    );
+
+                    if (!roleButton || !roleSelect) {
+                        return;
+                    }
+
+                    roleSelect.value = roleButton.dataset.permissionRole;
+                    changePermissionRole();
+                }
+            );
+        }
 
         /*
             Lưu.

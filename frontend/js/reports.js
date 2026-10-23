@@ -7,6 +7,14 @@
     let dateRangeInitialized = false;
 
     const money = value => Number(value || 0).toLocaleString("vi-VN") + " ₫";
+    const compactMoney = value => {
+        const amount = Number(value || 0);
+        const format = number => Number(number.toFixed(1)).toLocaleString("vi-VN");
+        if (Math.abs(amount) >= 1_000_000_000) return `${format(amount / 1_000_000_000)} tỷ`;
+        if (Math.abs(amount) >= 1_000_000) return `${format(amount / 1_000_000)}tr`;
+        if (Math.abs(amount) >= 1_000) return `${format(amount / 1_000)}k`;
+        return amount.toLocaleString("vi-VN");
+    };
     const displayDate = iso => {
         const [year, month, day] = String(iso || "").slice(0, 10).split("-");
         return year && month && day ? `${day}/${month}/${year}` : "";
@@ -73,8 +81,10 @@
             (invoice.items || []).forEach(item => {
                 const product = productsById.get(item.productId) || {};
                 const sold = soldByProduct.get(item.productId) || {
+                    productId: item.productId,
                     code: product.code || "",
                     name: item.productName || product.name || "",
+                    category: product.category || "Khác",
                     imageData: item.productImageData || product.imageData || "",
                     sold: 0,
                     revenue: 0
@@ -100,11 +110,127 @@
         const productsSold = currentReport.products.reduce(
             (sum, item) => sum + Number(item.sold || 0), 0
         );
+        const productMap = new Map(sourceData.products.map(item => [item.id, item]));
+        const inventoryValue = currentReport.inventory.reduce((sum, item) => {
+            const product = productMap.get(item.productId) || {};
+            return sum + Number(item.quantity || 0) * Number(product.purchasePrice || 0);
+        }, 0);
         document.getElementById("report-total-revenue").textContent = money(totalRevenue);
         document.getElementById("report-total-invoices").textContent =
             currentReport.invoices.length.toLocaleString("vi-VN");
         document.getElementById("report-products-sold").textContent =
             productsSold.toLocaleString("vi-VN");
+        const inventoryValueElement = document.getElementById("report-inventory-value");
+        if (inventoryValueElement) inventoryValueElement.textContent = money(inventoryValue);
+    }
+
+    function renderRevenueChart() {
+        const container = document.getElementById("report-revenue-chart");
+        if (!container) return;
+        const data = currentReport.revenue;
+        if (!data.length) {
+            container.innerHTML = '<div class="reports-chart-empty">Không có dữ liệu doanh thu trong kỳ đã chọn.</div>';
+            return;
+        }
+
+        const width = 720;
+        const height = 220;
+        const left = 54;
+        const right = 14;
+        const top = 16;
+        const bottom = 34;
+        const chartWidth = width - left - right;
+        const chartHeight = height - top - bottom;
+        const maximum = Math.max(...data.map(item => Number(item.revenue || 0)), 1);
+        const scaleMax = Math.ceil(maximum / 4) * 4 || 1;
+        const points = data.map((item, index) => ({
+            item,
+            x: data.length === 1 ? left + chartWidth / 2 : left + index * chartWidth / (data.length - 1),
+            y: top + chartHeight - Number(item.revenue || 0) / scaleMax * chartHeight
+        }));
+        const line = points.map((point, index) => `${index ? "L" : "M"}${point.x.toFixed(2)},${point.y.toFixed(2)}`).join(" ");
+        const baseline = top + chartHeight;
+        const area = `${line} L${points.at(-1).x},${baseline} L${points[0].x},${baseline} Z`;
+        const labelStep = Math.max(1, Math.ceil(data.length / 7));
+
+        container.innerHTML = `
+            <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Doanh thu theo ngày">
+                <defs>
+                    <linearGradient id="reportRevenueArea" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#4f70f4" stop-opacity=".28"></stop>
+                        <stop offset="100%" stop-color="#4f70f4" stop-opacity=".03"></stop>
+                    </linearGradient>
+                </defs>
+                ${[0, 1, 2, 3, 4].map(index => {
+                    const y = top + index * chartHeight / 4;
+                    const value = scaleMax - index * scaleMax / 4;
+                    return `<line class="reports-chart-grid-line" x1="${left}" y1="${y}" x2="${width - right}" y2="${y}"></line>
+                        <text class="reports-chart-y-label" x="${left - 9}" y="${y + 4}" text-anchor="end">${compactMoney(value)}</text>`;
+                }).join("")}
+                <path class="reports-chart-area" d="${area}"></path>
+                <path class="reports-chart-line" d="${line}"></path>
+                ${points.map((point, index) => `
+                    <g>
+                        <circle class="reports-chart-point" cx="${point.x}" cy="${point.y}" r="4"><title>${escapeHTML(point.item.date)} · ${money(point.item.revenue)}</title></circle>
+                        ${index % labelStep === 0 || index === points.length - 1 ? `<text class="reports-chart-x-label" x="${point.x}" y="${height - 9}" text-anchor="middle">${escapeHTML(point.item.date.slice(0, 5))}</text>` : ""}
+                    </g>
+                `).join("")}
+            </svg>`;
+    }
+
+    function renderCategoryChart() {
+        const donut = document.getElementById("report-category-donut");
+        const legend = document.getElementById("report-category-legend");
+        const totalElement = document.getElementById("report-category-total");
+        if (!donut || !legend || !totalElement) return;
+
+        const grouped = new Map();
+        currentReport.products.forEach(item => {
+            const category = item.category || "Khác";
+            grouped.set(category, (grouped.get(category) || 0) + Number(item.revenue || 0));
+        });
+        const entries = [...grouped.entries()].sort((a, b) => b[1] - a[1]);
+        const total = entries.reduce((sum, item) => sum + item[1], 0);
+        const colors = ["#4f91f4", "#31c49a", "#f7b73f", "#9366e9", "#94a3b8", "#38bdf8"];
+        let cursor = 0;
+        const stops = entries.map(([, value], index) => {
+            const start = cursor;
+            cursor += total ? value / total * 100 : 0;
+            return `${colors[index % colors.length]} ${start}% ${cursor}%`;
+        });
+        donut.style.background = total ? `conic-gradient(${stops.join(",")})` : "#e2e8f0";
+        totalElement.textContent = compactMoney(total);
+        legend.innerHTML = entries.length ? entries.slice(0, 6).map(([name, value], index) => `
+            <div><i style="background:${colors[index % colors.length]}"></i><span>${escapeHTML(name)}</span><strong>${total ? (value / total * 100).toFixed(1) : 0}%</strong></div>
+        `).join("") : '<div class="reports-chart-empty">Chưa có dữ liệu danh mục.</div>';
+    }
+
+    function renderTopProductsChart() {
+        const container = document.getElementById("report-top-products");
+        if (!container) return;
+        const products = currentReport.products
+            .slice()
+            .sort((a, b) => Number(b.revenue || 0) - Number(a.revenue || 0))
+            .slice(0, 5);
+        if (!products.length) {
+            container.innerHTML = '<div class="reports-chart-empty">Chưa có sản phẩm được bán trong kỳ.</div>';
+            return;
+        }
+        const maximum = Math.max(...products.map(item => Number(item.revenue || 0)), 1);
+        const colors = ["#4f76f0", "#3ec49a", "#f4b53f", "#9464e8", "#64bdeb"];
+        container.innerHTML = products.map((item, index) => `
+            <div class="reports-top-product-row">
+                <span title="${escapeHTML(item.name)}">${escapeHTML(item.name)}</span>
+                <i><b style="width:${Number(item.revenue || 0) / maximum * 100}%;background:${colors[index]}"></b></i>
+                <strong>${money(item.revenue)}</strong>
+            </div>
+        `).join("");
+    }
+
+    function renderReportAnalytics() {
+        renderRevenueChart();
+        renderCategoryChart();
+        renderTopProductsChart();
     }
 
     function renderRevenue() {
@@ -209,6 +335,7 @@
         renderRevenue();
         renderProducts();
         renderInventory();
+        renderReportAnalytics();
         updateReportSections(document.getElementById("reports-type")?.value || "all");
         return true;
     }
@@ -273,6 +400,306 @@
         setTimeout(() => URL.revokeObjectURL(link.href), 1000);
     }
 
+    function downloadBlob(blob, fileName) {
+        const link = document.createElement("a");
+        const objectUrl = URL.createObjectURL(blob);
+        link.href = objectUrl;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+    }
+
+    function fitCanvasText(context, value, maxWidth) {
+        const text = String(value ?? "");
+        if (context.measureText(text).width <= maxWidth) return text;
+        let result = text;
+        while (result.length > 1 && context.measureText(`${result}…`).width > maxWidth) {
+            result = result.slice(0, -1);
+        }
+        return `${result}…`;
+    }
+
+    function getPdfSections(type) {
+        const sections = [];
+        if (type === "all" || type === "revenue") {
+            sections.push({
+                title: "Báo cáo doanh thu",
+                headers: ["Ngày", "Số hóa đơn", "Doanh thu", "Trung bình / hóa đơn"],
+                widths: [0.18, 0.18, 0.31, 0.33],
+                align: ["left", "center", "right", "right"],
+                rows: currentReport.revenue.map(item => [
+                    item.date,
+                    Number(item.invoices || 0).toLocaleString("vi-VN"),
+                    money(item.revenue),
+                    money(item.invoices ? item.revenue / item.invoices : 0)
+                ])
+            });
+        }
+        if (type === "all" || type === "product") {
+            sections.push({
+                title: "Báo cáo sản phẩm bán chạy",
+                headers: ["Mã", "Tên sản phẩm", "Số lượng bán", "Doanh thu"],
+                widths: [0.14, 0.42, 0.18, 0.26],
+                align: ["left", "left", "center", "right"],
+                rows: currentReport.products.map(item => [
+                    item.code || "—",
+                    item.name || "Sản phẩm",
+                    Number(item.sold || 0).toLocaleString("vi-VN"),
+                    money(item.revenue)
+                ])
+            });
+        }
+        if (type === "all" || type === "inventory") {
+            sections.push({
+                title: "Báo cáo tồn kho",
+                headers: ["Mã", "Tên sản phẩm", "Tồn kho", "Tồn tối thiểu", "Trạng thái"],
+                widths: [0.13, 0.35, 0.16, 0.18, 0.18],
+                align: ["left", "left", "center", "center", "left"],
+                rows: currentReport.inventory.map(item => [
+                    item.code || "—",
+                    item.name || "Sản phẩm",
+                    Number(item.quantity || 0).toLocaleString("vi-VN"),
+                    Number(item.minimum || 0).toLocaleString("vi-VN"),
+                    Number(item.quantity) <= Number(item.minimum) ? "Sắp hết hàng" : "Bình thường"
+                ])
+            });
+        }
+        return sections;
+    }
+
+    function buildPdfCanvases() {
+        const pageWidth = 1240;
+        const pageHeight = 1754;
+        const margin = 72;
+        const contentWidth = pageWidth - margin * 2;
+        const rowHeight = 44;
+        const headerHeight = 48;
+        const bottomLimit = pageHeight - 92;
+        const fromDate = document.getElementById("reports-from-date").value;
+        const toDate = document.getElementById("reports-to-date").value;
+        const type = document.getElementById("reports-type").value;
+        const totalRevenue = currentReport.invoices.reduce(
+            (sum, item) => sum + Number(item.finalAmount || 0), 0
+        );
+        const pages = [];
+        let canvas;
+        let context;
+        let cursorY;
+
+        function createPage() {
+            canvas = document.createElement("canvas");
+            canvas.width = pageWidth;
+            canvas.height = pageHeight;
+            context = canvas.getContext("2d");
+            context.fillStyle = "#ffffff";
+            context.fillRect(0, 0, pageWidth, pageHeight);
+
+            context.fillStyle = "#3157f5";
+            context.fillRect(margin, 54, 10, 78);
+            context.fillStyle = "#12213d";
+            context.font = "700 38px Arial, sans-serif";
+            context.textBaseline = "middle";
+            context.fillText("BÁO CÁO KINH DOANH", margin + 30, 79);
+            context.fillStyle = "#6b7b93";
+            context.font = "20px Arial, sans-serif";
+            context.fillText(`Thời gian: ${displayDate(fromDate)} - ${displayDate(toDate)}`, margin + 30, 116);
+            context.strokeStyle = "#d9e2ef";
+            context.lineWidth = 2;
+            context.beginPath();
+            context.moveTo(margin, 154);
+            context.lineTo(pageWidth - margin, 154);
+            context.stroke();
+            cursorY = 186;
+            pages.push(canvas);
+        }
+
+        function drawSummary() {
+            const gap = 18;
+            const cardWidth = (contentWidth - gap) / 2;
+            const cards = [
+                ["Tổng doanh thu", money(totalRevenue)],
+                ["Tổng số hóa đơn", currentReport.invoices.length.toLocaleString("vi-VN")]
+            ];
+            cards.forEach((card, index) => {
+                const x = margin + index * (cardWidth + gap);
+                context.fillStyle = index ? "#effaf6" : "#f0f3ff";
+                context.strokeStyle = index ? "#bfe8d8" : "#cad4ff";
+                context.lineWidth = 1.5;
+                context.beginPath();
+                context.roundRect(x, cursorY, cardWidth, 112, 16);
+                context.fill();
+                context.stroke();
+                context.fillStyle = "#6b7b93";
+                context.font = "18px Arial, sans-serif";
+                context.fillText(card[0], x + 24, cursorY + 32);
+                context.fillStyle = "#10214a";
+                context.font = "700 29px Arial, sans-serif";
+                context.fillText(card[1], x + 24, cursorY + 75);
+            });
+            cursorY += 142;
+        }
+
+        function drawSectionTitle(title, continued = false) {
+            context.fillStyle = "#14213a";
+            context.font = "700 25px Arial, sans-serif";
+            context.fillText(continued ? `${title} (tiếp)` : title, margin, cursorY + 22);
+            cursorY += 50;
+        }
+
+        function drawTableHeader(section) {
+            let x = margin;
+            context.fillStyle = "#edf2f8";
+            context.fillRect(margin, cursorY, contentWidth, headerHeight);
+            context.strokeStyle = "#bdc9da";
+            context.lineWidth = 1.2;
+            section.headers.forEach((header, index) => {
+                const width = contentWidth * section.widths[index];
+                context.strokeRect(x, cursorY, width, headerHeight);
+                context.fillStyle = "#43526a";
+                context.font = "700 16px Arial, sans-serif";
+                context.textAlign = section.align[index] === "right" ? "right" : section.align[index] === "center" ? "center" : "left";
+                const textX = context.textAlign === "right" ? x + width - 14 : context.textAlign === "center" ? x + width / 2 : x + 14;
+                context.fillText(fitCanvasText(context, header, width - 28), textX, cursorY + headerHeight / 2);
+                x += width;
+            });
+            context.textAlign = "left";
+            cursorY += headerHeight;
+        }
+
+        function drawRow(section, row, rowIndex) {
+            let x = margin;
+            context.fillStyle = rowIndex % 2 ? "#f9fbfe" : "#ffffff";
+            context.fillRect(margin, cursorY, contentWidth, rowHeight);
+            section.headers.forEach((_, index) => {
+                const width = contentWidth * section.widths[index];
+                context.strokeStyle = "#cbd5e1";
+                context.strokeRect(x, cursorY, width, rowHeight);
+                context.fillStyle = "#33445f";
+                context.font = index === 0 ? "700 16px Arial, sans-serif" : "16px Arial, sans-serif";
+                context.textAlign = section.align[index] === "right" ? "right" : section.align[index] === "center" ? "center" : "left";
+                const textX = context.textAlign === "right" ? x + width - 14 : context.textAlign === "center" ? x + width / 2 : x + 14;
+                context.fillText(fitCanvasText(context, row[index], width - 28), textX, cursorY + rowHeight / 2);
+                x += width;
+            });
+            context.textAlign = "left";
+            cursorY += rowHeight;
+        }
+
+        createPage();
+        drawSummary();
+
+        getPdfSections(type).forEach(section => {
+            if (cursorY + 50 + headerHeight + rowHeight > bottomLimit) createPage();
+            drawSectionTitle(section.title);
+            drawTableHeader(section);
+            const rows = section.rows.length ? section.rows : [["Không có dữ liệu", ...section.headers.slice(1).map(() => "")]];
+            rows.forEach((row, rowIndex) => {
+                if (cursorY + rowHeight > bottomLimit) {
+                    createPage();
+                    drawSectionTitle(section.title, true);
+                    drawTableHeader(section);
+                }
+                drawRow(section, row, rowIndex);
+            });
+            cursorY += 32;
+        });
+
+        pages.forEach((page, index) => {
+            const pageContext = page.getContext("2d");
+            pageContext.fillStyle = "#74839a";
+            pageContext.font = "16px Arial, sans-serif";
+            pageContext.textAlign = "center";
+            pageContext.fillText(`Trang ${index + 1} / ${pages.length}`, pageWidth / 2, pageHeight - 45);
+            pageContext.textAlign = "left";
+        });
+        return pages;
+    }
+
+    function concatenateBytes(chunks) {
+        const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
+        const result = new Uint8Array(totalLength);
+        let offset = 0;
+        chunks.forEach(chunk => {
+            result.set(chunk, offset);
+            offset += chunk.length;
+        });
+        return result;
+    }
+
+    function createPdfBlob(canvases) {
+        const encoder = new TextEncoder();
+        const pageWidth = 595.28;
+        const pageHeight = 841.89;
+        const objectCount = 2 + canvases.length * 3;
+        const offsets = new Array(objectCount + 1).fill(0);
+        const chunks = [];
+        let byteLength = 0;
+        const append = value => {
+            const bytes = typeof value === "string" ? encoder.encode(value) : value;
+            chunks.push(bytes);
+            byteLength += bytes.length;
+        };
+        const appendObject = (number, parts) => {
+            offsets[number] = byteLength;
+            append(`${number} 0 obj\n`);
+            parts.forEach(append);
+            append("\nendobj\n");
+        };
+
+        append("%PDF-1.4\n%\xE2\xE3\xCF\xD3\n");
+        appendObject(1, ["<< /Type /Catalog /Pages 2 0 R >>"]);
+        const pageReferences = canvases.map((_, index) => `${3 + index * 3} 0 R`).join(" ");
+        appendObject(2, [`<< /Type /Pages /Count ${canvases.length} /Kids [${pageReferences}] >>`]);
+
+        canvases.forEach((canvasItem, index) => {
+            const pageObject = 3 + index * 3;
+            const contentObject = pageObject + 1;
+            const imageObject = pageObject + 2;
+            const imageName = `Im${index + 1}`;
+            const content = encoder.encode(`q\n${pageWidth} 0 0 ${pageHeight} 0 0 cm\n/${imageName} Do\nQ`);
+            const base64 = canvasItem.toDataURL("image/jpeg", 0.92).split(",")[1];
+            const binary = atob(base64);
+            const imageBytes = new Uint8Array(binary.length);
+            for (let byteIndex = 0; byteIndex < binary.length; byteIndex += 1) {
+                imageBytes[byteIndex] = binary.charCodeAt(byteIndex);
+            }
+
+            appendObject(pageObject, [
+                `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageWidth} ${pageHeight}] `,
+                `/Resources << /XObject << /${imageName} ${imageObject} 0 R >> >> `,
+                `/Contents ${contentObject} 0 R >>`
+            ]);
+            appendObject(contentObject, [
+                `<< /Length ${content.length} >>\nstream\n`,
+                content,
+                "\nendstream"
+            ]);
+            appendObject(imageObject, [
+                `<< /Type /XObject /Subtype /Image /Width ${canvasItem.width} /Height ${canvasItem.height} `,
+                `/ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${imageBytes.length} >>\nstream\n`,
+                imageBytes,
+                "\nendstream"
+            ]);
+        });
+
+        const xrefOffset = byteLength;
+        append(`xref\n0 ${objectCount + 1}\n`);
+        append("0000000000 65535 f \n");
+        for (let index = 1; index <= objectCount; index += 1) {
+            append(`${String(offsets[index]).padStart(10, "0")} 00000 n \n`);
+        }
+        append(`trailer\n<< /Size ${objectCount + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`);
+        return new Blob([concatenateBytes(chunks)], { type: "application/pdf" });
+    }
+
+    function downloadPdf() {
+        const canvases = buildPdfCanvases();
+        const blob = createPdfBlob(canvases);
+        downloadBlob(blob, `bao-cao-${new Date().toISOString().slice(0, 10)}.pdf`);
+    }
+
     async function logReportExport(format) {
         const fromDate = document.getElementById("reports-from-date").value;
         const toDate = document.getElementById("reports-to-date").value;
@@ -301,16 +728,13 @@
         }
         const content = buildExportDocument();
         if (format === "pdf") {
-            const printWindow = window.open("", "_blank");
-            if (!printWindow) {
-                alert("Trình duyệt đang chặn cửa sổ in. Hãy cho phép cửa sổ bật lên rồi thử lại.");
+            try {
+                downloadPdf();
+            } catch (error) {
+                console.error("Không thể tạo tệp PDF:", error);
+                alert("Không thể tạo tệp PDF. Vui lòng thử lại.");
                 return;
             }
-            printWindow.document.open();
-            printWindow.document.write(content);
-            printWindow.document.close();
-            printWindow.focus();
-            setTimeout(() => printWindow.print(), 300);
         } else {
             downloadExcel(content);
         }

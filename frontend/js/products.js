@@ -22,7 +22,7 @@ let products = [];
 
 let currentProductPage = 1;
 
-const productsPerPage = 8;
+const productsPerPage = 6;
 
 let editingProductId = null;
 let productFiltersInitialized = false;
@@ -144,7 +144,6 @@ function getFilteredProducts() {
             "product-status-filter"
         );
 
-
     const search =
         searchInput
             ? searchInput.value
@@ -173,6 +172,9 @@ function getFilteredProducts() {
                 .toLowerCase()
                 .includes(search) ||
             product.code
+                .toLowerCase()
+                .includes(search) ||
+            (product.category || "")
                 .toLowerCase()
                 .includes(search);
 
@@ -204,6 +206,32 @@ function getFilteredProducts() {
 
 }
 
+
+function renderProductStats() {
+    const total = products.length;
+    const active = products.filter(product => product.isActive).length;
+    const low = products.filter(product => {
+        const stock = Number(product.stock || 0);
+        const minimum = Number(product.minimum || 0);
+        return product.isActive && stock <= minimum;
+    }).length;
+    const inactive = total - active;
+    const percentOfTotal = value => total ? Math.round((value / total) * 100) : 0;
+
+    const updateStat = (key, value, note, percent) => {
+        const valueElement = document.getElementById(`product-stat-${key}`);
+        const noteElement = document.getElementById(`product-stat-${key}-note`);
+        const barElement = document.getElementById(`product-stat-${key}-bar`);
+        if (valueElement) valueElement.textContent = value.toLocaleString("vi-VN");
+        if (noteElement) noteElement.textContent = note;
+        if (barElement) barElement.style.width = `${Math.min(100, Math.max(0, percent))}%`;
+    };
+
+    updateStat("total", total, "", 0);
+    updateStat("active", active, `${percentOfTotal(active)}% tổng sản phẩm`, percentOfTotal(active));
+    updateStat("low", low, `${percentOfTotal(low)}% cần nhập thêm`, percentOfTotal(low));
+    updateStat("inactive", inactive, `${percentOfTotal(inactive)}% tổng sản phẩm`, percentOfTotal(inactive));
+}
 
 /*
  * ============================================================
@@ -300,6 +328,8 @@ function renderProducts() {
         return;
     }
 
+    renderProductStats();
+
 
     const filteredProducts =
         getFilteredProducts();
@@ -357,7 +387,7 @@ function renderProducts() {
         tbody.innerHTML = `
             <tr>
                 <td
-                    colspan="8"
+                    colspan="9"
                     class="product-empty"
                 >
                     Không tìm thấy sản phẩm phù hợp.
@@ -449,6 +479,12 @@ function renderProducts() {
             <td>
                 <span class="product-unit">
                     ${escapeProductHtml(product.unit)}
+                </span>
+            </td>
+
+            <td>
+                <span class="product-stock ${Number(product.stock || 0) <= 0 ? "out" : Number(product.stock || 0) <= Number(product.minimum || 0) ? "low" : "ok"}">
+                    ${Number(product.stock || 0).toLocaleString("vi-VN")}
                 </span>
             </td>
 
@@ -1126,12 +1162,27 @@ function getProductStockStatus(product) {
     const minimum = Number(product?.minimum || 0);
 
     if (stock <= 0) {
-        return { key: "out", text: "Hết hàng" };
+        return {
+            key: "out",
+            text: "Hết hàng",
+            symbol: "×",
+            description: "Cần bổ sung hàng để tiếp tục bán."
+        };
     }
     if (stock <= minimum) {
-        return { key: "low", text: "Sắp hết hàng" };
+        return {
+            key: "low",
+            text: "Sắp hết hàng",
+            symbol: "!",
+            description: "Số lượng đã chạm mức tồn tối thiểu."
+        };
     }
-    return { key: "normal", text: "Đủ hàng" };
+    return {
+        key: "normal",
+        text: "Đủ hàng",
+        symbol: "✓",
+        description: "Số lượng tồn kho đang ở mức an toàn."
+    };
 }
 
 
@@ -1174,6 +1225,11 @@ function openProductDetail(id) {
             </div>
         </div>
 
+        <div class="product-detail-section-heading">
+            <h4>Giá vốn và tồn kho</h4>
+            <span>Các thông tin vận hành hiện tại</span>
+        </div>
+
         <div class="product-detail-grid">
             <article>
                 <span>Giá nhập</span>
@@ -1194,11 +1250,12 @@ function openProductDetail(id) {
         </div>
 
         <div class="product-detail-stock ${stockStatus.key}">
-            <span class="product-detail-stock-dot" aria-hidden="true"></span>
+            <span class="product-detail-stock-icon" aria-hidden="true">${stockStatus.symbol}</span>
             <div>
-                <small>Trạng thái kho</small>
+                <small>Tình trạng tồn kho</small>
                 <strong>${stockStatus.text}</strong>
             </div>
+            <span class="product-detail-stock-note">${stockStatus.description}</span>
         </div>
     `;
 
@@ -1329,6 +1386,11 @@ function setupProductFilters() {
             "product-status-filter"
         );
 
+    const resetButton =
+        document.getElementById(
+            "product-reset-filter"
+        );
+
 
     if (searchInput) {
 
@@ -1370,6 +1432,23 @@ function setupProductFilters() {
 
                 currentProductPage = 1;
 
+                renderProducts();
+
+            }
+        );
+
+    }
+
+    if (resetButton) {
+
+        resetButton.addEventListener(
+            "click",
+            function () {
+
+                if (searchInput) searchInput.value = "";
+                if (categoryFilter) categoryFilter.value = "all";
+                if (statusFilter) statusFilter.value = "all";
+                currentProductPage = 1;
                 renderProducts();
 
             }

@@ -7,6 +7,8 @@ let categoryEventsInitialized = false;
 let categoryImageData = null;
 let categoryDetailReturnFocus = null;
 let activeCategoryDetailId = null;
+let categoryProductCounts = new Map();
+let categoryTotalProducts = 0;
 
 const CATEGORY_IMAGE_MAX_BYTES = 2 * 1024 * 1024;
 const CATEGORY_IMAGE_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
@@ -59,11 +61,28 @@ async function loadCategoriesFromAPI() {
     }
 }
 
+async function loadCategoryProductStats() {
+    try {
+        const productItems = await window.salesApi.products.list();
+        categoryTotalProducts = productItems.length;
+        categoryProductCounts = productItems.reduce((counts, product) => {
+            const categoryName = product.category || "";
+            counts.set(categoryName, (counts.get(categoryName) || 0) + 1);
+            return counts;
+        }, new Map());
+    } catch (error) {
+        categoryTotalProducts = 0;
+        categoryProductCounts = new Map();
+        console.error("Không thể tải thống kê sản phẩm theo danh mục:", error);
+    }
+}
+
 function getFilteredCategories() {
     const keyword = (document.getElementById("category-search-input")?.value || "")
         .trim().toLowerCase();
     const status = document.getElementById("category-status-filter")?.value || "all";
-    return categories.filter(category => {
+    const sort = document.getElementById("category-sort-filter")?.value || "newest";
+    const filtered = categories.filter(category => {
         const matchesSearch = !keyword || category.name.toLowerCase().includes(keyword) ||
             (category.description || "").toLowerCase().includes(keyword);
         const matchesStatus = status === "all" ||
@@ -71,12 +90,46 @@ function getFilteredCategories() {
             (status === "inactive" && !category.isActive);
         return matchesSearch && matchesStatus;
     });
+
+    return filtered.sort((a, b) => {
+        if (sort === "name") return a.name.localeCompare(b.name, "vi");
+        if (sort === "products") {
+            return (categoryProductCounts.get(b.name) || 0) - (categoryProductCounts.get(a.name) || 0);
+        }
+        return Number(b.id) - Number(a.id);
+    });
+}
+
+function renderCategoryStats() {
+    const total = categories.length;
+    const active = categories.filter(category => category.isActive).length;
+    const inactive = total - active;
+    const percentOfTotal = value => total ? Math.round((value / total) * 100) : 0;
+
+    const setText = (id, value) => {
+        const element = document.getElementById(id);
+        if (element) element.textContent = value;
+    };
+    const setBar = (id, value) => {
+        const element = document.getElementById(id);
+        if (element) element.style.width = `${Math.min(100, Math.max(0, value))}%`;
+    };
+
+    setText("category-stat-total", total.toLocaleString("vi-VN"));
+    setText("category-stat-products", categoryTotalProducts.toLocaleString("vi-VN"));
+    setText("category-stat-active", active.toLocaleString("vi-VN"));
+    setText("category-stat-inactive", inactive.toLocaleString("vi-VN"));
+    setText("category-stat-active-note", `${percentOfTotal(active)}% tổng danh mục`);
+    setText("category-stat-inactive-note", `${percentOfTotal(inactive)}% tổng danh mục`);
+    setBar("category-stat-active-bar", percentOfTotal(active));
+    setBar("category-stat-inactive-bar", percentOfTotal(inactive));
 }
 
 function renderCategories() {
     const tableBody = document.getElementById("category-table-body");
     const countElement = document.getElementById("category-count");
     if (!tableBody) return;
+    renderCategoryStats();
     const filtered = getFilteredCategories();
     if (countElement) countElement.textContent = `${filtered.length} danh mục`;
     const totalPages = Math.max(1, Math.ceil(filtered.length / categoryPageSize));
@@ -84,7 +137,7 @@ function renderCategories() {
     const start = (categoryCurrentPage - 1) * categoryPageSize;
     const page = filtered.slice(start, start + categoryPageSize);
     if (!page.length) {
-        tableBody.innerHTML = `<tr><td colspan="5" class="category-empty">
+        tableBody.innerHTML = `<tr><td colspan="6" class="category-empty">
             <strong>Không tìm thấy danh mục</strong><span>Hãy thử thay đổi từ khóa tìm kiếm.</span>
         </td></tr>`;
         renderCategoryPagination(0);
@@ -113,6 +166,7 @@ function renderCategories() {
             </div>
         </td>
         <td>${escapeCategoryHtml(category.description || "-")}</td>
+        <td><span class="category-product-count"><strong>${categoryProductCounts.get(category.name) || 0}</strong><small>sản phẩm</small></span></td>
         <td><span class="category-status ${category.isActive ? "active" : "inactive"}">
             ${category.isActive ? "Đang hoạt động" : "Ngừng hoạt động"}
         </span></td>
@@ -275,6 +329,10 @@ async function openCategoryDetail(id) {
                 <p>${escapeCategoryHtml(category.description || "Danh mục chưa có mô tả.")}</p>
             </div>
         </div>
+        <div class="category-detail-section-heading">
+            <h4>Thông tin danh mục</h4>
+            <span>Dữ liệu tổng quan hiện tại</span>
+        </div>
         <div class="category-detail-summary">
             <article>
                 <span>Mã danh mục</span>
@@ -335,6 +393,10 @@ function setupCategoryFilters() {
         categoryCurrentPage = 1;
         renderCategories();
     });
+    document.getElementById("category-sort-filter")?.addEventListener("change", () => {
+        categoryCurrentPage = 1;
+        renderCategories();
+    });
 }
 
 function setupCategoryModal() {
@@ -374,6 +436,9 @@ async function initCategoryManagement() {
         setupCategoryModal();
         categoryEventsInitialized = true;
     }
-    await loadCategoriesFromAPI();
+    await Promise.all([
+        loadCategoriesFromAPI(),
+        loadCategoryProductStats()
+    ]);
     renderCategories();
 }

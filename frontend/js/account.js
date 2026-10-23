@@ -3,6 +3,8 @@
 
     const SESSION_KEY = "sales_management_current_user";
     const PREFERENCE_PREFIX = "sales_management_appearance_";
+    const NOTIFICATION_PREFIX = "sales_management_notifications_";
+    const GENERAL_PREFIX = "sales_management_general_";
     const roleNames = {
         admin: "Quản trị viên",
         owner: "Chủ cửa hàng",
@@ -22,9 +24,11 @@
         deepTeal: { primary: "#18736f", dark: "#10524f", soft: "#edf8f7", accent: "#368f8a" },
         plum: { primary: "#6b557c", dark: "#4c3a5a", soft: "#f6f1f8", accent: "#89719a" }
     };
+    const sidebarThemes = ["auto", "light", "midnight", "charcoal", "indigo"];
 
     let currentProfile = null;
     let pendingAvatarData = "";
+    let clockTimer = null;
 
     function getElement(id) {
         return document.getElementById(id);
@@ -43,9 +47,119 @@
         };
     }
 
-    function getPreferenceKey() {
+    function getScopedPreferenceKey(prefix) {
         const user = window.getCurrentUser?.();
-        return `${PREFERENCE_PREFIX}${user?.id || user?.username || "guest"}`;
+        return `${prefix}${user?.id || user?.username || "guest"}`;
+    }
+
+    function getPreferenceKey() {
+        return getScopedPreferenceKey(PREFERENCE_PREFIX);
+    }
+
+    function loadNotificationPreference() {
+        const defaults = {
+            stock: true,
+            invoice: true,
+            security: true,
+            sound: false
+        };
+        try {
+            return {
+                ...defaults,
+                ...JSON.parse(localStorage.getItem(getScopedPreferenceKey(NOTIFICATION_PREFIX)) || "{}")
+            };
+        } catch (_error) {
+            return defaults;
+        }
+    }
+
+    function applyNotificationPreference(preference = loadNotificationPreference()) {
+        const fieldMap = {
+            stock: "account-notify-stock",
+            invoice: "account-notify-invoice",
+            security: "account-notify-security",
+            sound: "account-notify-sound"
+        };
+        Object.entries(fieldMap).forEach(([key, id]) => {
+            const field = getElement(id);
+            if (field) field.checked = Boolean(preference[key]);
+        });
+        window.dispatchEvent(new CustomEvent("account:notification-preferences", {
+            detail: { ...preference }
+        }));
+    }
+
+    function saveNotificationPreference(event) {
+        event?.preventDefault();
+        const preference = {
+            stock: Boolean(getElement("account-notify-stock")?.checked),
+            invoice: Boolean(getElement("account-notify-invoice")?.checked),
+            security: Boolean(getElement("account-notify-security")?.checked),
+            sound: Boolean(getElement("account-notify-sound")?.checked)
+        };
+        localStorage.setItem(
+            getScopedPreferenceKey(NOTIFICATION_PREFIX),
+            JSON.stringify(preference)
+        );
+        applyNotificationPreference(preference);
+        showMessage("account-notification-message", "Đã lưu tùy chọn thông báo.", "success");
+    }
+
+    function loadGeneralPreference() {
+        const defaults = {
+            timezone: "Asia/Ho_Chi_Minh",
+            dateFormat: "dd/mm/yyyy",
+            showSeconds: false,
+            reduceMotion: false
+        };
+        try {
+            const saved = JSON.parse(
+                localStorage.getItem(getScopedPreferenceKey(GENERAL_PREFIX)) || "{}"
+            );
+            return {
+                timezone: ["Asia/Ho_Chi_Minh", "Asia/Bangkok", "Asia/Tokyo", "UTC"].includes(saved.timezone)
+                    ? saved.timezone
+                    : defaults.timezone,
+                dateFormat: ["dd/mm/yyyy", "yyyy-mm-dd"].includes(saved.dateFormat)
+                    ? saved.dateFormat
+                    : defaults.dateFormat,
+                showSeconds: Boolean(saved.showSeconds),
+                reduceMotion: Boolean(saved.reduceMotion)
+            };
+        } catch (_error) {
+            return defaults;
+        }
+    }
+
+    function applyGeneralPreference(preference = loadGeneralPreference()) {
+        const timezone = getElement("account-timezone");
+        const dateFormat = getElement("account-date-format");
+        const showSeconds = getElement("account-show-seconds");
+        const reduceMotion = getElement("account-reduce-motion");
+
+        if (timezone) timezone.value = preference.timezone;
+        if (dateFormat) dateFormat.value = preference.dateFormat;
+        if (showSeconds) showSeconds.checked = preference.showSeconds;
+        if (reduceMotion) reduceMotion.checked = preference.reduceMotion;
+
+        document.documentElement.dataset.reduceMotion = String(preference.reduceMotion);
+        startClock(preference);
+    }
+
+    function saveGeneralPreference(event) {
+        event?.preventDefault();
+        const preference = {
+            timezone: getElement("account-timezone")?.value || "Asia/Ho_Chi_Minh",
+            dateFormat: getElement("account-date-format")?.value || "dd/mm/yyyy",
+            showSeconds: Boolean(getElement("account-show-seconds")?.checked),
+            reduceMotion: Boolean(getElement("account-reduce-motion")?.checked)
+        };
+        localStorage.setItem(
+            getScopedPreferenceKey(GENERAL_PREFIX),
+            JSON.stringify(preference)
+        );
+        applyGeneralPreference(preference);
+        showMessage("account-general-message", "Đã lưu và áp dụng cài đặt.", "success");
     }
 
     function loadAppearancePreference() {
@@ -53,10 +167,11 @@
             const saved = JSON.parse(localStorage.getItem(getPreferenceKey()) || "{}");
             return {
                 theme: ["light", "dark", "system"].includes(saved.theme) ? saved.theme : "system",
-                color: palettes[saved.color] ? saved.color : "indigo"
+                color: palettes[saved.color] ? saved.color : "indigo",
+                sidebar: sidebarThemes.includes(saved.sidebar) ? saved.sidebar : "auto"
             };
         } catch (_error) {
-            return { theme: "system", color: "indigo" };
+            return { theme: "system", color: "indigo", sidebar: "auto" };
         }
     }
 
@@ -71,6 +186,9 @@
         root.dataset.appTheme = resolvedTheme;
         root.dataset.themePreference = preference.theme;
         root.dataset.primaryColor = preference.color;
+        root.dataset.sidebarTheme = sidebarThemes.includes(preference.sidebar)
+            ? preference.sidebar
+            : "auto";
         root.style.setProperty("--sm-primary", palette.primary);
         root.style.setProperty("--sm-primary-dark", palette.dark);
         root.style.setProperty("--sm-primary-soft", palette.soft);
@@ -84,6 +202,9 @@
             button.classList.toggle("active", active);
             button.setAttribute("aria-pressed", String(active));
         });
+        document.querySelectorAll('input[name="account-sidebar-theme"]').forEach(input => {
+            input.checked = input.value === root.dataset.sidebarTheme;
+        });
     }
 
     function saveAppearance(patch) {
@@ -93,30 +214,56 @@
         showMessage("account-appearance-message", "Đã lưu thiết lập giao diện.", "success");
     }
 
-    function updateTopbarDateTime() {
+    function updateTopbarDateTime(preference = loadGeneralPreference()) {
         const now = new Date();
         const weekdayElement = getElement("topbar-current-weekday");
         const dateElement = getElement("topbar-current-date");
         const timeElement = getElement("topbar-current-time");
-        const weekday = now.toLocaleDateString("vi-VN", { weekday: "long" });
+        const weekday = now.toLocaleDateString("vi-VN", {
+            weekday: "long",
+            timeZone: preference.timezone
+        });
 
         if (weekdayElement) {
             weekdayElement.textContent = weekday.charAt(0).toUpperCase() + weekday.slice(1);
         }
         if (dateElement) {
-            dateElement.textContent = now.toLocaleDateString("vi-VN", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric"
-            });
+            if (preference.dateFormat === "yyyy-mm-dd") {
+                const parts = new Intl.DateTimeFormat("vi-VN", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    timeZone: preference.timezone
+                }).formatToParts(now);
+                const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
+                dateElement.textContent = `${values.year}-${values.month}-${values.day}`;
+            } else {
+                dateElement.textContent = now.toLocaleDateString("vi-VN", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    timeZone: preference.timezone
+                });
+            }
         }
         if (timeElement) {
             timeElement.textContent = now.toLocaleTimeString("vi-VN", {
                 hour: "2-digit",
-                minute: "2-digit"
+                minute: "2-digit",
+                second: preference.showSeconds ? "2-digit" : undefined,
+                timeZone: preference.timezone
             });
             timeElement.dateTime = now.toISOString();
         }
+    }
+
+    function startClock(preference = loadGeneralPreference()) {
+        if (clockTimer) window.clearInterval(clockTimer);
+        updateTopbarDateTime(preference);
+        clockTimer = window.setInterval(
+            () => updateTopbarDateTime(preference),
+            preference.showSeconds ? 1000 : 60_000
+        );
     }
 
     function getTopbarSection(title = "") {
@@ -210,10 +357,20 @@
         getElement("account-role-value").textContent = roleNames[currentProfile.role] || currentProfile.role;
         getElement("account-status-value").textContent = currentProfile.isActive ? "Đang hoạt động" : "Bị khóa";
         getElement("account-status-value").className = `account-status-value ${currentProfile.isActive ? "active" : "locked"}`;
+        getElement("account-personal-name").textContent = currentProfile.fullName || currentProfile.username;
+        getElement("account-personal-username").textContent = `@${currentProfile.username}`;
+        getElement("account-personal-role").textContent = roleNames[currentProfile.role] || currentProfile.role;
+        getElement("account-summary-username").textContent = currentProfile.username;
+        getElement("account-summary-role").textContent = roleNames[currentProfile.role] || currentProfile.role;
+        getElement("account-summary-status").textContent = currentProfile.isActive ? "Đang hoạt động" : "Bị khóa";
+        getElement("account-summary-status").className = currentProfile.isActive ? "is-active" : "is-locked";
         setAvatar(getElement("account-avatar-preview"), currentProfile);
         setAvatar(getElement("account-avatar-form-preview"), currentProfile);
+        setAvatar(getElement("account-personal-avatar"), currentProfile);
         syncAvatarSaveButton();
         applyAppearance();
+        applyNotificationPreference();
+        applyGeneralPreference();
     }
 
     async function refreshAccountProfile(options = {}) {
@@ -250,6 +407,8 @@
         fillProfile(user);
         selectAccountTab("profile");
         showMessage("account-profile-message", "");
+        showMessage("account-notification-message", "");
+        showMessage("account-general-message", "");
         modal.classList.add("active");
         modal.setAttribute("aria-hidden", "false");
         document.body.classList.add("account-modal-open");
@@ -350,6 +509,10 @@
                 ...currentProfile,
                 avatarData: pendingAvatarData
             });
+            setAvatar(getElement("account-personal-avatar"), {
+                ...currentProfile,
+                avatarData: pendingAvatarData
+            });
             syncAvatarSaveButton();
             showMessage("account-profile-message", "Ảnh mới đã sẵn sàng. Bấm Lưu ảnh để hiển thị ở góc phải.", "info");
         } catch (error) {
@@ -366,6 +529,10 @@
             avatarData: ""
         });
         setAvatar(getElement("account-avatar-form-preview"), {
+            ...currentProfile,
+            avatarData: ""
+        });
+        setAvatar(getElement("account-personal-avatar"), {
             ...currentProfile,
             avatarData: ""
         });
@@ -391,6 +558,7 @@
             updateSessionProfile(currentProfile);
             setAvatar(getElement("account-avatar-preview"), currentProfile);
             setAvatar(getElement("account-avatar-form-preview"), currentProfile);
+            setAvatar(getElement("account-personal-avatar"), currentProfile);
             showMessage(
                 "account-profile-message",
                 currentProfile.avatarData
@@ -457,6 +625,8 @@
         getElement("account-modal-close")?.addEventListener("click", closeAccountModal);
         getElement("account-profile-form")?.addEventListener("submit", handleProfileSubmit);
         getElement("account-password-form")?.addEventListener("submit", handlePasswordSubmit);
+        getElement("account-notification-form")?.addEventListener("submit", saveNotificationPreference);
+        getElement("account-general-form")?.addEventListener("submit", saveGeneralPreference);
         getElement("account-avatar-input")?.addEventListener("change", handleAvatarFile);
         getElement("account-avatar-save")?.addEventListener("click", saveAvatar);
         getElement("account-avatar-remove")?.addEventListener("click", removeAvatar);
@@ -468,11 +638,17 @@
         document.querySelectorAll(".account-tab").forEach(button => {
             button.addEventListener("click", () => selectAccountTab(button.dataset.accountTab));
         });
+        document.querySelectorAll("[data-open-account-tab]").forEach(button => {
+            button.addEventListener("click", () => selectAccountTab(button.dataset.openAccountTab));
+        });
         document.querySelectorAll('input[name="account-theme"]').forEach(input => {
             input.addEventListener("change", () => saveAppearance({ theme: input.value }));
         });
         document.querySelectorAll(".account-color-option").forEach(button => {
             button.addEventListener("click", () => saveAppearance({ color: button.dataset.color }));
+        });
+        document.querySelectorAll('input[name="account-sidebar-theme"]').forEach(input => {
+            input.addEventListener("change", () => saveAppearance({ sidebar: input.value }));
         });
         document.querySelectorAll(".account-password-toggle").forEach(button => {
             button.addEventListener("click", () => {
@@ -493,8 +669,8 @@
         setupEvents();
         setupTopbarContext();
         applyAppearance();
-        updateTopbarDateTime();
-        window.setInterval(updateTopbarDateTime, 60_000);
+        applyNotificationPreference();
+        applyGeneralPreference();
         refreshAccountProfile({ silent: true });
         window.matchMedia?.("(prefers-color-scheme: dark)").addEventListener?.("change", () => {
             if (loadAppearancePreference().theme === "system") applyAppearance();
@@ -503,11 +679,20 @@
 
     window.addEventListener("auth:login", () => {
         applyAppearance();
+        applyNotificationPreference();
+        applyGeneralPreference();
         refreshAccountProfile({ silent: true });
     });
     window.addEventListener("auth:logout", () => {
         closeAccountModal();
-        applyAppearance({ theme: "system", color: "indigo" });
+        applyAppearance({ theme: "system", color: "indigo", sidebar: "auto" });
+        applyNotificationPreference({ stock: true, invoice: true, security: true, sound: false });
+        applyGeneralPreference({
+            timezone: "Asia/Ho_Chi_Minh",
+            dateFormat: "dd/mm/yyyy",
+            showSeconds: false,
+            reduceMotion: false
+        });
     });
     window.openAccountModal = openAccountModal;
 
