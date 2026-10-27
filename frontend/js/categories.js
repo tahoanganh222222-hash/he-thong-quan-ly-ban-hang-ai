@@ -329,24 +329,15 @@ async function openCategoryDetail(id) {
                 <p>${escapeCategoryHtml(category.description || "Danh mục chưa có mô tả.")}</p>
             </div>
         </div>
-        <div class="category-detail-section-heading">
-            <h4>Thông tin danh mục</h4>
-            <span>Dữ liệu tổng quan hiện tại</span>
-        </div>
-        <div class="category-detail-summary">
-            <article>
-                <span>Mã danh mục</span>
-                <strong>#${category.id}</strong>
-            </article>
-            <article>
-                <span>Loại dữ liệu</span>
-                <strong>Nhóm sản phẩm</strong>
-            </article>
-            <article>
-                <span>Sản phẩm thuộc danh mục</span>
-                <strong id="category-detail-product-count">Đang tải...</strong>
-            </article>
-        </div>
+        <section class="category-detail-products" aria-labelledby="category-detail-products-title">
+            <div class="category-detail-section-heading">
+                <h4 id="category-detail-products-title">Sản phẩm trong danh mục</h4>
+                <span id="category-detail-product-count" aria-live="polite">Đang tải...</span>
+            </div>
+            <div id="category-detail-product-list" aria-busy="true">
+                <p class="category-detail-message" role="status">Đang tải danh sách sản phẩm…</p>
+            </div>
+        </section>
     `;
 
     categoryDetailReturnFocus = document.activeElement;
@@ -359,13 +350,34 @@ async function openCategoryDetail(id) {
     try {
         const productItems = await window.salesApi.products.list();
         if (activeCategoryDetailId !== Number(category.id)) return;
-        const count = productItems.filter(product => product.category === category.name).length;
+        const items = productItems.filter(product => product.category === category.name);
         const countElement = document.getElementById("category-detail-product-count");
-        if (countElement) countElement.textContent = `${count} sản phẩm`;
+        if (countElement) countElement.textContent = `${items.length} sản phẩm`;
+        const list = document.getElementById("category-detail-product-list");
+        if (list) {
+            list.innerHTML = items.length ? `<ul class="category-detail-product-list">${items.map(product => `
+                <li class="category-detail-product">
+                    <img src="${escapeCategoryHtml(product.imageData || "./assets/branding/sales-manager-logo.svg")}" alt="" loading="lazy">
+                    <div class="category-detail-product-name">
+                        <strong>${escapeCategoryHtml(product.name)}</strong>
+                        <span>${escapeCategoryHtml(product.code)}</span>
+                    </div>
+                    <div class="category-detail-product-price">
+                        <strong>${new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(Number(product.sellingPrice) || 0)}</strong>
+                        <span class="${product.isActive ? "" : "is-inactive"}">${product.isActive ? "Đang kinh doanh" : "Ngừng kinh doanh"}</span>
+                    </div>
+                </li>`).join("")}</ul>` : '<p class="category-detail-message">Danh mục này chưa có sản phẩm.</p>';
+            list.setAttribute("aria-busy", "false");
+        }
     } catch (error) {
         const countElement = document.getElementById("category-detail-product-count");
         if (countElement && activeCategoryDetailId === Number(category.id)) {
             countElement.textContent = "Chưa xác định";
+            const list = document.getElementById("category-detail-product-list");
+            if (list) {
+                list.innerHTML = '<p class="category-detail-message" role="status">Không thể tải sản phẩm. Vui lòng đóng và mở lại danh mục.</p>';
+                list.setAttribute("aria-busy", "false");
+            }
         }
     }
 }

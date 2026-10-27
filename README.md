@@ -83,6 +83,35 @@ CREATE DATABASE SalesManagement;
 Backend sẽ tự tạo các bảng và thêm dữ liệu ban đầu còn thiếu trong lần khởi
 động đầu tiên. Dữ liệu đã có trong database sẽ được giữ lại.
 
+### Bổ sung dữ liệu mẫu để thử giao diện
+
+Để có thêm giao dịch gần đây, hàng sắp hết, hết hàng và ngừng kinh doanh, chạy
+một lần tại thư mục gốc project:
+
+```powershell
+.\.venv\Scripts\python.exe .\backend\seed_demo.py
+```
+
+Script thêm 2 danh mục, 6 sản phẩm, 2 khách hàng, 4 phiếu nhập và 10 hóa đơn
+trong khoảng 2 tuần tính đến ngày chạy, kèm lịch sử hoạt động. Bộ bổ sung dùng
+mã sản phẩm `SP018`–`SP023`, khách hàng `KH013`–`KH014`, hóa đơn `HD-BSxxx`
+và phiếu nhập `PN-BSxxx`. Ảnh sản phẩm lưu sẵn trong project và được nạp vào
+database. Tồn kho được tính từ phiếu nhập và hóa đơn tương ứng.
+
+Chạy lại không tạo trùng hay đặt lại dữ liệu đã chỉnh sửa. Script không chạy
+tự động khi mở backend, không tạo nhật ký AI giả và không thay đổi dữ liệu
+ngoài bộ bổ sung. Nếu có lỗi, toàn bộ lần nạp được rollback. Cần có một tài khoản
+quản trị viên đang hoạt động trước khi nạp.
+
+Với database đã nạp phiên bản có nhãn DEMO, chỉ cập nhật tên, mã và ảnh bằng:
+
+```powershell
+.\.venv\Scripts\python.exe .\backend\seed_demo.py --refresh-catalog-only
+```
+
+Lệnh này giữ nguyên ID, số lượng tồn, giá, hóa đơn và chi tiết giao dịch. Nguồn
+ảnh được ghi tại `frontend/assets/catalog/products/sources.json`.
+
 ## Cấu hình `.env`
 
 Tại thư mục gốc của dự án, sao chép `.env.example` thành `.env` nếu chưa có:

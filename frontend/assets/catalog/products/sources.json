@@ -1,0 +1,49 @@
+{
+  "retrieved_on": "2026-10-28",
+  "usage": "Product reference photographs for the local coursework sample catalog. Original image rights remain with their respective owners. Images are stored locally without altering the original artwork.",
+  "images": [
+    {
+      "product_code": "SP018",
+      "file": "tra-xanh-khong-do.png",
+      "name": "Trà xanh Không Độ 455ml",
+      "source_page": "https://yummyasia.fr/products/tra-xanh-khong-d%E1%BB%99-455-ml",
+      "image_url": "https://yummyasia.fr/cdn/shop/files/Traxanhkhongdo.png?v=1756045885"
+    },
+    {
+      "product_code": "SP019",
+      "file": "banh-quy-bo-danisa.png",
+      "name": "Bánh quy bơ Danisa 200g",
+      "source_page": "https://jmarthcm.com/banh-quy-bo-danisa-butter-200g-nk-indonesia",
+      "image_url": "https://jmarthcm.com/thumbnail/1800x1286x2/upload/product/danisa-cookies-butter-9017.png"
+    },
+    {
+      "product_code": "SP020",
+      "file": "dau-goi-pantene.jpg",
+      "name": "Dầu gội Pantene 300ml",
+      "source_page": "https://www.bachhoaxanh.com/dau-goi/dau-goi-pantene-ngan-rung-toc-900g",
+      "image_url": "https://cdnv2.tgdd.vn/bhx-static/bhx/Products/Images/2483/193847/bhx/dau-goi-pantene-ngan-rung-toc-300g_202506171655036853.jpg",
+      "note": "The retailer page includes multiple sizes. The selected image depicts the 300ml bottle."
+    },
+    {
+      "product_code": "SP021",
+      "file": "nuoc-lau-san-lix.jpg",
+      "name": "Nước lau sàn Lix 1L",
+      "source_page": "https://www.webtaphoa.vn/products/nuoc-lau-san-lix-duoi-con-trung-chai-1lit",
+      "image_url": "https://product.hstatic.net/1000288770/product/nuoc_lau_san_lix_chai_1_lit_339ff9cf09134b72a09b1874aeca1639_9ae17f263d9e4c49b0babc88ffa71eb7.jpg"
+    },
+    {
+      "product_code": "SP022",
+      "file": "sua-tuoi-vinamilk.jpg",
+      "name": "Sữa tươi Vinamilk có đường 180ml",
+      "source_page": "https://www.kidsplaza.vn/sua-tuoi-tiet-trung-co-duong-vinamilk-4-180ml.html",
+      "image_url": "https://cdn-v2.kidsplaza.vn/media/catalog/product/s/u/sua_tuoi_tiet_trung_co_duong_vinamilk_180ml.jpg"
+    },
+    {
+      "product_code": "SP023",
+      "file": "khan-giay-pulppy.png",
+      "name": "Khăn giấy Pulppy 100 tờ",
+      "source_page": "https://satrafoods.com.vn/vn/san-pham/khan-an-pulppy-100-to.html",
+      "image_url": "https://satrafoods.com.vn/uploads/san-pham-cung-loai/pulppy300.png"
+    }
+  ]
+}

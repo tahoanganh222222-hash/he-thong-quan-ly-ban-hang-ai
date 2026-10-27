@@ -55,7 +55,16 @@
     z-index: 2;
     top: 11px;
     right: 13px;
-    display: block !important;
+    bottom: auto;
+    left: auto;
+    /* Reset the decorative circle inherited from theme.css. */
+    width: 18px;
+    height: 18px;
+    border-radius: 0;
+    background: none;
+    display: grid !important;
+    place-items: center;
+    pointer-events: none;
     color: #6c7e98;
     font-size: 18px;
     font-weight: 800;

@@ -1,0 +1,178 @@
+/* A neutral palette for account settings; app-wide accent preferences stay intact. */
+#account-modal {
+    --account-canvas: #f6f6f6;
+    --account-surface: #fff;
+    --account-soft: #f0f1f2;
+    --account-line: #e1e3e6;
+    --account-control-line: #8a919a;
+    --account-ink: #26292e;
+    --account-muted: #686d74;
+    --account-action: #30343a;
+    --account-action-hover: #20242a;
+    --account-on-action: #fff;
+    --account-success: #38704f;
+    --account-success-soft: #edf4ee;
+    --account-danger: #a43c3c;
+    --account-danger-soft: #fbf1f0;
+    --sm-ink: var(--account-ink);
+    --sm-muted: var(--account-muted);
+    --sm-line: var(--account-line);
+    --sm-surface: var(--account-surface);
+    --sm-primary: var(--account-action);
+    --sm-primary-dark: var(--account-action-hover);
+    --sm-primary-soft: var(--account-soft);
+    background: rgb(16 20 26 / 48%);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+}
+
+html[data-app-theme="dark"] #account-modal {
+    --account-canvas: #191c20;
+    --account-surface: #22262b;
+    --account-soft: #30363d;
+    --account-line: #3c444d;
+    --account-control-line: #717b87;
+    --account-ink: #e8ebef;
+    --account-muted: #acb4be;
+    --account-action: #dfe4ea;
+    --account-action-hover: #f2f4f6;
+    --account-on-action: #22262b;
+    --account-success: #a3c9ae;
+    --account-success-soft: #293e30;
+    --account-danger: #e7abab;
+    --account-danger-soft: #422d2d;
+}
+
+#account-modal .account-dialog {
+    border: 1px solid var(--account-line);
+    border-radius: 14px;
+    color: var(--account-ink);
+    background: var(--account-surface);
+    box-shadow: 0 20px 64px rgb(0 0 0 / 18%);
+}
+#account-modal .account-dialog-header {
+    min-height: 76px;
+    padding: 16px 24px;
+    color: var(--account-ink);
+    border-bottom: 1px solid var(--account-line);
+    background: var(--account-surface);
+}
+#account-modal .account-dialog-header h2 { color: var(--account-ink); font-size: 21px; font-weight: 650; }
+#account-modal .account-dialog-header p { color: var(--account-muted); line-height: 1.5; }
+#account-modal .account-dialog-icon {
+    width: 36px;
+    height: 36px;
+    color: var(--account-muted);
+    background: var(--account-soft);
+    border: 0;
+    border-radius: 8px;
+}
+#account-modal .account-close {
+    width: 34px;
+    height: 34px;
+    color: var(--account-muted);
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    box-shadow: none;
+}
+#account-modal .account-close:hover { color: var(--account-ink); background: var(--account-soft); }
+#account-modal .account-sidebar { background: var(--account-surface); border-color: var(--account-line); }
+#account-modal .account-main { background: var(--account-canvas); }
+#account-modal :is(.account-avatar-preview, .account-personal-avatar) {
+    color: var(--account-ink);
+    background: var(--account-soft);
+    border: 1px solid var(--account-line);
+    border-radius: 10px;
+    box-shadow: none;
+}
+#account-modal .account-avatar-editor .account-avatar-preview { border: 1px solid var(--account-line); border-radius: 10px; }
+#account-modal .account-identity strong { color: var(--account-ink); font-weight: 600; }
+#account-modal .account-identity span { color: var(--account-muted); }
+#account-modal .account-tab { color: var(--account-muted); border: 1px solid transparent; border-radius: 7px; box-shadow: none; }
+#account-modal .account-tab:hover { color: var(--account-ink); background: var(--account-canvas); border-color: transparent; }
+#account-modal .account-tab.active { color: var(--account-ink); background: var(--account-soft); border-color: transparent; box-shadow: none; }
+#account-modal .account-tab-copy strong { font-weight: 600; }
+#account-modal .account-tab-copy small,
+#account-modal .account-tab.active .account-tab-copy small { color: var(--account-muted); }
+#account-modal .account-tab-icon,
+#account-modal .account-tab.active .account-tab-icon { color: currentColor; background: transparent; border-radius: 0; }
+
+#account-modal :is(
+    .account-personal-card, .account-contact-card, .account-quick-card,
+    .account-settings-card, .account-appearance-group, #account-password-form,
+    #account-profile-form > .account-avatar-editor,
+    #account-profile-form > .account-info-card
+) {
+    color: var(--account-ink);
+    background: var(--account-surface);
+    border: 1px solid var(--account-line);
+    border-radius: 10px;
+    box-shadow: none;
+}
+#account-modal :is(.account-card-heading, .account-setting-row, .account-setting-fields, .account-info-row) { border-color: var(--account-line); }
+#account-modal .account-card-icon { color: var(--account-muted); background: var(--account-soft); border-radius: 7px; }
+#account-modal :is(h3, h4, .account-personal-copy strong, .account-setting-copy strong, .account-select-field > span, .account-field label, .account-info-row strong) { color: var(--account-ink); }
+#account-modal :is(.account-card-heading h4, .account-section-heading h3) { font-weight: 600; }
+#account-modal :is(.account-card-heading p, .account-section-heading p, .account-personal-copy span, .account-personal-copy small, .account-setting-copy small, .account-quick-links button small) { color: var(--account-muted); }
+#account-modal .account-role-badge { color: var(--account-ink); background: var(--account-soft); border-color: var(--account-line); border-radius: 5px; font-weight: 600; }
+#account-modal .account-personal-details { background: var(--account-canvas); border-color: var(--account-line); border-radius: 7px; }
+#account-modal .account-personal-details > div { border-color: var(--account-line); }
+#account-modal .account-personal-details span { color: var(--account-muted); }
+#account-modal .account-personal-details strong { color: var(--account-ink); }
+#account-modal .account-personal-details strong.is-active { color: var(--account-success); }
+#account-modal .account-personal-details strong.is-locked { color: var(--account-danger); }
+#account-modal #account-profile-form .account-avatar-actions strong { color: var(--account-ink); }
+#account-modal #account-profile-form .account-avatar-actions small { color: var(--account-muted); }
+#account-modal .account-quick-links button { color: var(--account-ink); border-color: var(--account-line); }
+#account-modal .account-quick-links button:hover,
+#account-modal .account-setting-row:hover { color: var(--account-ink); background: var(--account-canvas); }
+#account-modal .account-info-card h4 { background: var(--account-surface); }
+#account-modal #account-profile-form > .account-info-card > .account-info-row + .account-info-row { border-color: var(--account-line); }
+
+#account-modal :is(.account-field input, .account-select-field select) {
+    color: var(--account-ink);
+    background: var(--account-surface);
+    border: 1px solid var(--account-control-line);
+    border-radius: 7px;
+    accent-color: var(--account-action);
+}
+#account-modal .account-field input::placeholder { color: var(--account-muted); opacity: 1; }
+#account-modal :is(.account-field input, .account-select-field select):focus { border-color: var(--account-muted); box-shadow: 0 0 0 3px color-mix(in srgb, var(--account-muted) 14%, transparent); }
+#account-modal :is(.account-field input, .account-select-field select):disabled { color: var(--account-muted); background: var(--account-canvas); cursor: not-allowed; }
+#account-modal :is(.account-primary-button, .account-secondary-button, .account-danger-button) { border-radius: 7px; box-shadow: none; font-weight: 600; }
+#account-modal .account-primary-button { color: var(--account-on-action); background: var(--account-action); border-color: var(--account-action); }
+#account-modal .account-primary-button:hover { background: var(--account-action-hover); border-color: var(--account-action-hover); }
+#account-modal .account-secondary-button { color: var(--account-ink); background: var(--account-surface); border-color: var(--account-line); }
+#account-modal .account-secondary-button:hover { background: var(--account-soft); }
+#account-modal .account-danger-button { color: var(--account-danger); background: var(--account-surface); border-color: var(--account-line); }
+#account-modal .account-danger-button:hover { background: var(--account-danger-soft); border-color: var(--account-danger); }
+#account-modal :is(.account-primary-button, .account-secondary-button, .account-danger-button):disabled { color: var(--account-muted); background: var(--account-soft); border-color: var(--account-line); opacity: 1; cursor: not-allowed; }
+#account-modal :is(.account-security-note, .account-message.info) { color: var(--account-muted); background: var(--account-soft); border-color: var(--account-line); }
+#account-modal .account-status-value.active { color: var(--account-success); background: var(--account-success-soft); }
+#account-modal .account-status-value.locked { color: var(--account-danger); background: var(--account-danger-soft); }
+#account-modal .account-switch i { background: var(--account-control-line); box-shadow: none; }
+#account-modal .account-switch input:checked + i { background: var(--account-action); }
+#account-modal .account-switch input:checked + i::after { background: var(--account-on-action); }
+#account-modal .account-theme-option span { color: var(--account-ink); background: var(--account-surface); border-color: var(--account-line); }
+#account-modal .account-theme-option input:checked + span { color: var(--account-ink); background: var(--account-soft); border-color: var(--account-muted); box-shadow: none; }
+#account-modal .account-theme-preview.dark { color: #e8ebef; background: #26292e; }
+#account-modal .account-theme-preview.system { color: var(--account-muted); background: linear-gradient(90deg, #f6f6f6 50%, #26292e 50%); }
+#account-modal .account-color-option.active { border-color: var(--account-muted); box-shadow: none; }
+#account-modal .account-sidebar-option > span { color: var(--account-ink); background: var(--account-surface); border-color: var(--account-line); border-radius: 8px; }
+#account-modal .account-sidebar-option > span:hover { border-color: var(--account-muted); transform: none; }
+#account-modal .account-sidebar-option input:checked + span { color: var(--account-ink); background: var(--account-soft); border-color: var(--account-muted); box-shadow: none; }
+#account-modal :is(button, select):focus-visible,
+#account-modal .account-theme-option input:focus-visible + span,
+#account-modal .account-sidebar-option input:focus-visible + span,
+#account-modal .account-switch input:focus-visible + i { outline: 2px solid var(--account-muted); outline-offset: 3px; }
+
+@media (max-width: 760px) {
+    #account-modal .account-dialog-header { min-height: 68px; padding: 12px 16px; }
+    #account-modal .account-dialog-header h2 { font-size: 18px; }
+    #account-modal .account-tab { width: auto; min-width: 110px; flex: 0 0 auto; }
+}
+
+@media (max-width: 520px) {
+    #account-modal .account-role-badge { grid-column: 1 / -1; width: fit-content; max-width: 100%; white-space: nowrap; }
+}

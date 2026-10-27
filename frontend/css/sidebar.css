@@ -543,3 +543,73 @@ html[data-sidebar-theme="light"] .sidebar [data-auth-action="logout"]:hover {
 html[data-sidebar-theme="light"][data-sidebar-collapsed="true"] .menu-section {
     background: #d8e0eb;
 }
+
+/* Consistent navigation type; collapsed and phone layouts keep their existing rules. */
+@media (min-width: 601px) {
+    html:not([data-sidebar-collapsed="true"]) .sidebar .sidebar-logo {
+        padding-right: 18px;
+        padding-left: 18px;
+        gap: 10px;
+    }
+
+    html:not([data-sidebar-collapsed="true"]) .sidebar .menu-item {
+        min-height: 42px;
+        padding: 9px 12px;
+        gap: 10px;
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 1.5;
+        letter-spacing: 0;
+    }
+
+    html:not([data-sidebar-collapsed="true"]) .sidebar .menu-item.active {
+        font-weight: 400;
+    }
+
+    html:not([data-sidebar-collapsed="true"]) .sidebar .menu-item > span:not(.menu-icon) {
+        min-width: 0;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    html:not([data-sidebar-collapsed="true"]) .sidebar .menu-item .menu-icon {
+        width: 22px;
+        flex: 0 0 22px;
+        font-size: 17px;
+        line-height: 24px;
+        text-align: center;
+    }
+
+    html:not([data-sidebar-collapsed="true"]) .sidebar .menu-section {
+        margin: 20px 12px 8px;
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 1.5;
+        letter-spacing: .08em;
+    }
+
+    html:not([data-sidebar-collapsed="true"]) .sidebar .sidebar-brand-copy > span {
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    html:not([data-sidebar-collapsed="true"]) .sidebar .system-status {
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    html:not([data-sidebar-collapsed="true"]) .sidebar .logout-button,
+    html:not([data-sidebar-collapsed="true"]) .sidebar [data-auth-action="logout"] {
+        min-height: 44px;
+        font-size: 13px;
+        font-weight: 500;
+        line-height: 1.4;
+    }
+}
+
+@media (min-width: 601px) and (max-width: 1000px) {
+    html:not([data-sidebar-collapsed="true"]) .sidebar .sidebar-logo { padding-right: 12px; padding-left: 12px; gap: 8px; }
+    html:not([data-sidebar-collapsed="true"]) .sidebar .sidebar-logo .logo-icon.logo-mark { width: 36px; height: 36px; flex-basis: 36px; border-radius: 10px; }
+    html:not([data-sidebar-collapsed="true"]) .sidebar .sidebar-logo h2 { font-size: 16px; }
+    html:not([data-sidebar-collapsed="true"]) .sidebar .sidebar-toggle { width: 30px; flex-basis: 30px; }
+}
