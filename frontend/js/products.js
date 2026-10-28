@@ -56,11 +56,11 @@ function updateProductImagePreview(product = null) {
 
 function readProductImage(file) {
     if (!PRODUCT_IMAGE_TYPES.has(file.type)) {
-        alert("Vui lòng chọn ảnh PNG, JPG hoặc WebP.");
+        window.appNotify("Vui lòng chọn ảnh PNG, JPG hoặc WebP.");
         return;
     }
     if (file.size > PRODUCT_IMAGE_MAX_BYTES) {
-        alert("Kích thước ảnh không được vượt quá 2 MB.");
+        window.appNotify("Kích thước ảnh không được vượt quá 2 MB.");
         return;
     }
     const reader = new FileReader();
@@ -68,7 +68,7 @@ function readProductImage(file) {
         productImageData = String(reader.result || "");
         updateProductImagePreview();
     });
-    reader.addEventListener("error", () => alert("Không thể đọc tệp ảnh đã chọn."));
+    reader.addEventListener("error", () => window.appNotify("Không thể đọc tệp ảnh đã chọn."));
     reader.readAsDataURL(file);
 }
 
@@ -101,7 +101,7 @@ async function loadProductsFromAPI() {
         products = [];
         console.error("Không thể tải danh sách sản phẩm:", error);
         if (error.status === 401) return;
-        alert("Không thể tải dữ liệu sản phẩm từ máy chủ.");
+        window.appNotify("Không thể tải dữ liệu sản phẩm từ máy chủ.");
     }
 }
 
@@ -955,7 +955,7 @@ async function saveProduct(event) {
         !unit
     ) {
 
-        alert(
+        window.appNotify(
             "Vui lòng nhập đầy đủ thông tin sản phẩm."
         );
 
@@ -969,7 +969,7 @@ async function saveProduct(event) {
         sellingPrice < 0
     ) {
 
-        alert(
+        window.appNotify(
             "Giá sản phẩm không được nhỏ hơn 0."
         );
 
@@ -983,7 +983,7 @@ async function saveProduct(event) {
         purchasePrice
     ) {
 
-        alert(
+        window.appNotify(
             "Giá bán không nên thấp hơn giá nhập."
         );
 
@@ -1007,7 +1007,7 @@ async function saveProduct(event) {
 
         if (duplicatedCode) {
 
-            alert(
+            window.appNotify(
                 "Mã sản phẩm đã tồn tại."
             );
 
@@ -1030,7 +1030,7 @@ async function saveProduct(event) {
             products.unshift(createdProduct);
             currentProductPage = 1;
         } catch (error) {
-            alert(error.message || "Không thể thêm sản phẩm.");
+            window.appNotify(error.message || "Không thể thêm sản phẩm.");
             return;
         }
         addHistory({
@@ -1065,7 +1065,7 @@ async function saveProduct(event) {
                 item.id === editingProductId ? updatedProduct : item
             );
         } catch (error) {
-            alert(error.message || "Không thể cập nhật sản phẩm.");
+            window.appNotify(error.message || "Không thể cập nhật sản phẩm.");
             return;
         }
         addHistory({
@@ -1112,7 +1112,7 @@ async function toggleProductStatus(id) {
     if (product.isActive) {
 
         const confirmed =
-            confirm(
+            await window.appConfirm(
                 `Bạn có chắc muốn ngừng kinh doanh sản phẩm "${product.name}"?`
             );
 
@@ -1134,7 +1134,7 @@ async function toggleProductStatus(id) {
             item.id === id ? updatedProduct : item
         );
     } catch (error) {
-        alert(error.message || "Không thể cập nhật trạng thái sản phẩm.");
+        window.appNotify(error.message || "Không thể cập nhật trạng thái sản phẩm.");
         return;
     }
     addHistory({
@@ -1345,7 +1345,7 @@ async function deleteProduct(id) {
     }
     const product = products.find(item => item.id === id);
     if (!product) return;
-    const confirmed = confirm(
+    const confirmed = await window.appConfirm(
         `Xóa vĩnh viễn sản phẩm "${product.name}"? Sản phẩm đã có giao dịch sẽ không thể xóa.`
     );
     if (!confirmed) return;
@@ -1354,9 +1354,9 @@ async function deleteProduct(id) {
         products = products.filter(item => item.id !== id);
         loadProductCategories();
         renderProducts();
-        alert("Đã xóa sản phẩm.");
+        window.appNotify("Đã xóa sản phẩm.");
     } catch (error) {
-        alert(error.message || "Không thể xóa sản phẩm.");
+        window.appNotify(error.message || "Không thể xóa sản phẩm.");
     }
 }
 

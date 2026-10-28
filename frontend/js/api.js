@@ -26,7 +26,9 @@ window.getAuthAccessToken = getAuthAccessToken;
 window.getAuthSessionStorage = getAuthSessionStorage;
 window.clearAuthSession = clearAuthSession;
 
-function handleUnauthorizedSession(endpoint) {
+window.addEventListener("auth:login", () => { unauthorizedSessionHandled = false; });
+
+function handleUnauthorizedSession(endpoint, messageText) {
     if (endpoint === "/api/auth/login" || unauthorizedSessionHandled) return;
     unauthorizedSessionHandled = true;
     clearAuthSession();
@@ -39,7 +41,7 @@ function handleUnauthorizedSession(endpoint) {
         }
         const message = document.getElementById("login-message");
         if (message) {
-            message.textContent = "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.";
+            message.textContent = messageText || "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.";
             message.className = "auth-message auth-message-error";
         }
     }, 0);
@@ -105,8 +107,10 @@ async function apiRequest(endpoint, options = {}) {
 
         if (!response.ok) {
 
-            if (response.status === 401) {
-                handleUnauthorizedSession(endpoint);
+            if (accessToken === getAuthAccessToken() && response.status === 401) {
+                handleUnauthorizedSession(endpoint, typeof data.detail === "string" ? data.detail : "");
+            } else if (accessToken && response.status === 403 && endpoint !== "/api/auth/login") {
+                window.dispatchEvent(new Event("auth:permission-denied"));
             }
 
             const requestError = new Error(

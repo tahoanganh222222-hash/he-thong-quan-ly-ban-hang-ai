@@ -23,6 +23,7 @@ from app.models import (
     PurchaseReceipt,
     PurchaseReceiptDetail,
     User,
+    Supplier,
 )
 from app.schemas.sales import (
     CategoryCreate,
@@ -38,6 +39,8 @@ from app.schemas.sales import (
     ProductUpdate,
     PurchaseCreate,
     PurchaseUpdate,
+    SupplierCreate,
+    SupplierUpdate,
 )
 
 
@@ -263,20 +266,19 @@ def delete_category(
     return {"message": "Đã xóa danh mục", "id": category_id}
 
 
-def _product_dict(db: Session, product: Product) -> dict:
+def _product_dict(db: Session, product: Product, current_user: User) -> dict:
     category = db.get(Category, product.category_id)
     inventory = (
         db.query(Inventory)
         .filter(Inventory.product_id == product.id)
         .first()
     )
-    return {
+    payload = {
         "id": product.id,
         "code": product.code,
         "name": product.name,
         "categoryId": product.category_id,
         "category": category.name if category else "",
-        "purchasePrice": float(product.purchase_price),
         "sellingPrice": float(product.selling_price),
         "unit": product.unit,
         "isActive": product.is_active,
@@ -284,6 +286,9 @@ def _product_dict(db: Session, product: Product) -> dict:
         "minimum": inventory.min_quantity if inventory else 0,
         "imageData": product.image_data,
     }
+    if current_user.role != "customer":
+        payload["purchasePrice"] = float(product.purchase_price)
+    return payload
 
 
 def _customer_dict(customer: Customer) -> dict:
@@ -404,7 +409,7 @@ def list_products(
     db: Session = Depends(get_db),
     _current_user: User = Depends(require_any_permission(*PRODUCT_READ_PERMISSIONS)),
 ):
-    return [_product_dict(db, item) for item in db.query(Product).order_by(Product.id).all()]
+    return [_product_dict(db, item, _current_user) for item in db.query(Product).order_by(Product.id).all()]
 
 
 @router.get("/products/{product_id}")
@@ -416,7 +421,7 @@ def get_product(
     product = db.get(Product, product_id)
     if product is None:
         raise _not_found("sản phẩm")
-    return _product_dict(db, product)
+    return _product_dict(db, product, _current_user)
 
 
 @router.post("/products", status_code=status.HTTP_201_CREATED)
@@ -451,7 +456,7 @@ def create_product(
     )
     _commit(db, "Mã sản phẩm đã tồn tại")
     db.refresh(product)
-    return _product_dict(db, product)
+    return _product_dict(db, product, current_user)
 
 
 @router.put("/products/{product_id}")
@@ -488,7 +493,7 @@ def update_product(
     )
     _commit(db, "Mã sản phẩm đã tồn tại")
     db.refresh(product)
-    return _product_dict(db, product)
+    return _product_dict(db, product, current_user)
 
 
 @router.delete("/products/{product_id}")
@@ -984,7 +989,8 @@ def _replace_purchase_items(db: Session, receipt: PurchaseReceipt, items) -> Non
     receipt.total_amount = total
 
 
-PURCHASE_READ_PERMISSIONS = ("purchase_track", "report_export", "history_view")
+# Activity history does not grant access to purchase documents or their costs.
+PURCHASE_READ_PERMISSIONS = ("purchase_track", "report_export")
 
 
 @router.get("/purchases")
@@ -1044,16 +1050,77 @@ def get_purchase(
     return _purchase_dict(db, receipt)
 
 
+def _supplier_dict(supplier: Supplier) -> dict:
+    return {"id": supplier.id, "name": supplier.name, "phone": supplier.phone or "",
+            "email": supplier.email or "", "address": supplier.address or "",
+            "isActive": supplier.is_active}
+
+
+@router.get("/suppliers")
+def list_suppliers(db: Session = Depends(get_db),
+                   current_user: User = Depends(require_permission("purchase_track"))):
+    return [_supplier_dict(item) for item in db.query(Supplier).order_by(Supplier.id.desc()).all()]
+
+
+@router.post("/suppliers", status_code=status.HTTP_201_CREATED)
+def create_supplier(data: SupplierCreate, db: Session = Depends(get_db),
+                    current_user: User = Depends(require_permission("purchase_track"))):
+    if any(item.name.casefold() == data.name.casefold() for item in db.query(Supplier).all()):
+        raise HTTPException(status_code=409, detail="Nhà cung cấp đã tồn tại")
+    supplier = Supplier(name=data.name, phone=data.phone or None,
+                        email=data.email, address=data.address or None, is_active=True)
+    db.add(supplier)
+    _record_activity(db, current_user, "Thêm", "add", "Nhà cung cấp", "", f"Thêm nhà cung cấp: {supplier.name}")
+    _commit(db, "Nhà cung cấp đã tồn tại")
+    db.refresh(supplier)
+    return _supplier_dict(supplier)
+
+
+@router.put("/suppliers/{supplier_id}")
+def update_supplier(supplier_id: int, data: SupplierUpdate,
+                    db: Session = Depends(get_db),
+                    current_user: User = Depends(require_permission("purchase_track"))):
+    supplier = db.get(Supplier, supplier_id)
+    if supplier is None:
+        raise _not_found("nhà cung cấp")
+    if data.name is not None and any(item.id != supplier_id and item.name.casefold() == data.name.casefold() for item in db.query(Supplier).all()):
+        raise HTTPException(status_code=409, detail="Nhà cung cấp đã tồn tại")
+    for key, value in data.model_dump(exclude_unset=True).items():
+        if key == "isActive":
+            if value is not None:
+                supplier.is_active = value
+        else:
+            setattr(supplier, key, value or None)
+    _record_activity(db, current_user, "Cập nhật", "update", "Nhà cung cấp", f"NCC{supplier.id:03}", f"Cập nhật nhà cung cấp: {supplier.name}")
+    _commit(db, "Nhà cung cấp đã tồn tại")
+    db.refresh(supplier)
+    return _supplier_dict(supplier)
+
+
 @router.post("/purchases", status_code=status.HTTP_201_CREATED)
 def create_purchase(
     data: PurchaseCreate,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_permission("purchase_track")),
 ):
+    supplier_name = (data.supplierName or "").strip()
+    if data.supplierId is not None:
+        supplier = db.get(Supplier, data.supplierId)
+        if supplier is None:
+            raise _not_found("nhà cung cấp")
+        if not supplier.is_active:
+            raise HTTPException(status_code=400, detail="Nhà cung cấp đã bị khóa")
+        supplier_name = supplier.name
+    if not supplier_name:
+        raise HTTPException(status_code=422, detail="Vui lòng chọn nhà cung cấp")
+    if data.supplierId is None:
+        matching = next((item for item in db.query(Supplier).all() if item.name.casefold() == supplier_name.casefold()), None)
+        if matching is not None and not matching.is_active:
+            raise HTTPException(status_code=400, detail="Nhà cung cấp đã bị khóa")
     receipt = PurchaseReceipt(
         receipt_code=data.receiptCode or f"PN{datetime.now():%Y%m%d}-{uuid4().hex[:6].upper()}",
         user_id=current_user.id,
-        supplier_name=data.supplierName.strip(),
+        supplier_name=supplier_name,
         total_amount=0,
         created_at=(
             datetime.combine(data.purchaseDate, datetime.now().time())

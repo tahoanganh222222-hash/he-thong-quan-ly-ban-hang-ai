@@ -20,6 +20,18 @@ dùng, tính năng, câu hỏi, phản hồi, số token và thời gian yêu c�
 **Lịch sử hoạt động** ghi cả các phiên đăng nhập, đăng xuất và thao tác nghiệp vụ.
 Quyền xem từng loại nhật ký có thể cấu hình trong màn hình **Phân quyền**.
 
+API sản phẩm không trả trường giá nhập (`purchasePrice`) cho vai trò khách hàng;
+giá bán và thông tin tồn kho vẫn được giữ như hiện tại. Đọc danh sách, chi tiết
+và các dòng hàng của phiếu nhập cần quyền **Theo dõi nhập hàng** hoặc **Xuất báo cáo**.
+Quyền **Xem lịch sử** chỉ cho phép xem nhật ký hoạt động, không cấp quyền đọc phiếu nhập.
+
+Phiên đang mở tự đồng bộ quyền khoảng mỗi 2 giây và kiểm tra lại khi quay về tab.
+Các tab cùng trình duyệt nhận thông báo đổi quyền ngay. Nếu bị thu hồi quyền của
+trang đang xem, ứng dụng đóng cửa sổ chi tiết và đưa người dùng về Dashboard.
+Tắt quyền **Đăng nhập / đăng xuất** kết thúc các phiên của vai trò đó; bật lại quyền
+vẫn cần đăng nhập mới. Backend tự bổ sung cột `Users.session_version` khi khởi động
+để token đã bị thu hồi không hoạt động lại.
+
 ## Cấu trúc dự án
 
 ```text
@@ -111,6 +123,16 @@ Với database đã nạp phiên bản có nhãn DEMO, chỉ cập nhật tên, 
 
 Lệnh này giữ nguyên ID, số lượng tồn, giá, hóa đơn và chi tiết giao dịch. Nguồn
 ảnh được ghi tại `frontend/assets/catalog/products/sources.json`.
+
+## Danh sách nhà cung cấp
+
+Mục **Nhập hàng → Nhà cung cấp** hỗ trợ thêm, sửa và khóa/mở khóa đối tác.
+Tab Nhập hàng chọn từ danh sách nhà cung cấp đang hoạt động. Nhà cung cấp
+bị khóa không thể dùng cho phiếu mới; các phiếu đã lập giữ nguyên tên đã ghi.
+Backend tự tạo bảng `Suppliers` và khởi tạo danh sách từ tên trên các phiếu
+nhập cũ khi danh sách còn trống. Dữ liệu được lưu trong SQL Server, không chỉ
+trên trình duyệt. Các API danh sách, thêm và cập nhật nhà cung cấp sử dụng
+quyền nhập hàng `purchase_track`, cùng với thao tác lập phiếu nhập hiện tại.
 
 ## Cấu hình `.env`
 

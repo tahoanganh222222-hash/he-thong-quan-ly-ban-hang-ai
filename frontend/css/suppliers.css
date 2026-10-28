@@ -1,0 +1,23 @@
+#purchase-page .purchase-view-tabs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.supplier-layout { display: grid; grid-template-columns: minmax(260px, .7fr) minmax(0, 1.5fr); gap: 18px; }
+.supplier-card { min-width: 0; padding: 22px; border: 1px solid var(--sm-line, #e1e5e9); border-radius: 12px; background: var(--sm-surface, #fff); color: var(--sm-ink, #20272f); }
+.supplier-card h3 { margin: 0 0 8px; font-size: 17px; }
+.supplier-card > p, .supplier-search-label { color: var(--sm-muted, #68727d); font-size: 12px; line-height: 1.6; }
+.supplier-card label { display: block; margin: 15px 0 6px; font-size: 13px; }
+.supplier-card input { box-sizing: border-box; width: 100%; min-height: 42px; padding: 10px 12px; border: 1px solid #929ba6; border-radius: 7px; background: var(--sm-surface, #fff); color: var(--sm-ink, #20272f); font: inherit; font-size: 14px; }
+.supplier-card button { min-height: 36px; padding: 8px 12px; border: 1px solid var(--sm-line, #dce1e5); border-radius: 7px; background: var(--sm-surface, #fff); color: var(--sm-ink, #20272f); font: inherit; font-size: 12px; cursor: pointer; }
+#supplier-save { margin-top: 20px; background: #30343a; color: #fff; border-color: #30343a; }
+#supplier-save:disabled { opacity: .6; cursor: not-allowed; }
+.supplier-list-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+#supplier-count { color: var(--sm-muted, #68727d); font-size: 12px; }
+.supplier-table-wrap { overflow-x: auto; margin-top: 18px; }
+.supplier-table { width: 100%; border-collapse: collapse; }
+.supplier-table th, .supplier-table td { text-align: left; padding: 14px 10px; border-bottom: 1px solid var(--sm-line, #e1e5e9); font-size: 13px; vertical-align: middle; }
+.supplier-table th { color: var(--sm-muted, #68727d); font-size: 11px; white-space: nowrap; }
+.supplier-table td { overflow-wrap: anywhere; }
+.supplier-table small { display: block; margin-top: 5px; color: var(--sm-muted, #68727d); font-size: 11px; }
+.supplier-table button { white-space: nowrap; }
+.supplier-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.supplier-card :is(input, button):focus-visible { outline: 2px solid #718398; outline-offset: 2px; }
+@media (max-width: 1000px) { .supplier-layout { grid-template-columns: 1fr; } }
+@media (max-width: 760px) { #purchase-page .purchase-view-tabs { grid-template-columns: 1fr; } .supplier-card { padding: 16px; } .supplier-table { min-width: 520px; } }

@@ -384,10 +384,16 @@ const permissionFunctionIcons = {
 */
 
 let rolePermissions =
-    clonePermissions(defaultRolePermissions);
+    emptyRolePermissions();
 
 let permissionDrafts =
-    clonePermissions(defaultRolePermissions);
+    clonePermissions(rolePermissions);
+
+function emptyRolePermissions() {
+    return Object.fromEntries(Object.keys(defaultRolePermissions).map(role => [role,
+        Object.fromEntries(permissionDefinitions.map(({ key }) => [key, role === "ADMIN"]))
+    ]));
+}
 
 /* =========================================================
    7. HELPER CLONE
@@ -406,12 +412,7 @@ function clonePermissions(data) {
    8. LOAD PERMISSIONS FROM DATABASE
    ========================================================= */
 
-async function loadPermissionsFromAPI() {
-
-    rolePermissions =
-        clonePermissions(
-            defaultRolePermissions
-        );
+async function loadPermissionsFromAPI({ resetDrafts = false } = {}) {
 
     if (
         !currentPermissionUser ||
@@ -431,17 +432,14 @@ async function loadPermissionsFromAPI() {
             defaultRolePermissions
         ).forEach(function (role) {
 
+            const keepDraft = !resetDrafts && hasUnsavedChanges(role);
             rolePermissions[role] = {
                 ...defaultRolePermissions[role],
                 ...(saved[role] || {})
             };
+            if (!keepDraft) permissionDrafts[role] = clonePermissions(rolePermissions[role]);
 
         });
-
-        permissionDrafts =
-            clonePermissions(
-                rolePermissions
-            );
 
         return true;
 
@@ -452,14 +450,29 @@ async function loadPermissionsFromAPI() {
             error
         );
 
-        permissionDrafts =
-            clonePermissions(
-                rolePermissions
-            );
-
         return false;
     }
 }
+
+
+function applyLivePermissions(permissions) {
+    syncCurrentPermissionUser();
+    const role = currentPermissionUser?.role;
+    if (!role || !rolePermissions[role]) return false;
+    const keepDraft = hasUnsavedChanges(role);
+    const previous = rolePermissions[role];
+    const next = Object.fromEntries(permissionDefinitions.map(({ key }) => [
+        key, role === "ADMIN" || permissions[key] === true
+    ]));
+    const changed = permissionDefinitions.some(({ key }) => previous[key] !== next[key]);
+    rolePermissions[role] = next;
+    if (!keepDraft) permissionDrafts[role] = clonePermissions(next);
+    applyPermissionVisibility();
+    if (changed && !keepDraft) renderPermissionPage();
+    return changed;
+}
+
+window.applyLivePermissions = applyLivePermissions;
 
 
 /* =========================================================
@@ -1058,7 +1071,7 @@ function handlePermissionCheckboxChange(event) {
         checkbox.checked =
             !checkbox.checked;
 
-        alert(
+        window.appNotify(
             "Bạn không có quyền thay đổi phân quyền."
         );
 
@@ -1308,7 +1321,7 @@ async function savePermissions() {
 
     if (!canManagePermissions()) {
 
-        alert(
+        window.appNotify(
             "Bạn không có quyền truy cập chức năng này."
         );
 
@@ -1333,7 +1346,7 @@ async function savePermissions() {
 
     if (role === "ADMIN") {
 
-        alert(
+        window.appNotify(
             "Quản trị viên luôn có toàn quyền và không thể thay đổi."
         );
 
@@ -1342,7 +1355,7 @@ async function savePermissions() {
 
     if (!rolePermissions[role]) {
 
-        alert(
+        window.appNotify(
             "Vai trò không hợp lệ."
         );
 
@@ -1356,7 +1369,7 @@ async function savePermissions() {
 
     if (!hasUnsavedChanges(role)) {
 
-        alert(
+        window.appNotify(
             `Không có thay đổi nào cần lưu cho vai trò "${getRoleName(role)}".`
         );
 
@@ -1384,7 +1397,7 @@ async function savePermissions() {
 
     } catch (error) {
 
-        alert(
+        window.appNotify(
             error.message ||
             "Không thể lưu quyền. Vui lòng thử lại."
         );
@@ -1409,7 +1422,7 @@ async function savePermissions() {
         Thông báo.
     */
 
-    alert(
+    window.appNotify(
         `Đã lưu quyền cho vai trò "${getRoleName(role)}".`
     );
 
@@ -1479,7 +1492,7 @@ function resetPermissions() {
 async function resetAllPermissionsToDefault() {
 
     const confirmed =
-        confirm(
+        await window.appConfirm(
             "Bạn có chắc muốn khôi phục toàn bộ quyền về mặc định?"
         );
 
@@ -1490,7 +1503,7 @@ async function resetAllPermissionsToDefault() {
 
 
     if (!canManagePermissions()) {
-        alert("Bạn không có quyền thay đổi phân quyền.");
+        window.appNotify("Bạn không có quyền thay đổi phân quyền.");
         return;
     }
 
@@ -1503,11 +1516,11 @@ async function resetAllPermissionsToDefault() {
             );
         }
 
-        await loadPermissionsFromAPI();
+        await loadPermissionsFromAPI({ resetDrafts: true });
 
     } catch (error) {
 
-        alert(
+        window.appNotify(
             error.message ||
             "Không thể khôi phục quyền mặc định."
         );
@@ -1519,7 +1532,7 @@ async function resetAllPermissionsToDefault() {
     renderPermissionPage();
 
 
-    alert(
+    window.appNotify(
         "Đã khôi phục toàn bộ quyền mặc định."
     );
 
@@ -1689,7 +1702,7 @@ function requirePermission(permissionKey) {
             : permissionKey;
 
 
-    alert(
+    window.appNotify(
         `Bạn không có quyền sử dụng chức năng "${permissionName}".`
     );
 
@@ -1713,7 +1726,7 @@ function requireAnyPermission(permissionKeys) {
         return true;
     }
 
-    alert(
+    window.appNotify(
         "Bạn không có quyền sử dụng chức năng này."
     );
 
@@ -2310,8 +2323,8 @@ window.addEventListener(
     "auth:logout",
     function () {
         syncCurrentPermissionUser();
-        rolePermissions = clonePermissions(defaultRolePermissions);
-        permissionDrafts = clonePermissions(defaultRolePermissions);
+        rolePermissions = emptyRolePermissions();
+        permissionDrafts = clonePermissions(rolePermissions);
         renderPermissionPage();
         applyPermissionVisibility();
     }

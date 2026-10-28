@@ -38,7 +38,8 @@ def verify_password(
 def create_access_token(
     user_id: int,
     username: str,
-    role: str
+    role: str,
+    session_version: int = 0,
 ) -> str:
     """
     Tạo JWT access token.
@@ -52,6 +53,7 @@ def create_access_token(
         "sub": str(user_id),
         "username": username,
         "role": role,
+        "session_version": session_version,
         "exp": expire
     }
 

@@ -68,8 +68,20 @@ def get_current_user(
 
     if not user.is_active:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Tài khoản đã bị khóa"
+        )
+
+    if payload.get("session_version", 0) != user.session_version:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Phiên đăng nhập đã bị thu hồi. Vui lòng đăng nhập lại.",
+        )
+
+    if not _has_permission(db, user, "login"):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Quyền đăng nhập đã bị tắt. Phiên đăng nhập đã kết thúc.",
         )
 
     return user

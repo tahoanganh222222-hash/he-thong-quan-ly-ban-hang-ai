@@ -9,6 +9,10 @@
         }
         const result = await window.apiRequest(path, options);
 
+        if (method !== "GET" && /^\/api\/auth\/(permissions|users)(\/|$)/.test(path)) {
+            window.dispatchEvent(new Event("access:changed"));
+        }
+
         if (
             method !== "GET" &&
             /^\/api\/(categories|products|customers|inventory|invoices|purchases)(\/|$)/.test(path)
@@ -91,6 +95,11 @@
             create: data => request("/api/invoices", "POST", data),
             update: (id, data) => request(`/api/invoices/${id}`, "PUT", data),
             remove: id => request(`/api/invoices/${id}`, "DELETE")
+        },
+        suppliers: {
+            list: () => request("/api/suppliers"),
+            create: data => request("/api/suppliers", "POST", data),
+            update: (id, data) => request(`/api/suppliers/${id}`, "PUT", data)
         },
         purchases: {
             list: () => request("/api/purchases"),

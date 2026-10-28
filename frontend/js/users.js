@@ -746,7 +746,7 @@
 
         if (!user) {
 
-            alert(
+            window.appNotify(
                 "Không tìm thấy tài khoản."
             );
 
@@ -1016,7 +1016,7 @@
             !statusInput
         ) {
 
-            alert(
+            window.appNotify(
                 "Không tìm thấy đầy đủ các trường trong form."
             );
 
@@ -1059,7 +1059,7 @@
 
         if (!validation.valid) {
 
-            alert(
+            window.appNotify(
                 validation.message
             );
 
@@ -1090,7 +1090,7 @@
             )
         ) {
 
-            alert(
+            window.appNotify(
                 "Tên tài khoản đã tồn tại."
             );
 
@@ -1108,7 +1108,7 @@
 
             if (!data.password) {
 
-                alert(
+                window.appNotify(
                     "Vui lòng nhập mật khẩu."
                 );
 
@@ -1145,7 +1145,7 @@
                 });
 
 
-                alert(
+                window.appNotify(
                     "Thêm tài khoản thành công."
                 );
 
@@ -1158,7 +1158,7 @@
 
                 console.error(error);
 
-                alert(
+                window.appNotify(
                     error.message ||
                     "Không thể thêm tài khoản."
                 );
@@ -1183,7 +1183,7 @@
 
         if (!existingUser) {
 
-            alert(
+            window.appNotify(
                 "Không tìm thấy tài khoản."
             );
 
@@ -1222,7 +1222,7 @@
             );
 
 
-            alert(
+            window.appNotify(
                 "Cập nhật tài khoản thành công."
             );
 
@@ -1235,7 +1235,7 @@
 
             console.error(error);
 
-            alert(
+            window.appNotify(
                 error.message ||
                 "Không thể cập nhật tài khoản."
             );
@@ -1259,7 +1259,7 @@
 
         if (!user) {
 
-            alert(
+            window.appNotify(
                 "Không tìm thấy tài khoản."
             );
 
@@ -1274,7 +1274,7 @@
 
 
         const confirmed =
-            confirm(
+            await window.appConfirm(
                 `Bạn có chắc muốn ${action} tài khoản "${user.username}" không?`
             );
 
@@ -1292,7 +1292,7 @@
                 );
 
 
-            alert(
+            window.appNotify(
                 updatedUser.isActive
                     ? "Đã mở khóa tài khoản."
                     : "Đã khóa tài khoản."
@@ -1305,7 +1305,7 @@
 
             console.error(error);
 
-            alert(
+            window.appNotify(
                 error.message ||
                 "Không thể thay đổi trạng thái tài khoản."
             );
@@ -1992,7 +1992,7 @@
     async function resetUsersToDefault() {
 
         const confirmed =
-            confirm(
+            await window.appConfirm(
                 "Bạn có muốn tải lại danh sách tài khoản từ database không?"
             );
 
@@ -2007,7 +2007,7 @@
         renderUsers();
 
 
-        alert(
+        window.appNotify(
             "Đã tải lại danh sách tài khoản từ database."
         );
     }

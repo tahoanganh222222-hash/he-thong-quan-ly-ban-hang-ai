@@ -28,7 +28,7 @@ async function loadInvoiceReferenceData() {
         invoiceCustomers = [];
         console.error("Không thể tải dữ liệu lập hóa đơn:", error);
         if (error.status === 401) return;
-        alert("Không thể tải sản phẩm và khách hàng từ máy chủ.");
+        window.appNotify("Không thể tải sản phẩm và khách hàng từ máy chủ.");
     }
 }
 
@@ -168,7 +168,7 @@ function addInvoiceProduct() {
         Number(quantityInput.value);
 
     if (!productId) {
-        alert("Vui lòng chọn sản phẩm.");
+        window.appNotify("Vui lòng chọn sản phẩm.");
         return;
     }
 
@@ -176,7 +176,7 @@ function addInvoiceProduct() {
         !Number.isInteger(quantity) ||
         quantity <= 0
     ) {
-        alert(
+        window.appNotify(
             "Số lượng phải là số nguyên lớn hơn 0."
         );
         return;
@@ -202,7 +202,7 @@ function addInvoiceProduct() {
             : quantity;
 
     if (newQuantity > product.stock) {
-        alert(
+        window.appNotify(
             `Số lượng vượt quá tồn kho. Hiện còn ${product.stock} ${product.name}.`
         );
         return;
@@ -387,7 +387,7 @@ function updateInvoiceItemQuantity(
         !Number.isInteger(quantity) ||
         quantity <= 0
     ) {
-        alert(
+        window.appNotify(
             "Số lượng phải là số nguyên lớn hơn 0."
         );
 
@@ -396,7 +396,7 @@ function updateInvoiceItemQuantity(
     }
 
     if (quantity > product.stock) {
-        alert(
+        window.appNotify(
             `Số lượng vượt quá tồn kho. Hiện còn ${product.stock}.`
         );
 
@@ -441,7 +441,7 @@ function updateInvoiceItemDiscount(productId, value) {
         discountPerUnit < 0 ||
         discountPerUnit > item.unitPrice
     ) {
-        alert(`Số tiền giảm mỗi đơn vị phải từ 0 đến ${formatInvoiceMoney(item.unitPrice)}.`);
+        window.appNotify(`Số tiền giảm mỗi đơn vị phải từ 0 đến ${formatInvoiceMoney(item.unitPrice)}.`);
         renderInvoiceItems();
         return;
     }
@@ -553,7 +553,7 @@ async function createSalesInvoice() {
     }
 
     if (invoiceItems.length === 0) {
-        alert(
+        window.appNotify(
             "Vui lòng thêm ít nhất một sản phẩm vào hóa đơn."
         );
         return;
@@ -577,7 +577,7 @@ async function createSalesInvoice() {
     const finalAmount = calculateInvoiceTotal();
 
     if (!paymentMethod) {
-        alert(
+        window.appNotify(
             "Vui lòng chọn phương thức thanh toán."
         );
         return;
@@ -602,7 +602,7 @@ async function createSalesInvoice() {
                 ? "Chuyển khoản"
                 : "Khác";
 
-    const confirmed = confirm(
+    const confirmed = await window.appConfirm(
         `Xác nhận lập hóa đơn ${invoiceCode}?\n\n` +
         `Khách hàng: ${
             customer
@@ -635,11 +635,11 @@ async function createSalesInvoice() {
         await loadInvoiceReferenceData();
         document.dispatchEvent(new CustomEvent("sales:invoice-created"));
     } catch (error) {
-        alert(error.message || "Không thể lập hóa đơn.");
+        window.appNotify(error.message || "Không thể lập hóa đơn.");
         return;
     }
 
-    alert(
+    window.appNotify(
         `Lập hóa đơn ${invoiceCode} thành công.`
     );
 
@@ -1353,7 +1353,7 @@ if (detailModal && detailModal.parentElement !== document.body) {
             fromDate > toDate
         ) {
 
-            alert(
+            window.appNotify(
                 "Ngày bắt đầu không được lớn hơn ngày kết thúc."
             );
 
@@ -1367,7 +1367,7 @@ if (detailModal && detailModal.parentElement !== document.body) {
             minAmount > maxAmount
         ) {
 
-            alert(
+            window.appNotify(
                 "Giá trị tối thiểu không được lớn hơn giá trị tối đa."
             );
 
@@ -2000,7 +2000,7 @@ if (detailModal && detailModal.parentElement !== document.body) {
             <div class="invoice-search-detail-footer">
                 <div class="invoice-search-detail-status">
                     <span>Trạng thái</span>
-                    <strong>${invoiceSearchEscapeHTML(
+                    <strong data-status="${invoiceSearchEscapeHTML(invoice.status || "")}">${invoiceSearchEscapeHTML(
                         invoiceSearchStatusText(invoice.status)
                     )}</strong>
                 </div>
@@ -2063,7 +2063,7 @@ if (detailModal && detailModal.parentElement !== document.body) {
 
         if (!invoiceSummary) {
 
-            alert(
+            window.appNotify(
                 "Không tìm thấy hóa đơn."
             );
 

@@ -323,11 +323,11 @@
         const fromDate = document.getElementById("reports-from-date")?.value;
         const toDate = document.getElementById("reports-to-date")?.value;
         if (!fromDate || !toDate) {
-            if (showMessage) alert("Vui lòng chọn đầy đủ Từ ngày và Đến ngày.");
+            if (showMessage) window.appNotify("Vui lòng chọn đầy đủ Từ ngày và Đến ngày.");
             return false;
         }
         if (fromDate > toDate) {
-            if (showMessage) alert("Từ ngày không được lớn hơn Đến ngày.");
+            if (showMessage) window.appNotify("Từ ngày không được lớn hơn Đến ngày.");
             return false;
         }
         buildReport(fromDate, toDate);
@@ -723,7 +723,7 @@
             !requirePermission("report_export")
         ) return;
         if (!applyReportFilter(false)) {
-            alert("Vui lòng chọn khoảng ngày hợp lệ trước khi xuất báo cáo.");
+            window.appNotify("Vui lòng chọn khoảng ngày hợp lệ trước khi xuất báo cáo.");
             return;
         }
         const content = buildExportDocument();
@@ -732,7 +732,7 @@
                 downloadPdf();
             } catch (error) {
                 console.error("Không thể tạo tệp PDF:", error);
-                alert("Không thể tạo tệp PDF. Vui lòng thử lại.");
+                window.appNotify("Không thể tạo tệp PDF. Vui lòng thử lại.");
                 return;
             }
         } else {

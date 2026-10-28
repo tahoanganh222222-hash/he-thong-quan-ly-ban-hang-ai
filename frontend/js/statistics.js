@@ -425,11 +425,11 @@ let currentRevenueStatisticsData = [];
     function applyStatisticsFilter(showMessage = true) {
         const filters = readFilters();
         if (!filters.from || !filters.to) {
-            if (showMessage) alert("Vui lòng chọn đầy đủ ngày bắt đầu và ngày kết thúc.");
+            if (showMessage) window.appNotify("Vui lòng chọn đầy đủ ngày bắt đầu và ngày kết thúc.");
             return;
         }
         if (filters.from > filters.to) {
-            if (showMessage) alert("Ngày bắt đầu không được lớn hơn ngày kết thúc.");
+            if (showMessage) window.appNotify("Ngày bắt đầu không được lớn hơn ngày kết thúc.");
             return;
         }
         currentFilters = filters;

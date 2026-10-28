@@ -1,0 +1,33 @@
+.app-toast-region {
+    position: fixed; z-index: 21000; top: 22px; right: 22px;
+    display: flex; width: min(380px, calc(100vw - 32px)); flex-direction: column; gap: 10px;
+    pointer-events: none;
+}
+.app-toast {
+    display: flex; align-items: flex-start; gap: 14px; padding: 15px 16px;
+    border: 1px solid #dce1e5; border-left: 3px solid #596673; border-radius: 9px;
+    color: #20272f; background: #fff; box-shadow: 0 12px 32px rgb(0 0 0 / 14%);
+    font-size: 14px; line-height: 1.5; pointer-events: auto;
+}
+.app-toast-text { flex: 1; min-width: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.app-toast-close { flex: 0 0 auto; padding: 0 2px; border: 0; color: #737b85; background: none; font-size: 20px; line-height: 1; cursor: pointer; }
+.app-confirm {
+    width: min(480px, calc(100vw - 32px)); max-height: calc(100dvh - 32px);
+    padding: 0; border: 1px solid #e1e4e7; border-radius: 12px; color: #20272f;
+    background: #fff; box-shadow: 0 20px 64px rgb(0 0 0 / 20%);
+}
+.app-confirm::backdrop { background: rgb(16 24 35 / 50%); }
+.app-confirm-content { padding: 24px; }
+.app-confirm h2 { margin: 0; font-size: 18px; font-weight: 650; line-height: 1.35; }
+.app-confirm p { margin: 12px 0 24px; color: #59636f; font-size: 14px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
+.app-confirm-actions { display: flex; justify-content: flex-end; gap: 10px; }
+.app-confirm-actions button { min-height: 40px; padding: 8px 16px; border: 1px solid #cbd0d6; border-radius: 7px; background: #fff; color: #20272f; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.app-confirm-actions .app-confirm-accept { border-color: #30343a; background: #30343a; color: #fff; }
+.app-confirm-actions button:hover { filter: brightness(.94); }
+.app-confirm-actions button:focus-visible, .app-toast-close:focus-visible { outline: 2px solid #718398; outline-offset: 3px; }
+html[data-app-theme="dark"] .app-toast, html[data-app-theme="dark"] .app-confirm { color: #e8ebef; background: #22262b; border-color: #414852; }
+html[data-app-theme="dark"] .app-toast { border-left-color: #a6b1bd; }
+html[data-app-theme="dark"] .app-toast-close, html[data-app-theme="dark"] .app-confirm p { color: #b2bbc6; }
+html[data-app-theme="dark"] .app-confirm-actions button { color: #e8ebef; background: #22262b; border-color: #68717c; }
+html[data-app-theme="dark"] .app-confirm-actions .app-confirm-accept { color: #22262b; background: #e0e5eb; border-color: #e0e5eb; }
+@media (max-width: 600px) { .app-toast-region { top: 12px; right: 12px; } .app-confirm-content { padding: 20px; } }

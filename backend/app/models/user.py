@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, String, Unicode, UnicodeText
+from sqlalchemy import Boolean, Integer, String, Unicode, UnicodeText
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base
@@ -50,3 +50,5 @@ class User(Base):
         default=True,
         nullable=False
     )
+
+    session_version: Mapped[int] = mapped_column(Integer, default=0, server_default="0", nullable=False)

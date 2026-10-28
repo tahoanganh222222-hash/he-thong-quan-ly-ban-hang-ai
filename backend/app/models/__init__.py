@@ -9,6 +9,7 @@ from app.models.inventory import Inventory
 from app.models.ai_log import AILog
 from app.models.role_permission import RolePermission
 from app.models.activity_log import ActivityLog
+from app.models.supplier import Supplier
 
 __all__ = [
     "Base",
@@ -24,4 +25,5 @@ __all__ = [
     "AILog",
     "RolePermission",
     "ActivityLog",
+    "Supplier",
 ]

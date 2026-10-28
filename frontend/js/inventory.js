@@ -95,7 +95,7 @@ async function loadInventoryFromAPI() {
         currentInventoryPage = 1;
         console.error("Không thể tải dữ liệu tồn kho:", error);
         if (error.status === 401) return;
-        alert("Không thể tải dữ liệu tồn kho từ máy chủ.");
+        window.appNotify("Không thể tải dữ liệu tồn kho từ máy chủ.");
     }
 }
 
@@ -705,7 +705,7 @@ async function saveInventoryAdjustment(event) {
     const quantity = Number(document.getElementById("inventory-adjust-quantity")?.value);
     const minimum = Number(document.getElementById("inventory-adjust-minimum")?.value);
     if (!Number.isInteger(quantity) || quantity < 0 || !Number.isInteger(minimum) || minimum < 0) {
-        alert("Số lượng và mức tồn tối thiểu phải là số nguyên không âm.");
+        window.appNotify("Số lượng và mức tồn tối thiểu phải là số nguyên không âm.");
         return;
     }
     const submit = event.currentTarget.querySelector('[type="submit"]');
@@ -721,7 +721,7 @@ async function saveInventoryAdjustment(event) {
         loadInventoryTable();
         closeInventoryAdjustment();
     } catch (error) {
-        alert(error.message || "Không thể cập nhật tồn kho.");
+        window.appNotify(error.message || "Không thể cập nhật tồn kho.");
     } finally {
         if (submit) {
             submit.disabled = false;

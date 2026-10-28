@@ -23,7 +23,7 @@ async function loadCustomersFromAPI() {
         customers = [];
         console.error("Không thể tải danh sách khách hàng:", error);
         if (error.status === 401) return;
-        alert("Không thể tải dữ liệu khách hàng từ máy chủ.");
+        window.appNotify("Không thể tải dữ liệu khách hàng từ máy chủ.");
     }
 }
 
@@ -907,7 +907,7 @@ async function saveCustomer(event) {
 
     if (!code || !name || !phone) {
 
-        alert(
+        window.appNotify(
             "Vui lòng nhập đầy đủ mã, tên và số điện thoại khách hàng."
         );
 
@@ -918,7 +918,7 @@ async function saveCustomer(event) {
 
     if (!phoneRegex.test(phone)) {
 
-        alert(
+        window.appNotify(
             "Số điện thoại phải gồm từ 9 đến 11 chữ số."
         );
 
@@ -932,7 +932,7 @@ async function saveCustomer(event) {
 
         if (!emailRegex.test(email)) {
 
-            alert("Email không hợp lệ.");
+            window.appNotify("Email không hợp lệ.");
 
             return;
         }
@@ -947,7 +947,7 @@ async function saveCustomer(event) {
 
     if (duplicateCode) {
 
-        alert("Mã khách hàng đã tồn tại.");
+        window.appNotify("Mã khách hàng đã tồn tại.");
 
         return;
     }
@@ -968,11 +968,11 @@ async function saveCustomer(event) {
             selectedCustomerId = createdCustomer.id;
             customerDetailCache.delete(createdCustomer.id);
         } catch (error) {
-            alert(error.message || "Không thể thêm khách hàng.");
+            window.appNotify(error.message || "Không thể thêm khách hàng.");
             return;
         }
 
-        alert("Thêm khách hàng thành công.");
+        window.appNotify("Thêm khách hàng thành công.");
 
     } else {
 
@@ -995,11 +995,11 @@ async function saveCustomer(event) {
             selectedCustomerId = updatedCustomer.id;
             customerDetailCache.delete(updatedCustomer.id);
         } catch (error) {
-            alert(error.message || "Không thể cập nhật khách hàng.");
+            window.appNotify(error.message || "Không thể cập nhật khách hàng.");
             return;
         }
 
-        alert("Cập nhật khách hàng thành công.");
+        window.appNotify("Cập nhật khách hàng thành công.");
     }
 
     closeCustomerModal();
@@ -1038,7 +1038,7 @@ async function toggleCustomerStatus(id) {
         ? "khóa"
         : "mở khóa";
 
-    const confirmed = confirm(
+    const confirmed = await window.appConfirm(
         `Bạn có chắc muốn ${action} khách hàng "${customer.name}"?`
     );
 
@@ -1057,7 +1057,7 @@ async function toggleCustomerStatus(id) {
         selectedCustomerId = id;
         customerDetailCache.delete(id);
     } catch (error) {
-        alert(error.message || "Không thể cập nhật trạng thái khách hàng.");
+        window.appNotify(error.message || "Không thể cập nhật trạng thái khách hàng.");
         return;
     }
 
@@ -1074,7 +1074,7 @@ async function deleteCustomer(id) {
     }
     const customer = customers.find(item => item.id === id);
     if (!customer) return;
-    const confirmed = confirm(
+    const confirmed = await window.appConfirm(
         `Xóa vĩnh viễn khách hàng "${customer.name}"? Khách hàng đã có hóa đơn sẽ không thể xóa.`
     );
     if (!confirmed) return;
@@ -1084,9 +1084,9 @@ async function deleteCustomer(id) {
         customerDetailCache.delete(id);
         if (selectedCustomerId === id) selectedCustomerId = null;
         renderCustomers();
-        alert("Đã xóa khách hàng.");
+        window.appNotify("Đã xóa khách hàng.");
     } catch (error) {
-        alert(error.message || "Không thể xóa khách hàng.");
+        window.appNotify(error.message || "Không thể xóa khách hàng.");
     }
 }
 

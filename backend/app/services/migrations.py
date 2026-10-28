@@ -29,6 +29,9 @@ def migrate_unicode_columns(engine: Engine) -> None:
                     ALTER TABLE dbo.Users ADD email NVARCHAR(100) NULL;
                 IF COL_LENGTH('dbo.Users', 'avatar_data') IS NULL
                     ALTER TABLE dbo.Users ADD avatar_data NVARCHAR(MAX) NULL;
+                IF COL_LENGTH('dbo.Users', 'session_version') IS NULL
+                    ALTER TABLE dbo.Users ADD session_version INT NOT NULL
+                        CONSTRAINT DF_Users_session_version DEFAULT 0;
                 IF COL_LENGTH('dbo.Categories', 'image_data') IS NULL
                     ALTER TABLE dbo.Categories ADD image_data NVARCHAR(MAX) NULL;
                 IF COL_LENGTH('dbo.Products', 'image_data') IS NULL

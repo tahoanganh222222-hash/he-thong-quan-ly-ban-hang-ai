@@ -960,7 +960,7 @@
 
         if (!need) {
 
-            alert(
+            window.appNotify(
                 "Vui lòng nhập nhu cầu của khách hàng."
             );
 

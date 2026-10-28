@@ -32,11 +32,11 @@ function updateCategoryImagePreview() {
 
 function readCategoryImage(file) {
     if (!CATEGORY_IMAGE_TYPES.has(file.type)) {
-        alert("Vui lòng chọn ảnh PNG, JPG hoặc WebP.");
+        window.appNotify("Vui lòng chọn ảnh PNG, JPG hoặc WebP.");
         return;
     }
     if (file.size > CATEGORY_IMAGE_MAX_BYTES) {
-        alert("Kích thước ảnh không được vượt quá 2 MB.");
+        window.appNotify("Kích thước ảnh không được vượt quá 2 MB.");
         return;
     }
     const reader = new FileReader();
@@ -44,7 +44,7 @@ function readCategoryImage(file) {
         categoryImageData = String(reader.result || "");
         updateCategoryImagePreview();
     });
-    reader.addEventListener("error", () => alert("Không thể đọc tệp ảnh đã chọn."));
+    reader.addEventListener("error", () => window.appNotify("Không thể đọc tệp ảnh đã chọn."));
     reader.readAsDataURL(file);
 }
 
@@ -57,7 +57,7 @@ async function loadCategoriesFromAPI() {
         categories = [];
         console.error("Không thể tải danh mục:", error);
         if (error.status === 401) return;
-        alert(error.message || "Không thể tải danh mục từ máy chủ.");
+        window.appNotify(error.message || "Không thể tải danh mục từ máy chủ.");
     }
 }
 
@@ -247,11 +247,11 @@ async function saveCategory(event) {
     const name = (document.getElementById("category-name")?.value || "").trim();
     const description = (document.getElementById("category-description")?.value || "").trim();
     if (!name) {
-        alert("Vui lòng nhập tên danh mục.");
+        window.appNotify("Vui lòng nhập tên danh mục.");
         return;
     }
     if (categories.some(item => item.id !== categoryEditingId && item.name.toLowerCase() === name.toLowerCase())) {
-        alert("Tên danh mục đã tồn tại.");
+        window.appNotify("Tên danh mục đã tồn tại.");
         return;
     }
     try {
@@ -259,18 +259,18 @@ async function saveCategory(event) {
             await window.salesApi.categories.create({
                 name, description, isActive: true, imageData: categoryImageData
             });
-            alert("Thêm danh mục thành công.");
+            window.appNotify("Thêm danh mục thành công.");
         } else {
             await window.salesApi.categories.update(categoryEditingId, {
                 name, description, imageData: categoryImageData
             });
-            alert("Cập nhật danh mục thành công.");
+            window.appNotify("Cập nhật danh mục thành công.");
         }
         closeCategoryModal();
         await loadCategoriesFromAPI();
         renderCategories();
     } catch (error) {
-        alert(error.message || "Không thể lưu danh mục.");
+        window.appNotify(error.message || "Không thể lưu danh mục.");
     }
 }
 
@@ -279,27 +279,27 @@ async function toggleCategoryStatus(id) {
     const category = categories.find(item => item.id === id);
     if (!category) return;
     const action = category.isActive ? "ngừng hoạt động" : "kích hoạt";
-    if (!confirm(`Bạn có chắc muốn ${action} danh mục "${category.name}"?`)) return;
+    if (!(await window.appConfirm(`Bạn có chắc muốn ${action} danh mục "${category.name}"?`))) return;
     try {
         const updated = await window.salesApi.categories.update(id, { isActive: !category.isActive });
         categories = categories.map(item => item.id === id ? updated : item);
         renderCategories();
     } catch (error) {
-        alert(error.message || "Không thể cập nhật trạng thái danh mục.");
+        window.appNotify(error.message || "Không thể cập nhật trạng thái danh mục.");
     }
 }
 
 async function deleteCategory(id) {
     if (typeof requirePermission === "function" && !requirePermission("product_manage")) return;
     const category = categories.find(item => item.id === id);
-    if (!category || !confirm(`Xóa vĩnh viễn danh mục "${category.name}"?`)) return;
+    if (!category || !(await window.appConfirm(`Xóa vĩnh viễn danh mục "${category.name}"?`))) return;
     try {
         await window.salesApi.categories.remove(id);
         categories = categories.filter(item => item.id !== id);
         renderCategories();
-        alert("Đã xóa danh mục.");
+        window.appNotify("Đã xóa danh mục.");
     } catch (error) {
-        alert(error.message || "Không thể xóa danh mục.");
+        window.appNotify(error.message || "Không thể xóa danh mục.");
     }
 }
 

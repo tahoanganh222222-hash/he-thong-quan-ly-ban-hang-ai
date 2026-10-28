@@ -113,7 +113,7 @@
 >
 <link
     rel="stylesheet"
-    href="css/dashboard.css?v=20261028-1"
+    href="css/dashboard.css?v=20261028-2"
 >
 <link
     rel="stylesheet"
@@ -127,6 +127,9 @@
     rel="stylesheet"
     href="css/account-neutral.css?v=20261028-1"
 >
+<link rel="stylesheet" href="css/detail-neutral.css?v=20261028-3">
+<link rel="stylesheet" href="css/app-feedback.css?v=20261028-1">
+<link rel="stylesheet" href="css/suppliers.css?v=20261028-2">
 <link
     rel="stylesheet"
     href="css/notifications.css?v=20260930-1"
@@ -2803,6 +2806,10 @@
             <span class="purchase-view-icon">◷</span>
             <span><strong>Lịch sử nhập hàng</strong><small>Tra cứu các phiếu nhập đã tạo</small></span>
         </button>
+        <button type="button" class="purchase-view-tab" data-purchase-view="suppliers" role="tab" aria-selected="false">
+            <span class="purchase-view-icon" aria-hidden="true">＋</span>
+            <span><strong>Nhà cung cấp</strong><small>Thêm và chọn đối tác nhập hàng</small></span>
+        </button>
     </div>
 
     <div class="purchase-workspace active" id="purchase-create-panel" role="tabpanel">
@@ -2813,14 +2820,10 @@
                 <h3>Thông tin phiếu nhập</h3>
                 <div class="purchase-form-grid">
                     <div class="purchase-form-group">
-                        <label>
+                        <label for="purchase-supplier">
                             Nhà cung cấp
                         </label>
-                        <input
-                            type="text"
-                            id="purchase-supplier"
-                            placeholder="Nhập tên nhà cung cấp"
-                        >
+                        <select id="purchase-supplier" disabled><option value="">Đang tải nhà cung cấp...</option></select>
                     </div>
                     <div class="purchase-form-group">
                         <label>
@@ -3052,6 +3055,32 @@
             <div class="purchase-history-pagination" id="purchase-history-pagination"></div>
         </div>
     </div>
+    </div>
+    <div class="purchase-workspace" id="purchase-suppliers-panel" role="tabpanel">
+        <div class="supplier-layout">
+            <section class="supplier-card">
+                <h3 id="supplier-form-title">Thêm nhà cung cấp</h3>
+                <p>Lưu thông tin để chọn nhanh khi lập phiếu nhập.</p>
+                <form id="supplier-form">
+                    <label for="supplier-name">Tên nhà cung cấp <span aria-hidden="true">*</span></label>
+                    <input id="supplier-name" name="name" required maxlength="150" placeholder="Ví dụ: Công ty Minh Long">
+                    <label for="supplier-phone">Số điện thoại</label>
+                    <input id="supplier-phone" name="phone" type="tel" maxlength="20" autocomplete="tel">
+                    <label for="supplier-email">Email</label>
+                    <input id="supplier-email" name="email" type="email" maxlength="100" autocomplete="email">
+                    <label for="supplier-address">Địa chỉ</label>
+                    <input id="supplier-address" name="address" maxlength="255" autocomplete="street-address">
+                    <button type="submit" id="supplier-save">Lưu nhà cung cấp</button>
+                    <button type="button" id="supplier-cancel-edit" hidden>Hủy chỉnh sửa</button>
+                </form>
+            </section>
+            <section class="supplier-card">
+                <div class="supplier-list-heading"><h3>Danh sách nhà cung cấp</h3><span id="supplier-count" aria-live="polite"></span><button type="button" id="supplier-reload">Tải lại</button></div>
+                <label for="supplier-search" class="supplier-search-label">Tìm theo tên, số điện thoại hoặc email</label>
+                <input id="supplier-search" type="search" placeholder="Tìm nhà cung cấp...">
+                <div class="supplier-table-wrap"><table class="supplier-table"><thead><tr><th>Nhà cung cấp</th><th>Liên hệ</th><th>Địa chỉ</th><th>Thao tác</th></tr></thead><tbody id="supplier-table-body"></tbody></table></div>
+            </section>
+        </div>
     </div>
 </section>
 
@@ -5180,27 +5209,30 @@
     </div>
 
     <!-- JS -->
-    <script src="./js/api.js?v=20260922-1"></script>
-<script src="./js/data-api.js?v=20260921-1"></script>
-    <script src="js/dashboard.js?v=20260928-1"></script>
-    <script src="./js/products.js?v=20260924-3"></script>
-    <script src="./js/categories.js?v=20261028-1"></script>
-    <script src="./js/customers.js?v=20260930-2"></script>
-    <script src="./js/invoices.js?v=20260929-1"></script>
-<script src="./js/purchases.js?v=20260925-4"></script>
-    <script src="./js/inventory.js?v=20260925-5"></script>
+    <script src="./js/app-feedback.js?v=20261028-1"></script>
+    <script src="./js/api.js?v=20261028-2"></script>
+<script src="./js/data-api.js?v=20261028-3"></script>
+    <script src="js/dashboard.js?v=20261028-2"></script>
+    <script src="./js/products.js?v=20261028-4"></script>
+    <script src="./js/categories.js?v=20261028-4"></script>
+    <script src="./js/customers.js?v=20261028-4"></script>
+    <script src="./js/invoices.js?v=20261028-5"></script>
+<script src="./js/suppliers.js?v=20261028-2"></script>
+<script src="./js/purchases.js?v=20261028-6"></script>
+    <script src="./js/inventory.js?v=20261028-4"></script>
     <script src="./js/history.js?v=20260925-4"></script>
-    <script src="./js/statistics.js?v=20260928-4"></script>
-    <script src="./js/reports.js?v=20260930-1"></script>
-    <script src="./js/users.js?v=20260925-2"></script>
-    <script src="./js/permissions.js?v=20260928-1"></script>
+    <script src="./js/statistics.js?v=20261028-4"></script>
+    <script src="./js/reports.js?v=20261028-4"></script>
+    <script src="./js/users.js?v=20261028-4"></script>
+    <script src="./js/permissions.js?v=20261028-6"></script>
     <script src="./js/auth.js?v=20260924-3"></script>
     <script src="./js/account.js?v=20261003-1"></script>
     <script src="./js/sidebar.js?v=20260924-1"></script>
     <script src="./js/notifications.js?v=20260930-1"></script>
-    <script src="js/ai-product.js?v=20260922-1"></script>
+    <script src="js/ai-product.js?v=20261028-4"></script>
     <script src="./js/ai-assistant.js?v=20260922-1"></script>
     <script src="./js/ai-logs.js?v=20260925-3"></script>
+    <script src="./js/session-sync.js?v=20261028-1"></script>
 
     <script>
 
@@ -5411,7 +5443,7 @@
                 .addEventListener(
                     "click",
                     function () {
-                        alert(
+                        window.appNotify(
                             "Chức năng đăng xuất sẽ sử dụng hệ thống xác thực ở Part 3."
                         );
                     }

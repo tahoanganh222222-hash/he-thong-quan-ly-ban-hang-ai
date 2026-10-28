@@ -147,7 +147,8 @@ def login(
     access_token = create_access_token(
         user_id=user.id,
         username=user.username,
-        role=user.role
+        role=user.role,
+        session_version=user.session_version,
     )
 
     _record_auth_activity(db, user, "Đăng nhập", "login")
@@ -183,6 +184,22 @@ def get_me(
     """
 
     return _user_response(current_user)
+
+
+@router.get("/session")
+def get_session(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    permissions = {key: False for key in PERMISSION_KEYS}
+    for row in db.query(RolePermission).filter(RolePermission.role == current_user.role).all():
+        permissions[row.permission_key] = bool(row.allowed)
+    if current_user.role == "admin":
+        permissions = {key: True for key in PERMISSION_KEYS}
+    return {
+        "user": _user_response(current_user).model_dump(exclude={"avatar_data"}),
+        "permissions": permissions,
+    }
 
 
 @router.put(
@@ -392,11 +409,17 @@ def update_permissions(
         .filter(RolePermission.role == backend_role)
         .all()
     }
+    login_was_allowed = bool(rows.get("login") and rows["login"].allowed)
     for permission_key in PERMISSION_KEYS:
         row = rows.get(permission_key)
         if row is None:
             row = RolePermission(role=backend_role, permission_key=permission_key)
             db.add(row)
         row.allowed = permissions.get(permission_key, False)
+    if login_was_allowed and not permissions.get("login", False):
+        # Keep old tokens revoked even if login is enabled again later.
+        db.query(User).filter(User.role == backend_role).update(
+            {User.session_version: User.session_version + 1}, synchronize_session=False,
+        )
     db.commit()
     return {permission_key: permissions.get(permission_key, False) for permission_key in PERMISSION_KEYS}

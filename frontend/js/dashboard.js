@@ -22,6 +22,8 @@
        ========================================================= */
 
     let topProductsData = [];
+    let topProductsIncomplete = false;
+    let topProductsUnavailable = false;
 
 
     /* =========================================================
@@ -122,6 +124,10 @@
                 invoices.map(invoice => window.salesApi.invoices.get(invoice.id))
             );
             const soldByProduct = new Map();
+            topProductsUnavailable = false;
+            topProductsIncomplete = results[0].status === "rejected" ||
+                results[2].status === "rejected" ||
+                detailResults.some(result => result.status === "rejected");
             detailResults.forEach(result => {
                 if (result.status !== "fulfilled") {
                     return;
@@ -135,13 +141,16 @@
                 .map(product => ({
                     code: product.code,
                     name: product.name,
+                    unit: product.unit || "",
                     imageData: product.imageData,
                     quantity: soldByProduct.get(product.id) || 0
                 }))
                 .filter(product => product.quantity > 0)
-                .sort((a, b) => b.quantity - a.quantity)
-                .slice(0, 5);
+                .sort((a, b) => b.quantity - a.quantity ||
+                    String(a.code).localeCompare(String(b.code), "vi"));
         } catch (error) {
+            topProductsData = [];
+            topProductsUnavailable = true;
             console.error("Không thể tải dữ liệu dashboard:", error);
             throw error;
         }
@@ -631,7 +640,7 @@ function updateRevenue(period) {
             1
         );
 
-        container.innerHTML = topProductsData.map((product, index) => {
+        container.innerHTML = topProductsData.slice(0, 5).map((product, index) => {
             const quantity = Number(product.quantity) || 0;
             const progress = Math.max(3, (quantity / highestQuantity) * 100);
 
@@ -668,6 +677,88 @@ function updateRevenue(period) {
                 </article>
             `;
         }).join("");
+    }
+
+
+    function ensureTopProductsDialog() {
+        let dialog = getElement("dashboard-top-products-dialog");
+        if (dialog) return dialog;
+
+        dialog = document.createElement("dialog");
+        dialog.id = "dashboard-top-products-dialog";
+        dialog.className = "dashboard-ranking-dialog";
+        dialog.setAttribute("aria-labelledby", "dashboard-ranking-title");
+        dialog.setAttribute("aria-describedby", "dashboard-ranking-description");
+        dialog.innerHTML = `
+            <header class="dashboard-ranking-header">
+                <div>
+                    <h2 id="dashboard-ranking-title">Sản phẩm bán chạy</h2>
+                    <p id="dashboard-ranking-description">Xếp hạng theo tổng số lượng đã bán · Toàn bộ thời gian</p>
+                </div>
+                <button type="button" class="dashboard-ranking-close" aria-label="Đóng danh sách sản phẩm bán chạy">×</button>
+            </header>
+            <div class="dashboard-ranking-toolbar">
+                <label for="dashboard-ranking-search">Tìm sản phẩm</label>
+                <input type="search" id="dashboard-ranking-search" placeholder="Nhập tên hoặc mã sản phẩm" autocomplete="off">
+                <p id="dashboard-ranking-count" role="status"></p>
+            </div>
+            <p id="dashboard-ranking-notice" class="dashboard-ranking-notice" role="status" hidden></p>
+            <div class="dashboard-ranking-scroll" tabindex="0" role="region" aria-label="Bảng xếp hạng sản phẩm bán chạy">
+                <table class="dashboard-ranking-table">
+                    <thead><tr><th scope="col">Hạng</th><th scope="col">Sản phẩm</th><th scope="col">Đơn vị</th><th scope="col">Đã bán</th></tr></thead>
+                    <tbody id="dashboard-ranking-body"></tbody>
+                </table>
+            </div>`;
+        dialog.querySelector(".dashboard-ranking-close").addEventListener("click", () => dialog.close());
+        dialog.querySelector("input").addEventListener("input", renderTopProductsRanking);
+        dialog.addEventListener("keydown", event => {
+            if (event.key === "Escape") event.stopPropagation();
+        });
+        document.body.appendChild(dialog);
+        return dialog;
+    }
+
+    function renderTopProductsRanking() {
+        const dialog = getElement("dashboard-top-products-dialog");
+        if (!dialog?.open) return;
+        const normalize = value => String(value || "").normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").toLocaleLowerCase("vi");
+        const query = normalize(getElement("dashboard-ranking-search").value.trim());
+        const ranked = topProductsData.map((product, index) => ({ ...product, rank: index + 1 }))
+            .filter(product => normalize(`${product.name} ${product.code}`).includes(query));
+        getElement("dashboard-ranking-count").textContent = query
+            ? `${ranked.length} / ${topProductsData.length} sản phẩm đã có lượt bán`
+            : `${topProductsData.length} sản phẩm đã có lượt bán`;
+        const notice = getElement("dashboard-ranking-notice");
+        notice.hidden = !topProductsIncomplete && !topProductsUnavailable;
+        notice.textContent = topProductsUnavailable
+            ? "Không thể tải dữ liệu. Đóng và mở lại danh sách để thử lại."
+            : "Một phần dữ liệu chưa tải được; số lượng và thứ hạng có thể chưa đầy đủ. Đóng và mở lại để thử lại.";
+        getElement("dashboard-ranking-body").innerHTML = ranked.length
+            ? ranked.map(product => `<tr>
+                <td class="dashboard-ranking-rank">${product.rank}</td>
+                <td><div class="dashboard-ranking-product">
+                    <img src="${escapeDashboardHtml(getDashboardProductImage(product))}" alt="" loading="lazy">
+                    <div><strong>${escapeDashboardHtml(product.name)}</strong><span>${escapeDashboardHtml(product.code)}</span></div>
+                </div></td>
+                <td>${escapeDashboardHtml(product.unit || "—")}</td>
+                <td class="dashboard-ranking-quantity">${Number(product.quantity).toLocaleString("vi-VN")}</td>
+            </tr>`).join("")
+            : `<tr><td colspan="4" class="dashboard-ranking-empty">${topProductsUnavailable
+                ? "Dữ liệu chưa sẵn sàng" : query ? "Không tìm thấy sản phẩm phù hợp" : "Chưa có sản phẩm nào được bán"}</td></tr>`;
+    }
+
+    async function openTopProductsRanking() {
+        if (typeof window.requirePermission === "function" && !window.requirePermission("top_products")) return;
+        const dialog = ensureTopProductsDialog();
+        getElement("dashboard-ranking-search").value = "";
+        getElement("dashboard-ranking-count").textContent = "Đang tải bảng xếp hạng…";
+        getElement("dashboard-ranking-notice").hidden = true;
+        getElement("dashboard-ranking-body").innerHTML = '<tr><td colspan="4" class="dashboard-ranking-empty">Đang tải dữ liệu…</td></tr>';
+        if (!dialog.open) dialog.showModal();
+        getElement("dashboard-ranking-search").focus();
+        await initDashboard();
+        renderTopProductsRanking();
     }
 
 
@@ -1016,9 +1107,7 @@ function updateRevenue(period) {
         if (viewAllProducts) {
             viewAllProducts.addEventListener(
                 "click",
-                function () {
-                    openDashboardTarget("products");
-                }
+                openTopProductsRanking
             );
         }
 
@@ -1123,6 +1212,7 @@ function updateRevenue(period) {
         }
 
         loadTopProducts();
+        renderTopProductsRanking();
     }
 
 

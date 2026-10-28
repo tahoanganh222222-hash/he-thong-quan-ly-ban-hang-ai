@@ -1,0 +1,147 @@
+/* The read-only details share the same quiet surfaces as category details. */
+:is(#product-detail-modal, #customer-history-modal, #invoice-search-detail-modal, #statistics-detail-modal, #ai-log-detail-modal) {
+    --detail-ink: #20272f;
+    --detail-muted: #68727d;
+    --detail-line: #e1e5e9;
+    --detail-soft-line: #e9ecef;
+    --detail-surface: #fff;
+    --detail-soft: #f5f6f7;
+    --detail-blue: #44515c;
+    --detail-indigo: #56616c;
+    --detail-success: #287350;
+    --detail-success-bg: #eef6f0;
+    --detail-warning: #94631c;
+    --detail-warning-bg: #faf4e8;
+    --detail-danger: #a43c3c;
+    --detail-danger-bg: #fbefef;
+    background: rgb(16 24 35 / 46%);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+}
+html[data-app-theme="dark"] :is(#product-detail-modal, #customer-history-modal, #invoice-search-detail-modal, #statistics-detail-modal, #ai-log-detail-modal) {
+    --detail-ink: #e8ecf0;
+    --detail-muted: #aeb8c2;
+    --detail-line: #39434e;
+    --detail-soft-line: #303a46;
+    --detail-surface: #18212c;
+    --detail-soft: #222d39;
+    --detail-blue: #d3dce5;
+    --detail-indigo: #c2cbd5;
+    --detail-success: #9ac9af;
+    --detail-success-bg: #23392e;
+    --detail-warning: #e1c18b;
+    --detail-warning-bg: #403624;
+    --detail-danger: #e3b1b1;
+    --detail-danger-bg: #482c2c;
+}
+
+:is(#product-detail-modal, #customer-history-modal, #invoice-search-detail-modal, #statistics-detail-modal, #ai-log-detail-modal) :is(.product-detail-dialog, .customer-history-modal-content, .invoice-search-detail-dialog, .statistics-detail-dialog, .ai-log-detail-dialog) {
+    border: 1px solid var(--detail-line);
+    border-radius: 14px !important;
+    color: var(--detail-ink);
+    background: var(--detail-surface);
+    box-shadow: 0 20px 64px rgb(0 0 0 / 16%);
+}
+:is(#product-detail-modal, #customer-history-modal, #invoice-search-detail-modal, #statistics-detail-modal, #ai-log-detail-modal) :is(.product-detail-header, .customer-history-modal-header, .invoice-search-detail-header, .statistics-detail-header, .ai-log-detail-header) {
+    min-height: 68px;
+    padding: 16px 28px !important;
+    border-bottom: 1px solid var(--detail-line);
+    color: var(--detail-ink) !important;
+    background: var(--detail-surface) !important;
+    backdrop-filter: none;
+}
+:is(#product-detail-modal, #customer-history-modal, #invoice-search-detail-modal, #statistics-detail-modal, #ai-log-detail-modal) :is(.product-detail-header, .customer-history-modal-header, .invoice-search-detail-header)::before,
+:is(#product-detail-modal, #customer-history-modal, #invoice-search-detail-modal, #statistics-detail-modal, #ai-log-detail-modal) :is(.product-detail-header, .customer-history-modal-header, .invoice-search-detail-header)::after { content: none; display: none; }
+:is(#product-detail-modal, #invoice-search-detail-modal, #statistics-detail-modal, #ai-log-detail-modal) :is(.product-detail-header h2, .invoice-search-detail-header h3, .statistics-detail-header h3, .ai-log-detail-header h3) {
+    margin: 0; color: var(--detail-ink) !important; font-size: 18px !important; font-weight: 650; line-height: 1.4; letter-spacing: 0;
+}
+:is(#product-detail-modal, #invoice-search-detail-modal, #statistics-detail-modal, #ai-log-detail-modal) :is(.product-detail-header-icon, .product-detail-kicker, .invoice-search-detail-header span, .statistics-detail-header span, .ai-log-detail-header span) { display: none; }
+:is(#product-detail-modal, #customer-history-modal, #invoice-search-detail-modal, #statistics-detail-modal, #ai-log-detail-modal) :is(.product-detail-close, .customer-modal-close, .invoice-search-detail-close, .statistics-detail-header button, .ai-log-detail-header button) {
+    width: 34px; height: 34px; flex-basis: 34px; border: 0 !important; border-radius: 6px;
+    color: var(--detail-muted) !important; background: transparent !important; box-shadow: none; cursor: pointer;
+}
+:is(#product-detail-modal, #customer-history-modal, #invoice-search-detail-modal, #statistics-detail-modal, #ai-log-detail-modal) :is(.product-detail-close, .customer-modal-close, .invoice-search-detail-close, .statistics-detail-header button, .ai-log-detail-header button):hover { color: var(--detail-ink) !important; background: var(--detail-soft) !important; transform: none; }
+:is(#product-detail-modal, #customer-history-modal, #invoice-search-detail-modal, #statistics-detail-modal, #ai-log-detail-modal) :is(button, summary):focus-visible { outline: 2px solid #718398; outline-offset: 3px; }
+:is(#product-detail-modal, #customer-history-modal, #invoice-search-detail-modal, #statistics-detail-modal, #ai-log-detail-modal) :is(.product-detail-content, .customer-history-content, .invoice-search-detail-body, .statistics-detail-body) { color: var(--detail-ink); background: var(--detail-surface); }
+
+/* Product: image and identity first, followed by compact operational information. */
+#product-detail-modal .product-detail-dialog { width: min(860px, 100%); }
+#product-detail-modal .product-detail-content { padding: 28px; }
+#product-detail-modal .product-detail-showcase { grid-template-columns: 180px minmax(0, 1fr); align-items: center; gap: 32px; padding: 0 0 28px; border: 0; border-bottom: 1px solid var(--detail-line); border-radius: 0; background: transparent; box-shadow: none; }
+#product-detail-modal .product-detail-image-wrap { display: flex; align-items: center; justify-content: center; width: 180px; height: 180px; padding: 16px; border: 0; border-radius: 8px; background: #f6f7f8; }
+#product-detail-modal .product-detail-image-wrap img { min-width: 0; min-height: 0; max-width: 100%; max-height: 100%; object-fit: contain; mix-blend-mode: multiply; }
+#product-detail-modal .product-detail-identity h3 { color: var(--detail-ink); font-size: clamp(24px, 2.6vw, 30px); font-weight: 650; overflow-wrap: anywhere; }
+#product-detail-modal .product-detail-identity > p { margin: 8px 0 14px; color: var(--detail-muted); }
+#product-detail-modal .product-detail-badges { align-items: center; margin-bottom: 12px; }
+#product-detail-modal .product-detail-code { padding: 0; border: 0; color: var(--detail-muted); background: transparent; font-weight: 600; }
+#product-detail-modal .product-detail-business { border: 0; border-radius: 4px; font-weight: 600; }
+#product-detail-modal .product-detail-business.active { color: var(--detail-success); background: var(--detail-success-bg); }
+#product-detail-modal .product-detail-business.inactive { color: var(--detail-warning); background: var(--detail-warning-bg); }
+#product-detail-modal .product-detail-selling-price { padding-top: 12px; border-color: var(--detail-line); }
+#product-detail-modal .product-detail-selling-price small, #product-detail-modal .product-detail-grid span, #product-detail-modal .product-detail-section-heading span { color: var(--detail-muted); }
+#product-detail-modal .product-detail-selling-price strong { color: var(--detail-ink); font-size: 23px; }
+#product-detail-modal .product-detail-section-heading h4 { color: var(--detail-ink); }
+#product-detail-modal .product-detail-grid { gap: 0; border-color: var(--detail-line); border-radius: 8px; background: transparent; }
+#product-detail-modal .product-detail-grid article { min-height: 0; border: 0; border-right: 1px solid var(--detail-line); border-radius: 0; background: var(--detail-surface); box-shadow: none; }
+#product-detail-modal .product-detail-grid article:last-child { border-right: 0; }
+#product-detail-modal .product-detail-grid strong { color: var(--detail-ink); }
+#product-detail-modal .product-detail-stock { border-color: var(--detail-line); border-radius: 8px; }
+
+/* Customer history retains the real invoice summaries and expandable tables. */
+#customer-history-modal .customer-history-modal-header { grid-template-columns: minmax(0, 1fr) minmax(210px, .6fr); gap: 24px; min-height: 112px; }
+#customer-history-modal .customer-history-visual { display: none; }
+#customer-history-modal .customer-history-eyebrow { min-height: 0; padding: 0; color: var(--detail-muted); background: transparent; font-size: 10px; letter-spacing: .08em; }
+#customer-history-modal .customer-history-eyebrow::before { content: none; }
+#customer-history-modal .customer-history-modal-header h3 { color: var(--detail-ink); font-size: 24px; }
+#customer-history-modal .customer-history-code { color: var(--detail-muted); background: var(--detail-soft); border-radius: 5px; }
+#customer-history-modal .customer-history-contact, #customer-history-modal .customer-history-contact span::before { color: var(--detail-muted); }
+#customer-history-modal .customer-history-latest { margin-right: 36px; border-color: var(--detail-line); border-radius: 8px; background: var(--detail-soft); box-shadow: none; backdrop-filter: none; }
+#customer-history-modal .customer-history-latest-icon, #customer-history-modal .customer-history-summary-icon, #customer-history-modal .customer-history-invoice-icon { color: var(--detail-muted); background: var(--detail-soft); border-radius: 8px; }
+#customer-history-modal :is(.customer-history-latest strong, .customer-history-summary strong, .customer-history-invoice-title strong, .customer-history-product strong, .customer-history-invoice-footer dd) { color: var(--detail-ink); }
+#customer-history-modal :is(.customer-history-latest small, .customer-history-latest span, .customer-history-summary span, .customer-history-summary small, .customer-history-product small) { color: var(--detail-muted); }
+#customer-history-modal .customer-history-summary article, #customer-history-modal .customer-history-invoice { border-color: var(--detail-line); border-radius: 8px; background: var(--detail-surface); box-shadow: none; }
+#customer-history-modal .customer-history-invoice[open] { border-color: var(--detail-line); box-shadow: none; }
+#customer-history-modal .customer-history-invoice summary::after, #customer-history-modal .customer-history-payment, #customer-history-modal .customer-history-invoice-footer .is-total { color: var(--detail-ink); background: var(--detail-soft); }
+#customer-history-modal .customer-history-invoice-title em { color: var(--detail-success); background: var(--detail-success-bg); }
+#customer-history-modal .customer-history-invoice-meta strong, #customer-history-modal .customer-history-items td:last-child, #customer-history-modal .customer-history-invoice-footer .is-total dd { color: var(--detail-ink); }
+#customer-history-modal :is(.customer-history-summary span, .customer-history-latest small, .customer-history-invoice-main small, .customer-history-invoice-meta small, .customer-history-product small, .customer-history-invoice-footer dl div) { font-size: 11px; }
+#customer-history-modal :is(.customer-history-summary strong, .customer-history-invoice-title strong, .customer-history-invoice-meta strong) { font-size: 15px; }
+#customer-history-modal .customer-history-items th { font-size: 10px; }
+#customer-history-modal .customer-history-items td, #customer-history-modal .customer-history-product strong { font-size: 12px; }
+
+/* Invoices, revenue and AI logs use the same flat headings and data surfaces. */
+#invoice-search-detail-modal .invoice-search-detail-meta article { border-color: var(--detail-line) !important; border-radius: 8px !important; background: var(--detail-surface) !important; box-shadow: none; }
+#invoice-search-detail-modal .invoice-search-detail-products { border-color: var(--detail-line) !important; border-radius: 8px !important; }
+#invoice-search-detail-modal .invoice-search-detail-section-title { border-color: var(--detail-line) !important; background: var(--detail-soft) !important; }
+#invoice-search-detail-modal .invoice-search-detail-totals .total { background: var(--detail-soft) !important; }
+#invoice-search-detail-modal .invoice-search-detail-section-title strong { color: var(--detail-muted); background: var(--detail-surface); }
+#invoice-search-detail-modal .invoice-search-detail-status strong { color: var(--detail-muted); background: var(--detail-soft); }
+#invoice-search-detail-modal .invoice-search-detail-status [data-status="completed"] { color: var(--detail-success); background: var(--detail-success-bg); }
+#invoice-search-detail-modal .invoice-search-detail-status [data-status="pending"] { color: var(--detail-warning); background: var(--detail-warning-bg); }
+#invoice-search-detail-modal .invoice-search-detail-status [data-status="cancelled"] { color: var(--detail-danger); background: var(--detail-danger-bg); }
+#invoice-search-detail-modal :is(.invoice-search-detail-status span, .invoice-search-detail-totals span) { color: var(--detail-muted); }
+#statistics-detail-modal .statistics-detail-summary, #ai-log-detail-modal .ai-log-detail-meta { border-color: var(--detail-line); border-radius: 8px; background: var(--detail-soft); }
+#ai-log-detail-modal .ai-log-detail-section { border-color: var(--detail-line); border-radius: 8px; background: var(--detail-surface); }
+#ai-log-detail-modal .ai-log-detail-meta span { border-color: var(--detail-line); color: var(--detail-muted); background: var(--detail-surface); }
+:is(#invoice-search-detail-modal, #statistics-detail-modal, #ai-log-detail-modal) :is(h4, strong, td, p) { color: var(--detail-ink); }
+:is(#invoice-search-detail-modal, #statistics-detail-modal, #ai-log-detail-modal) :is(.invoice-search-detail-meta span, .invoice-search-detail-section-title span, .statistics-detail-summary span, .ai-log-detail-section p) { color: var(--detail-muted); }
+:is(#customer-history-modal, #invoice-search-detail-modal, #statistics-detail-modal) :is(th, td, table) { border-color: var(--detail-line) !important; }
+:is(#customer-history-modal, #invoice-search-detail-modal, #statistics-detail-modal) th { color: var(--detail-muted) !important; background: var(--detail-soft) !important; }
+:is(#customer-history-modal, #invoice-search-detail-modal, #statistics-detail-modal) td { color: var(--detail-ink); background: var(--detail-surface); }
+
+@media (max-width: 640px) {
+    :is(#product-detail-modal, #customer-history-modal, #invoice-search-detail-modal, #statistics-detail-modal, #ai-log-detail-modal) :is(.product-detail-header, .customer-history-modal-header, .invoice-search-detail-header, .statistics-detail-header, .ai-log-detail-header) { padding: 14px 18px !important; }
+    #product-detail-modal .product-detail-content { padding: 18px !important; }
+    #product-detail-modal .product-detail-showcase { grid-template-columns: 100px minmax(0, 1fr); gap: 20px; }
+    #product-detail-modal .product-detail-image-wrap { width: 100px; height: 120px; padding: 10px; }
+    #product-detail-modal .product-detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    #product-detail-modal .product-detail-grid article:nth-child(2) { border-right: 0; }
+    #customer-history-modal .customer-history-modal-header { display: block; }
+}
+@media (max-width: 420px) {
+    #product-detail-modal .product-detail-showcase { grid-template-columns: 1fr; gap: 18px; }
+    #product-detail-modal .product-detail-image-wrap { width: 100%; height: 130px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    :is(#product-detail-modal, #customer-history-modal, #invoice-search-detail-modal, #statistics-detail-modal, #ai-log-detail-modal) :is(.product-detail-dialog, .customer-history-modal-content, .invoice-search-detail-dialog, .statistics-detail-dialog, .ai-log-detail-dialog) { animation: none; }
+}

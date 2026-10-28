@@ -760,6 +760,62 @@
     }
 }
 
+/* Full best-selling product ranking */
+.dashboard-ranking-dialog {
+    --ranking-bg: #fff;
+    --ranking-ink: #252b33;
+    --ranking-muted: #68717d;
+    --ranking-border: #e1e5e9;
+    --ranking-subtle: #f6f7f9;
+    width: min(850px, calc(100vw - 32px));
+    max-height: calc(100dvh - 48px);
+    margin: auto; padding: 0; overflow: hidden;
+    border: 1px solid var(--ranking-border); border-radius: 12px;
+    background: var(--ranking-bg); color: var(--ranking-ink);
+    box-shadow: 0 24px 72px rgb(0 0 0 / 22%);
+    font-size: 14px;
+}
+.dashboard-ranking-dialog[open] { display: flex; flex-direction: column; }
+.dashboard-ranking-dialog::backdrop { background: rgb(16 24 35 / 50%); }
+.dashboard-ranking-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; padding: 24px; border-bottom: 1px solid var(--ranking-border); }
+.dashboard-ranking-header h2 { margin: 0; color: var(--ranking-ink); font-size: 22px; line-height: 1.35; font-weight: 650; }
+.dashboard-ranking-header p { margin: 7px 0 0; color: var(--ranking-muted); font-size: 13px; line-height: 1.5; }
+.dashboard-ranking-close { flex: 0 0 auto; width: 34px; height: 34px; border: 1px solid var(--ranking-border); border-radius: 6px; color: var(--ranking-muted); background: var(--ranking-bg); font-size: 24px; line-height: 1; cursor: pointer; }
+.dashboard-ranking-toolbar { padding: 18px 24px 12px; }
+.dashboard-ranking-toolbar label { display: block; margin-bottom: 7px; color: var(--ranking-ink); font-size: 13px; font-weight: 600; }
+.dashboard-ranking-toolbar input { box-sizing: border-box; width: 100%; min-height: 42px; padding: 10px 12px; border: 1px solid var(--ranking-border); border-radius: 7px; color: var(--ranking-ink); background: var(--ranking-bg); font: inherit; }
+.dashboard-ranking-toolbar input::placeholder { color: var(--ranking-muted); }
+.dashboard-ranking-toolbar p { margin: 10px 0 0; color: var(--ranking-muted); font-size: 12px; }
+.dashboard-ranking-dialog :focus-visible { outline: 2px solid #7b8999; outline-offset: 2px; }
+.dashboard-ranking-notice { margin: 0 24px 12px; color: var(--ranking-muted); font-size: 13px; line-height: 1.5; }
+.dashboard-ranking-scroll { min-height: 0; overflow: auto; margin: 0 24px 24px; border: 1px solid var(--ranking-border); border-radius: 8px; }
+.dashboard-ranking-table { width: 100%; border-collapse: collapse; border: 0; background: var(--ranking-bg); text-align: left; }
+.dashboard-ranking-table th { position: sticky; top: 0; z-index: 1; background: var(--ranking-subtle); color: var(--ranking-muted); font-size: 12px; font-weight: 600; white-space: nowrap; }
+.dashboard-ranking-table th, .dashboard-ranking-table td { padding: 12px 16px; border: 0; border-bottom: 1px solid var(--ranking-border); }
+.dashboard-ranking-table td { color: var(--ranking-ink); font-size: 14px; background: var(--ranking-bg); }
+.dashboard-ranking-table tbody tr:last-child td { border-bottom: 0; }
+.dashboard-ranking-table th:last-child, .dashboard-ranking-quantity { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.dashboard-ranking-rank { width: 40px; color: var(--ranking-muted); font-variant-numeric: tabular-nums; }
+.dashboard-ranking-product { display: flex; align-items: center; gap: 12px; min-width: 160px; }
+.dashboard-ranking-product img { flex: 0 0 40px; width: 40px; height: 44px; object-fit: contain; border-radius: 4px; background: #fff; }
+.dashboard-ranking-product strong { display: block; color: var(--ranking-ink); font-weight: 600; line-height: 1.4; overflow-wrap: anywhere; }
+.dashboard-ranking-product span { display: block; margin-top: 3px; color: var(--ranking-muted); font-size: 12px; }
+.dashboard-ranking-quantity { font-weight: 650; }
+.dashboard-ranking-table .dashboard-ranking-empty { text-align: center; padding: 32px 16px; color: var(--ranking-muted); }
+html[data-app-theme="dark"] .dashboard-ranking-dialog {
+    --ranking-bg: #22262b; --ranking-ink: #e8ebef; --ranking-muted: #b2bbc6;
+    --ranking-border: #414852; --ranking-subtle: #2c3138;
+}
+@media (max-width: 600px) {
+    .dashboard-ranking-dialog { max-height: calc(100dvh - 24px); }
+    .dashboard-ranking-header { padding: 18px 16px; }
+    .dashboard-ranking-header h2 { font-size: 20px; }
+    .dashboard-ranking-toolbar { padding: 16px 16px 12px; }
+    .dashboard-ranking-scroll { margin: 0 16px 16px; }
+    .dashboard-ranking-notice { margin-left: 16px; margin-right: 16px; }
+    .dashboard-ranking-table th, .dashboard-ranking-table td { padding: 10px; }
+}
+
 /* Dark mode */
 
 html[data-app-theme="dark"] .dashboard-content {

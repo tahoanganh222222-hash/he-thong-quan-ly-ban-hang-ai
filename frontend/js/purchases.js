@@ -18,7 +18,7 @@ async function fetchPurchaseProducts() {
         purchaseProducts = [];
         console.error("Không thể tải sản phẩm nhập hàng:", error);
         if (error.status === 401) return;
-        alert("Không thể tải dữ liệu sản phẩm từ máy chủ.");
+        window.appNotify("Không thể tải dữ liệu sản phẩm từ máy chủ.");
     }
 }
 
@@ -347,17 +347,17 @@ function addPurchaseProduct() {
         Number(priceInput.value);
 
     if (!productId) {
-        alert("Vui lòng chọn sản phẩm.");
+        window.appNotify("Vui lòng chọn sản phẩm.");
         return;
     }
 
     if (!Number.isInteger(quantity) || quantity <= 0) {
-        alert("Số lượng phải là số nguyên lớn hơn 0.");
+        window.appNotify("Số lượng phải là số nguyên lớn hơn 0.");
         return;
     }
 
     if (unitPrice < 0 || Number.isNaN(unitPrice)) {
-        alert("Giá nhập không hợp lệ.");
+        window.appNotify("Giá nhập không hợp lệ.");
         return;
     }
 
@@ -367,7 +367,7 @@ function addPurchaseProduct() {
         );
 
     if (!product) {
-        alert("Không tìm thấy sản phẩm.");
+        window.appNotify("Không tìm thấy sản phẩm.");
         return;
     }
 
@@ -499,7 +499,7 @@ function updatePurchaseQuantity(productId, value) {
     const quantity = Number(value);
 
     if (!Number.isInteger(quantity) || quantity <= 0) {
-        alert("Số lượng phải lớn hơn 0.");
+        window.appNotify("Số lượng phải lớn hơn 0.");
         renderPurchaseItems();
         return;
     }
@@ -530,7 +530,7 @@ function updatePurchasePrice(productId, value) {
     const price = Number(value);
 
     if (Number.isNaN(price) || price < 0) {
-        alert("Giá nhập không hợp lệ.");
+        window.appNotify("Giá nhập không hợp lệ.");
         renderPurchaseItems();
         return;
     }
@@ -647,7 +647,7 @@ function setupPurchaseViews() {
         if (button.dataset.initialized === "true") return;
         button.dataset.initialized = "true";
         button.addEventListener("click", () => {
-            const view = button.dataset.purchaseView === "history" ? "history" : "create";
+            const view = button.dataset.purchaseView;
             buttons.forEach(item => {
                 const selected = item.dataset.purchaseView === view;
                 item.classList.toggle("active", selected);
@@ -655,6 +655,7 @@ function setupPurchaseViews() {
             });
             document.getElementById("purchase-create-panel")?.classList.toggle("active", view === "create");
             document.getElementById("purchase-history-panel")?.classList.toggle("active", view === "history");
+            document.getElementById("purchase-suppliers-panel")?.classList.toggle("active", view === "suppliers");
             if (view === "history") renderPurchaseHistory();
         });
     });
@@ -673,22 +674,20 @@ async function createPurchaseReceipt() {
             "purchase-supplier"
         );
 
-    const supplier =
-        supplierInput
-            ? supplierInput.value.trim()
-            : "";
+    const selectedSupplier = purchaseSuppliers.find(item => item.id === Number(supplierInput?.value) && item.isActive);
+    const supplier = selectedSupplier?.name || "";
 
     const purchaseDate =
         document.getElementById("purchase-date")?.value ||
         localPurchaseDate();
 
     if (!supplier) {
-        alert("Vui lòng nhập tên nhà cung cấp.");
+        window.appNotify("Vui lòng chọn nhà cung cấp. Bạn có thể thêm ở tab Nhà cung cấp.");
         return;
     }
 
     if (purchaseItems.length === 0) {
-        alert("Phiếu nhập chưa có sản phẩm.");
+        window.appNotify("Phiếu nhập chưa có sản phẩm.");
         return;
     }
 
@@ -699,7 +698,7 @@ async function createPurchaseReceipt() {
         calculatePurchaseTotal();
 
     const confirmed =
-        confirm(
+        await window.appConfirm(
             `Xác nhận tạo phiếu nhập ${receiptCode}?\n\n` +
             `Nhà cung cấp: ${supplier}\n` +
             `Số sản phẩm: ${purchaseItems.length}\n` +
@@ -714,6 +713,7 @@ async function createPurchaseReceipt() {
             await window.salesApi.purchases.create({
                 receiptCode,
                 supplierName: supplier,
+                supplierId: selectedSupplier.id,
                 purchaseDate,
                 items: purchaseItems.map(item => ({
                     productId: item.productId,
@@ -726,7 +726,7 @@ async function createPurchaseReceipt() {
                 fetchPurchaseHistory()
             ]);
         } catch (error) {
-            alert(error.message || "Không thể tạo phiếu nhập.");
+            window.appNotify(error.message || "Không thể tạo phiếu nhập.");
             return;
         }
 
@@ -738,7 +738,7 @@ async function createPurchaseReceipt() {
             detail: `Tạo phiếu nhập ${receiptCode} từ nhà cung cấp ${supplier}, ${purchaseItems.length} sản phẩm, tổng tiền ${formatPurchaseMoney(total)}`
         });
 
-        alert(
+        window.appNotify(
             `Tạo phiếu nhập ${receiptCode} thành công.`
         );
     renderPurchaseInventory();
@@ -896,7 +896,8 @@ async function initPurchaseManagement() {
 
     await Promise.all([
         fetchPurchaseProducts(),
-        fetchPurchaseHistory()
+        fetchPurchaseHistory(),
+        loadPurchaseSuppliers()
     ]);
 
     loadPurchaseProducts();

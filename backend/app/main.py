@@ -10,6 +10,7 @@ from app.routers.ai import router as ai_router
 from app.routers.sales import router as sales_router
 from app.services.migrations import migrate_unicode_columns
 from app.services.seed import seed_initial_data
+from app.services.suppliers import import_historical_suppliers
 
 
 @asynccontextmanager
@@ -18,6 +19,7 @@ async def lifespan(_app: FastAPI):
     migrate_unicode_columns(engine)
     with SessionLocal() as db:
         seed_initial_data(db)
+        import_historical_suppliers(db)
     yield
 
 
