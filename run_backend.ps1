@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param(
-    [switch]$CheckOnly
+    [switch]$CheckOnly,
+    [switch]$NoPause
 )
 
 Set-StrictMode -Version Latest
@@ -48,10 +49,25 @@ try {
 
     $listeners = [System.Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().GetActiveTcpListeners()
     if (@($listeners | Where-Object { $_.Port -eq 8000 }).Count -gt 0) {
-        throw 'Port 8000 is already in use. If the backend is already running, keep its existing window. Otherwise stop the program using this port and try again.'
+        $existingApi = $null
+        try {
+            $existingApi = Invoke-RestMethod -Uri 'http://127.0.0.1:8000/' -TimeoutSec 5
+        }
+        catch { }
+        if ($existingApi -and $existingApi.PSObject.Properties['message'] -and
+            $existingApi.message -eq 'Sales Management API is running') {
+            Write-Host 'Backend is already running. No second instance is needed.' -ForegroundColor Green
+            Write-Host 'Keep its existing window open. Website: http://127.0.0.1:5500'
+            if (-not $NoPause -and [Environment]::UserInteractive) {
+                [void](Read-Host 'Press Enter to close this extra window')
+            }
+            return
+        }
+        throw 'Port 8000 is occupied, but the Sales Management API is not responding. Check the existing backend window for an error or stop the other program using this port, then run this file again.'
     }
 
     Write-Host 'Keep this window open. Press Ctrl+C to stop the backend.' -ForegroundColor Cyan
+    Write-Host 'Wait for Application startup complete before signing in.' -ForegroundColor Cyan
     Push-Location -LiteralPath $backendRoot
     try {
         & $pythonExecutable -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
@@ -66,7 +82,7 @@ try {
 }
 catch {
     Write-Host "ERROR: $($_.Exception.Message)" -ForegroundColor Red
-    if (-not $CheckOnly -and [Environment]::UserInteractive) {
+    if (-not $CheckOnly -and -not $NoPause -and [Environment]::UserInteractive) {
         [void](Read-Host 'Press Enter to close')
     }
     exit 1

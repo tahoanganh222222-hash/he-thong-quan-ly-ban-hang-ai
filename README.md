@@ -193,6 +193,13 @@ kích hoạt và có thể bỏ qua lệnh kích hoạt. Dự án nên dùng `.v
 
 Cần giữ **hai Terminal chạy cùng lúc**.
 
+Để chạy nhanh, nhấp phải `run_backend.ps1` rồi chọn **Run with PowerShell**,
+chờ dòng `Application startup complete`, sau đó chạy `run_frontend.ps1` theo cách
+tương tự và mở <http://127.0.0.1:5500>. Giữ hai cửa sổ đang chạy mở trong lúc dùng.
+Nếu bấm chạy thêm lần nữa, script sẽ báo dịch vụ đã chạy và không tạo bản thứ hai;
+nhấn Enter để đóng cửa sổ mở thêm. Nếu cổng bị chương trình khác chiếm hoặc backend
+chưa phản hồi, cửa sổ giữ lại thông báo lỗi để kiểm tra.
+
 ### Terminal 1 — Backend FastAPI
 
 ```powershell
