@@ -59,7 +59,7 @@ async function loadInventoryMovements() {
             window.salesApi.invoices.list()
         ]);
         if (purchaseResult.status === "fulfilled") {
-            purchaseResult.value.forEach(row => inventoryMovements.push({
+            purchaseResult.value.filter(row => row.status !== "cancelled").forEach(row => inventoryMovements.push({
                 date: inventoryDateKey(row.purchaseDate || row.createdAt),
                 productId: Number(row.productId),
                 delta: Number(row.quantity || 0)
@@ -72,6 +72,7 @@ async function loadInventoryMovements() {
             detailResults.forEach(result => {
                 if (result.status !== "fulfilled") return;
                 const invoice = result.value;
+                if (invoice.status === "cancelled") return;
                 (invoice.items || []).forEach(item => inventoryMovements.push({
                     date: inventoryDateKey(invoice.date || invoice.createdAt),
                     productId: Number(item.productId),
@@ -518,7 +519,7 @@ function loadInventoryTable() {
                 <td>
                     <div class="inventory-row-actions">
                         <button type="button" class="inventory-row-action trend" data-inventory-action="trend" data-inventory-id="${item.id}" title="Xem biến động">⌁</button>
-                        <button type="button" class="inventory-row-action edit" data-inventory-action="edit" data-inventory-id="${item.id}" title="Điều chỉnh tồn kho">✎</button>
+                        <button type="button" class="inventory-row-action edit" data-inventory-action="edit" data-inventory-id="${item.id}" title="Cài đặt mức tồn tối thiểu">✎</button>
                         <button type="button" class="inventory-row-action open" data-inventory-action="category" data-inventory-id="${item.id}" title="Lọc cùng danh mục">•••</button>
                     </div>
                 </td>
@@ -696,16 +697,15 @@ function openInventoryAdjustment(id) {
     modal.classList.add("open");
     modal.setAttribute("aria-hidden", "false");
     document.body.style.overflow = "hidden";
-    setTimeout(() => quantity?.focus(), 0);
+    setTimeout(() => minimum?.focus(), 0);
 }
 
 async function saveInventoryAdjustment(event) {
     event.preventDefault();
     if (inventoryEditingId === null) return;
-    const quantity = Number(document.getElementById("inventory-adjust-quantity")?.value);
     const minimum = Number(document.getElementById("inventory-adjust-minimum")?.value);
-    if (!Number.isInteger(quantity) || quantity < 0 || !Number.isInteger(minimum) || minimum < 0) {
-        window.appNotify("Số lượng và mức tồn tối thiểu phải là số nguyên không âm.");
+    if (!Number.isInteger(minimum) || minimum < 0) {
+        window.appNotify("Mức tồn tối thiểu phải là số nguyên không âm.");
         return;
     }
     const submit = event.currentTarget.querySelector('[type="submit"]');
@@ -714,7 +714,7 @@ async function saveInventoryAdjustment(event) {
         submit.textContent = "Đang lưu...";
     }
     try {
-        await window.salesApi.inventory.update(inventoryEditingId, { quantity, minimum });
+        await window.salesApi.inventory.update(inventoryEditingId, { minimum });
         await loadInventoryFromAPI();
         loadInventoryCategories();
         loadInventorySummary(inventoryData);

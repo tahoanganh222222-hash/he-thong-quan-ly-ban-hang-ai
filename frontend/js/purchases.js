@@ -114,6 +114,7 @@ function getFilteredPurchaseHistory() {
 }
 
 function renderPurchaseHistorySummary(rows) {
+    rows = rows.filter(row => row.status !== "cancelled");
     const receipts = new Set(rows.map(row => row.receiptId));
     const products = new Set(rows.map(row => row.productId));
     const quantity = rows.reduce((sum, row) => sum + Number(row.quantity || 0), 0);
@@ -203,7 +204,7 @@ function renderPurchaseHistory() {
         <tr>
             <td class="purchase-history-index">${start + index + 1}</td>
             <td class="purchase-history-date">${displayPurchaseDate(row.purchaseDate || row.createdAt)}</td>
-            <td><strong class="purchase-history-code">${escapePurchaseHTML(row.receiptCode)}</strong></td>
+            <td><button type="button" class="document-receipt-link" data-receipt-id="${Number(row.receiptId)}">${escapePurchaseHTML(row.receiptCode)}</button>${row.status === "cancelled" ? '<small class="document-cancelled-label">Đã hủy</small>' : '<small>Bấm để xem / sửa / hủy</small>'}</td>
             <td>${escapePurchaseHTML(row.supplierName || "—")}</td>
             <td>
                 <div class="sales-product-cell purchase-history-product-cell">
@@ -228,6 +229,10 @@ function renderPurchaseHistory() {
             </td>
         </tr>
     `).join("");
+
+    body.querySelectorAll("[data-receipt-id]").forEach(button => {
+        button.addEventListener("click", () => window.openSalesDocument("purchases", Number(button.dataset.receiptId)));
+    });
 
     count.textContent = `Hiển thị ${start + 1}-${Math.min(start + PURCHASE_HISTORY_PAGE_SIZE, rows.length)} / ${rows.length} mặt hàng nhập`;
     renderPurchaseHistoryPagination(totalPages, rows.length);
@@ -951,3 +956,12 @@ document.addEventListener(
         }
     }
 );
+
+
+document.addEventListener("sales:document-changed", () => {
+    if (document.getElementById("purchase-page")?.classList.contains("active") &&
+        window.hasCurrentUserPermission?.("purchase_track")) {
+        fetchPurchaseProducts();
+        fetchPurchaseHistory();
+    }
+});

@@ -61,7 +61,7 @@
             const customers =
                 results[1].status === "fulfilled" ? results[1].value : [];
             const invoices =
-                results[2].status === "fulfilled" ? results[2].value : [];
+                results[2].status === "fulfilled" ? results[2].value.filter(invoice => invoice.status !== "cancelled") : [];
             const inventory =
                 results[3].status === "fulfilled" ? results[3].value : [];
 
@@ -486,6 +486,12 @@ function updateRevenue(period) {
 
         description.textContent =
             descriptions[period] || descriptions["7"];
+        if (period !== "all") {
+            const end = new Date();
+            const start = new Date(end);
+            start.setDate(start.getDate() - Number(period) + 1);
+            description.textContent += ` (${start.toLocaleDateString("vi-VN")} – ${end.toLocaleDateString("vi-VN")})`;
+        }
     }
 
 

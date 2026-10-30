@@ -1,8 +1,11 @@
 import sys
+import base64
+import json
 import unittest
 from datetime import date, timedelta
 from decimal import Decimal
 from pathlib import Path
+from unittest.mock import patch
 
 from sqlalchemy import create_engine, event, func, select
 from sqlalchemy.orm import Session
@@ -14,6 +17,7 @@ from app.models import (
     Product, PurchaseReceipt, PurchaseReceiptDetail, User,
 )
 from seed_demo import (
+    CATALOG_IMAGE_ROOT, DEMO_CUSTOMERS, DEMO_INVOICES, DEMO_PRODUCTS, DEMO_PURCHASES,
     LEGACY_CUSTOMER_CODES, LEGACY_INVOICE_CODES, LEGACY_PRODUCT_CODES,
     LEGACY_RECEIPT_CODES, refresh_seed_catalog, seed_demo_data,
 )
@@ -50,7 +54,7 @@ class DemoSeedTests(unittest.TestCase):
 
     def test_creates_balanced_transactions_and_stock_scenarios(self):
         added = self.seed()
-        self.assertEqual(added, dict(categories=2, products=6, customers=2, inventories=6, purchases=4, invoices=10, activity_logs=28))
+        self.assertEqual(added, dict(categories=3, products=18, customers=6, inventories=18, purchases=10, invoices=28, activity_logs=76))
         for product in self.db.query(Product).all():
             purchased = self.db.query(func.sum(PurchaseReceiptDetail.quantity)).filter_by(product_id=product.id).scalar() or 0
             sold = self.db.query(func.sum(InvoiceDetail.quantity)).filter_by(product_id=product.id).scalar() or 0
@@ -69,14 +73,61 @@ class DemoSeedTests(unittest.TestCase):
         stock = {product.code: inventory.quantity for product, inventory in self.db.query(Product, Inventory).join(Inventory, Inventory.product_id == Product.id)}
         self.assertEqual(stock['SP021'], 3)
         self.assertEqual(stock['SP022'], 0)
+        self.assertEqual(stock['SP035'], 3)
         self.assertFalse(self.db.query(Product).filter_by(code='SP023').one().is_active)
         for product in self.db.query(Product).all():
             self.assertTrue(product.image_data.startswith(("data:image/png;base64,", "data:image/jpeg;base64,")))
+            image_bytes = base64.b64decode(product.image_data.split(",", 1)[1], validate=True)
+            self.assertTrue(image_bytes.startswith((b"\xff\xd8\xff", b"\x89PNG\r\n\x1a\n")))
             self.assertNotIn("DEMO", product.name)
             self.assertNotIn("DEMO", product.code)
         today_invoices = [row for row in self.db.query(Invoice).all() if row.created_at.date() == self.reference_date]
-        self.assertEqual(len(today_invoices), 2)
-        self.assertEqual(sum((row.final_amount for row in today_invoices), Decimal("0")), Decimal("188000"))
+        self.assertEqual(len(today_invoices), 5)
+        self.assertEqual(sum((row.final_amount for row in today_invoices), Decimal("0")), Decimal("801000"))
+
+    def test_expands_original_seed_without_changing_existing_records(self):
+        with patch.multiple(
+            "seed_demo", DEMO_PRODUCTS=DEMO_PRODUCTS[:6],
+            DEMO_CUSTOMERS=DEMO_CUSTOMERS[:2], DEMO_PURCHASES=DEMO_PURCHASES[:4],
+            DEMO_INVOICES=DEMO_INVOICES[:10],
+        ):
+            self.seed()
+        before = self.snapshot()
+        added = self.seed(self.reference_date + timedelta(days=2))
+        self.assertEqual(added, dict(categories=1, products=12, customers=4, inventories=12, purchases=6, invoices=18, activity_logs=48))
+        after = self.snapshot()
+        for table_name, rows in before.items():
+            after_by_id = {row[0]: row for row in after[table_name]}
+            for row in rows:
+                self.assertEqual(after_by_id[row[0]], row)
+
+    def test_stock_never_becomes_negative_in_transaction_date_order(self):
+        self.seed()
+        for product in self.db.query(Product).all():
+            events = [
+                (receipt.created_at, detail.quantity)
+                for detail, receipt in self.db.query(PurchaseReceiptDetail, PurchaseReceipt)
+                .join(PurchaseReceipt, PurchaseReceiptDetail.receipt_id == PurchaseReceipt.id)
+                .filter(PurchaseReceiptDetail.product_id == product.id)
+            ]
+            events.extend(
+                (invoice.created_at, -detail.quantity)
+                for detail, invoice in self.db.query(InvoiceDetail, Invoice)
+                .join(Invoice, InvoiceDetail.invoice_id == Invoice.id)
+                .filter(InvoiceDetail.product_id == product.id)
+            )
+            quantity = 0
+            for _created_at, change in sorted(events):
+                quantity += change
+                self.assertGreaterEqual(quantity, 0, product.code)
+
+    def test_all_seed_images_have_local_files_and_source_attribution(self):
+        manifest = json.loads((CATALOG_IMAGE_ROOT / "sources.json").read_text(encoding="utf-8"))
+        sources = {item["product_code"]: item for item in manifest["images"]}
+        for code, *_ in DEMO_PRODUCTS:
+            self.assertIn(code, sources)
+            self.assertTrue((CATALOG_IMAGE_ROOT / sources[code]["file"]).is_file())
+            self.assertTrue(sources[code]["source_page"].startswith("https://"))
 
     def test_rerun_does_not_duplicate_or_reset_edited_demo_data(self):
         self.seed()
@@ -150,9 +201,11 @@ class DemoSeedTests(unittest.TestCase):
             self.db.query(Invoice).filter_by(invoice_code=new_code).one().invoice_code = old_code
         category_names = {"Sữa và đồ uống": "Đồ uống (DEMO)", "Hàng tiêu dùng": "Hàng tiêu dùng (DEMO)"}
         for category in self.db.query(Category).all():
-            category.name = category_names[category.name]
+            category.name = category_names.get(category.name, category.name)
         reverse_codes = {new: old for old, new in {**LEGACY_INVOICE_CODES, **LEGACY_RECEIPT_CODES}.items()}
         for log in self.db.query(ActivityLog).all():
+            if log.object_code not in reverse_codes:
+                continue
             log.object_code = reverse_codes[log.object_code]
             log.detail = "[Dữ liệu mẫu DEMO] " + log.detail
             for new_code, old_code in reverse_codes.items():

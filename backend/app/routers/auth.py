@@ -266,8 +266,9 @@ def change_my_password(
         current_user.password_hash = hash_password(data.newPassword)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    current_user.session_version += 1
     db.commit()
-    return {"message": "Đổi mật khẩu thành công"}
+    return {"message": "Đổi mật khẩu thành công. Vui lòng đăng nhập lại bằng mật khẩu mới."}
 
 
 @router.get("/users")
@@ -327,6 +328,7 @@ def update_user(
     for key, value in changes.items():
         if key == "password":
             user.password_hash = hash_password(value)
+            user.session_version += 1
             continue
         if isinstance(value, str):
             value = value.strip() or None

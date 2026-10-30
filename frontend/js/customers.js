@@ -717,7 +717,7 @@ function renderCustomerPurchaseHistory(data) {
                             <span class="customer-history-invoice-main">
                                 <span class="customer-history-invoice-title">
                                     <strong>${escapeCustomerHtml(invoice.invoiceCode || invoice.code)}</strong>
-                                    <em>✓ Đã thanh toán</em>
+                                    <em class="${invoice.status === "cancelled" ? "document-cancelled-label" : ""}">${invoice.status === "cancelled" ? "Đã hủy" : "✓ Đã thanh toán"}</em>
                                 </span>
                                 <small>▣&nbsp; ${formatCustomerHistoryDate(invoice.createdAt || invoice.date)} &nbsp;&nbsp; Thanh toán: <b>${escapeCustomerHtml(formatCustomerPaymentMethod(invoice.paymentMethod))}</b></small>
                             </span>
@@ -727,6 +727,7 @@ function renderCustomerPurchaseHistory(data) {
                             </span>
                         </summary>
                         <div class="customer-history-invoice-body">
+                            ${invoice.status === "cancelled" ? `<p class="document-cancel-info">Đã hủy, không tính vào tổng chi tiêu. Lý do: ${escapeCustomerHtml(invoice.cancellationReason)}</p>` : ""}
                             <div class="customer-history-items-wrap">
                                 <table class="customer-history-items">
                                     <thead>
@@ -1298,3 +1299,6 @@ async function initCustomerManagement() {
 
     renderCustomers();
 }
+
+
+document.addEventListener("sales:document-changed", () => customerDetailCache.clear());

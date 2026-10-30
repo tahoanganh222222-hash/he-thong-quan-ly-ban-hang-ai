@@ -42,13 +42,8 @@ try {
     Write-Host "Backend: $backendRoot"
     Write-Host 'API:     http://127.0.0.1:8000'
     Write-Host 'Swagger: http://127.0.0.1:8000/docs'
-    if ($CheckOnly) {
-        Write-Host 'Check passed. Backend was not started.' -ForegroundColor Green
-        return
-    }
-
     $listeners = [System.Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().GetActiveTcpListeners()
-    if (@($listeners | Where-Object { $_.Port -eq 8000 }).Count -gt 0) {
+    if (-not $CheckOnly -and @($listeners | Where-Object { $_.Port -eq 8000 }).Count -gt 0) {
         $existingApi = $null
         try {
             $existingApi = Invoke-RestMethod -Uri 'http://127.0.0.1:8000/' -TimeoutSec 5
@@ -64,6 +59,49 @@ try {
             return
         }
         throw 'Port 8000 is occupied, but the Sales Management API is not responding. Check the existing backend window for an error or stop the other program using this port, then run this file again.'
+    }
+
+    # Check the same database configuration as the app, without creating tables
+    # or seeding data. SQL Server may still be starting after Windows boots.
+    $databaseCheck = @'
+import sys
+import time
+from contextlib import closing
+
+import pyodbc
+from app.core.config import settings
+from app.core.database import connection_string
+
+print(f'SQL Server: {settings.DB_SERVER},{settings.DB_PORT} / {settings.DB_NAME}', flush=True)
+for attempt in range(1, 6):
+    try:
+        with closing(pyodbc.connect(connection_string, timeout=3)) as connection:
+            with closing(connection.cursor()) as cursor:
+                cursor.execute('SELECT 1').fetchone()
+        print('Database connection passed.', flush=True)
+        sys.exit(0)
+    except pyodbc.Error as exc:
+        state = str(exc.args[0]) if exc.args else 'unknown'
+        if state not in {'08001', '08S01', 'HYT00', 'HYT01'} or attempt == 5:
+            print(f'Database connection failed (SQLSTATE {state}).', flush=True)
+            sys.exit(1)
+        print(f'SQL Server is not ready (attempt {attempt}/5). Retrying in 2 seconds...', flush=True)
+        time.sleep(2)
+'@
+    Push-Location -LiteralPath $backendRoot
+    try {
+        & $pythonExecutable -c $databaseCheck
+        $databaseCheckExitCode = $LASTEXITCODE
+    }
+    finally {
+        Pop-Location
+    }
+    if ($databaseCheckExitCode -ne 0) {
+        throw 'Cannot connect to SQL Server. Check that SQL Server (MSSQLSERVER) is running, TCP/IP is enabled, and DB_SERVER / DB_PORT / DB_NAME in .env are correct. Check Windows account database access if SQL Server reports a login error. Backend was not started; run this file again after fixing the connection.'
+    }
+    if ($CheckOnly) {
+        Write-Host 'Python dependencies and database connection passed. Backend was not started.' -ForegroundColor Green
+        return
     }
 
     Write-Host 'Keep this window open. Press Ctrl+C to stop the backend.' -ForegroundColor Cyan

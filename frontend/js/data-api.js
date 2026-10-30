@@ -94,6 +94,7 @@
             get: id => request(`/api/invoices/${id}`),
             create: data => request("/api/invoices", "POST", data),
             update: (id, data) => request(`/api/invoices/${id}`, "PUT", data),
+            cancel: (id, reason) => request(`/api/invoices/${id}/cancel`, "POST", { reason }),
             remove: id => request(`/api/invoices/${id}`, "DELETE")
         },
         suppliers: {
@@ -107,6 +108,7 @@
             get: id => request(`/api/purchases/${id}`),
             create: data => request("/api/purchases", "POST", data),
             update: (id, data) => request(`/api/purchases/${id}`, "PUT", data),
+            cancel: (id, reason) => request(`/api/purchases/${id}/cancel`, "POST", { reason }),
             remove: id => request(`/api/purchases/${id}`, "DELETE")
         },
         history: {

@@ -44,6 +44,114 @@
       "name": "Khăn giấy Pulppy 100 tờ",
       "source_page": "https://satrafoods.com.vn/vn/san-pham/khan-an-pulppy-100-to.html",
       "image_url": "https://satrafoods.com.vn/uploads/san-pham-cung-loai/pulppy300.png"
+    },
+    {
+      "product_code": "SP024",
+      "file": "sting-viet-quat-320ml.jpg",
+      "name": "Nước tăng lực Sting Sleek hương việt quất lon 320ml",
+      "source_page": "https://www.webtaphoa.vn/products/nuoc-tang-luc-sting-sleek-huong-viet-quat-lon-320ml",
+      "image_url": "https://product.hstatic.net/1000288770/product/nuoc_tang_luc_sting_sleek_huong_viet_quat_lon_320ml_c99347b59b8840b6aaa811959ae51733_grande.jpg",
+      "retrieved_on": "2026-10-30",
+      "sha256": "fb55e8da9036eb4827a2dff5c32ed09b0a07b658f36d81bb7e56991520b309e7"
+    },
+    {
+      "product_code": "SP025",
+      "file": "sting-dau-500ml.jpg",
+      "name": "Nước tăng lực Sting hương dâu chai đại 500ml",
+      "source_page": "https://www.webtaphoa.vn/products/nuoc-tang-luc-sting-huong-dau-chai-dai-500ml",
+      "image_url": "https://product.hstatic.net/1000288770/product/nuoc_tang_luc_sting_huong_dau_chai_dai_500ml_9631601816104e8e81a996ce8f620269_grande.jpg",
+      "retrieved_on": "2026-10-30",
+      "sha256": "c3dfc373283b09b77d8ed53cedb583018841799001f9c9d1b8e04c901ac63826"
+    },
+    {
+      "product_code": "SP026",
+      "file": "tra-olong-tea-plus-chanh-450ml.jpg",
+      "name": "Trà ô long xanh Tea Plus hương chanh chai 450ml",
+      "source_page": "https://www.webtaphoa.vn/products/tra-o-long-xanh-tea-plus-huong-chanh-chai-450ml",
+      "image_url": "https://product.hstatic.net/1000288770/product/tra_o_long_xanh_tea_plus_huong_chanh_chai_450ml_436db4ca6c5e4b6c947ee454ba791037_grande.jpg",
+      "retrieved_on": "2026-10-30",
+      "sha256": "b78e0fb032951f97ae36fb7d904ec2a07591995f509fb8e3db9a379807b97b01"
+    },
+    {
+      "product_code": "SP027",
+      "file": "sua-milo-210ml.jpg",
+      "name": "Sữa lúa mạch Milo nắp vặn hộp 210ml",
+      "source_page": "https://www.webtaphoa.vn/products/sua-lua-mach-milo-nap-van-hop-210ml",
+      "image_url": "https://product.hstatic.net/1000288770/product/sua_lua_mach_milo_nap_van_hop_210ml_b99eaab02b2d4881a2f1d91df4e4e784_grande.jpg",
+      "retrieved_on": "2026-10-30",
+      "sha256": "6d5a1581c4a61fb47a3e47837c33b33bca065838b93c161ff3f44b588d840102"
+    },
+    {
+      "product_code": "SP028",
+      "file": "banh-oreo-vani-133g.jpg",
+      "name": "Bánh quy Oreo nhân kem vani gói 133g",
+      "source_page": "https://www.webtaphoa.vn/products/banh-quy-oreo-nhan-kem-vani-goi-133g",
+      "image_url": "https://product.hstatic.net/1000288770/product/banh_quy_oreo_nhan_kem_vani_goi_133g_7ce5f869ac6647e98e10594b3c73ad18_grande.jpg",
+      "retrieved_on": "2026-10-30",
+      "sha256": "0addb3c2f95773d6046b57634469653ef619a6d82ceb1c1b39685e14cfc3eb07"
+    },
+    {
+      "product_code": "SP029",
+      "file": "banh-que-oreo-socola-54g.jpg",
+      "name": "Bánh quế sô cô la Oreo Wafer Roll hộp 54g",
+      "source_page": "https://www.webtaphoa.vn/products/banh-que-so-co-la-oreo-wafer-roll-hop-54g",
+      "image_url": "https://cdn.hstatic.net/products/1000288770/b_nh_qu__s__c__la_oreo_wafer_roll_h_p_54g_748a7f2452ed444e9dcd7ef230057993_grande.jpg",
+      "retrieved_on": "2026-10-30",
+      "sha256": "e3694f408eb9610b6175e7c0cfc3e87394abd50cee93e51e0170a70c61ed4ae7"
+    },
+    {
+      "product_code": "SP030",
+      "file": "xot-uop-thit-cholimex-200g.jpg",
+      "name": "Xốt ướp thịt nướng Cholimex hũ 200g",
+      "source_page": "https://www.webtaphoa.vn/products/xot-uop-thit-nuong-cholimex-hu-200g",
+      "image_url": "https://product.hstatic.net/1000288770/product/xot_uop_thit_nuong_cholimex_hu_200g_81595995395a432cba2d10a7838f83cc_grande.jpg",
+      "retrieved_on": "2026-10-30",
+      "sha256": "2249b74124287b6703cffd76c102a682f59c06c5f38bcbcf94524dc3f6b8f1a7"
+    },
+    {
+      "product_code": "SP031",
+      "file": "snack-oishi-tom-cay-65g.jpg",
+      "name": "Snack tôm vị cay nồng Oishi gói 65g",
+      "source_page": "https://www.webtaphoa.vn/products/snack-tom-vi-cay-nong-oishi-goi-65g",
+      "image_url": "https://cdn.hstatic.net/products/1000288770/snack_t_m_v__cay_n_ng_oishi_g_i_65g_bfa5e195b28a4c18b085faac80d18e2e_grande.jpg",
+      "retrieved_on": "2026-10-30",
+      "sha256": "138a3354ce912b1357270327d989bf1d928416745e54dc84ddea6961b5e9a3f9"
+    },
+    {
+      "product_code": "SP032",
+      "file": "ca-phe-g7-336g.jpg",
+      "name": "Cà phê sữa Trung Nguyên G7 3 in 1 21 gói x 16g hộp 336g",
+      "source_page": "https://www.webtaphoa.vn/products/ca-phe-sua-trung-nguyen-g7-3-in-1-21-goi-x-16g-hop-336g",
+      "image_url": "https://product.hstatic.net/1000288770/product/ca_phe_sua_trung_nguyen_g7_3_in_1_21_goi_x_16g_hop_336g_712b7774035b4b8aa8fd8bbbeb815ce4_grande.jpg",
+      "retrieved_on": "2026-10-30",
+      "sha256": "cd48814a993424b40cb78096d1ebca8b5978506f1f0e6b861a0d3b1b2c2ec170"
+    },
+    {
+      "product_code": "SP033",
+      "file": "bot-giat-aba-380g.jpg",
+      "name": "Bột giặt nhiệt Aba sạch tinh tươm gói 380g",
+      "source_page": "https://www.webtaphoa.vn/products/bot-giat-nhiet-aba-sach-tinh-tuom-goi-380g",
+      "image_url": "https://product.hstatic.net/1000288770/product/bot_giat_nhiet_aba_sach_tinh_tuom_goi_380g_43170c43710a4d9d94f7bcbc8aaa9887_grande.jpg",
+      "retrieved_on": "2026-10-30",
+      "sha256": "a4ec3f366c55dd1e94f92f3a60bc789e7c658e9b11cba1cb81a109e9b71b6ede"
+    },
+    {
+      "product_code": "SP034",
+      "file": "kem-danh-rang-closeup-180g.jpg",
+      "name": "Kem đánh răng Closeup tinh thể băng tuyết thơm mát 3 cực tuýp 180g",
+      "source_page": "https://www.webtaphoa.vn/products/kem-danh-rang-closeup-tinh-the-bang-tuyet-thom-mat-3-cuc-tuyp-180g",
+      "image_url": "https://product.hstatic.net/1000288770/product/kem_danh_rang_closeup_tinh_the_bang_tuyet_thom_mat_3_cuc_tuyp_180g_0f1eb34446cc40bd89ed7fcd03ab2154_grande.jpg",
+      "retrieved_on": "2026-10-30",
+      "sha256": "c295ee27e903a5544415661233ba5f525c79e42126cd50254f24648e830bf767"
+    },
+    {
+      "product_code": "SP035",
+      "file": "sua-tam-lifebuoy-850g.jpg",
+      "name": "Sữa tắm Lifebuoy chăm sóc da chai 850g",
+      "source_page": "https://www.webtaphoa.vn/products/sua-tam-lifebuoy-cham-soc-da-chai-850g",
+      "image_url": "https://product.hstatic.net/1000288770/product/sua_tam_lifebuoy_cham_soc_da_chai_850g_030fa61d649949a0a813c2bf281fe58c_grande.jpg",
+      "retrieved_on": "2026-10-30",
+      "sha256": "217de97d9266598b4fcd944ea672396984626203628c1ec1fee1a8b7ccf98b6d"
     }
   ]
 }

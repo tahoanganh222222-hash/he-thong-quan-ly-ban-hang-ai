@@ -189,6 +189,7 @@
 
     function buildInvoiceNotifications(items) {
         return (Array.isArray(items) ? items : [])
+            .filter(item => item.status !== "cancelled")
             .slice()
             .sort((left, right) => {
                 const leftDate = parseDate(left.createdAt || left.date)?.getTime() || 0;

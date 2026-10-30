@@ -45,7 +45,7 @@
         const productMap = new Map();
         const productDailyMap = new Map();
 
-        invoices.forEach(invoice => {
+        invoices.filter(invoice => invoice.status !== "cancelled").forEach(invoice => {
             const row = dailyMap.get(invoice.date) || {
                 isoDate: invoice.date,
                 date: invoice.date.split("-").reverse().join("/"),
@@ -320,7 +320,8 @@
         if (!daily.length || !Number.isFinite(days)) {
             return [...daily];
         }
-        const end = new Date(daily[daily.length - 1].isoDate + "T00:00:00");
+        const endISO = localISODate();
+        const end = new Date(endISO + "T00:00:00");
         const start = new Date(end);
         start.setDate(start.getDate() - days + 1);
         const startISO = [
@@ -328,7 +329,7 @@
             String(start.getMonth() + 1).padStart(2, "0"),
             String(start.getDate()).padStart(2, "0")
         ].join("-");
-        return daily.filter(item => item.isoDate >= startISO);
+        return daily.filter(item => item.isoDate >= startISO && item.isoDate <= endISO);
     }
 
     function shiftISODate(isoDate, dayOffset) {
@@ -367,9 +368,9 @@
         if (toDate) toDate.disabled = !isCustom;
 
         if (isCustom && fromDate && toDate && (!fromDate.value || !toDate.value)) {
-            const latestDate = realSalesData.daily.at(-1)?.isoDate || localISODate();
-            toDate.value = toDate.value || latestDate;
-            fromDate.value = fromDate.value || shiftISODate(latestDate, -6);
+            const today = localISODate();
+            toDate.value = toDate.value || today;
+            fromDate.value = fromDate.value || shiftISODate(today, -6);
         }
         setRevenueRangeError();
     }
@@ -439,7 +440,9 @@
             return `${displayISODate(selection.fromDate)} – ${displayISODate(selection.toDate)}`;
         }
         if (selection.period === "all") return "toàn bộ dữ liệu";
-        return `${daily.length} ngày dữ liệu`;
+        const endISO = localISODate();
+        const startISO = shiftISODate(endISO, 1 - Number(selection.period));
+        return `${displayISODate(startISO)} – ${displayISODate(endISO)}`;
     }
 
     async function generateRevenueReport() {

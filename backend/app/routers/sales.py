@@ -30,6 +30,7 @@ from app.schemas.sales import (
     CategoryUpdate,
     CustomerCreate,
     CustomerUpdate,
+    DocumentCancel,
     HistoryCreate,
     InventoryCreate,
     InventoryUpdate,
@@ -42,6 +43,9 @@ from app.schemas.sales import (
     SupplierCreate,
     SupplierUpdate,
 )
+
+
+from app.services.stock_documents import cancel_document, locked_document, replace_items, require_active
 
 
 router = APIRouter(prefix="/api", tags=["Sales Management"])
@@ -338,7 +342,10 @@ def _invoice_dict(db: Session, invoice: Invoice, include_items: bool = True) -> 
         "paymentMethod": invoice.payment_method,
         "date": invoice.created_at.strftime("%Y-%m-%d"),
         "createdAt": invoice.created_at.isoformat(),
-        "status": "completed",
+        "status": invoice.status,
+        "cancelledAt": invoice.cancelled_at.isoformat() if invoice.cancelled_at else None,
+        "cancelledBy": invoice.cancelled_by,
+        "cancellationReason": invoice.cancellation_reason or "",
     }
     if include_items:
         details = (
@@ -372,6 +379,10 @@ def _purchase_dict(db: Session, receipt: PurchaseReceipt, include_items: bool = 
         "id": receipt.id,
         "code": receipt.receipt_code,
         "receiptCode": receipt.receipt_code,
+        "status": receipt.status,
+        "cancelledAt": receipt.cancelled_at.isoformat() if receipt.cancelled_at else None,
+        "cancelledBy": receipt.cancelled_by,
+        "cancellationReason": receipt.cancellation_reason or "",
         "supplierName": receipt.supplier_name or "",
         "userId": receipt.user_id,
         "totalAmount": float(receipt.total_amount),
@@ -578,21 +589,23 @@ def get_customer_purchase_history(
         .all()
     )
     invoice_payloads = [_invoice_dict(db, invoice) for invoice in invoices]
+    active_invoices = [invoice for invoice in invoices if invoice.status != "cancelled"]
+    active_payloads = [invoice for invoice in invoice_payloads if invoice["status"] != "cancelled"]
 
     return {
         "customer": _customer_dict(customer),
         "summary": {
-            "invoiceCount": len(invoice_payloads),
+            "invoiceCount": len(active_invoices),
             "totalSpent": sum(
-                float(invoice.final_amount or 0) for invoice in invoices
+                float(invoice.final_amount or 0) for invoice in active_invoices
             ),
             "totalItems": sum(
                 int(item.get("quantity", 0))
-                for invoice in invoice_payloads
+                for invoice in active_payloads
                 for item in invoice.get("items", [])
             ),
             "lastPurchaseAt": (
-                invoices[0].created_at.isoformat() if invoices else None
+                active_invoices[0].created_at.isoformat() if active_invoices else None
             ),
         },
         "invoices": invoice_payloads,
@@ -742,8 +755,6 @@ def update_inventory(
     item = db.get(Inventory, inventory_id)
     if item is None:
         raise _not_found("tồn kho")
-    if data.quantity is not None:
-        item.quantity = data.quantity
     if data.minimum is not None:
         item.min_quantity = data.minimum
     product = db.get(Product, item.product_id)
@@ -762,59 +773,11 @@ def delete_inventory(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_permission("purchase_track")),
 ):
-    item = db.get(Inventory, inventory_id)
-    if item is None:
-        raise _not_found("tồn kho")
-    product = db.get(Product, item.product_id)
-    _record_activity(
-        db, current_user, "Xóa", "delete", "Tồn kho", product.code if product else "",
-        "Xóa bản ghi tồn kho",
-    )
-    db.delete(item)
-    db.commit()
-    return {"message": "Đã xóa bản ghi tồn kho", "id": inventory_id}
+    raise HTTPException(status_code=405, detail="Không được xóa tồn kho trực tiếp. Hãy sửa hoặc hủy chứng từ liên quan.")
 
 
 def _replace_invoice_items(db: Session, invoice: Invoice, items) -> None:
-    old_details = db.query(InvoiceDetail).filter(InvoiceDetail.invoice_id == invoice.id).all()
-    for detail in old_details:
-        inventory = db.query(Inventory).filter(Inventory.product_id == detail.product_id).first()
-        if inventory:
-            inventory.quantity += detail.quantity
-        db.delete(detail)
-
-    total = Decimal("0")
-    for item in items:
-        product = db.get(Product, item.productId)
-        if product is None or not product.is_active:
-            raise HTTPException(status_code=400, detail="Sản phẩm không tồn tại hoặc đã ngừng bán")
-        inventory = db.query(Inventory).filter(Inventory.product_id == product.id).first()
-        if inventory is None or inventory.quantity < item.quantity:
-            raise HTTPException(status_code=409, detail=f"Không đủ tồn kho cho {product.name}")
-        price = Decimal(str(item.unitPrice)) if item.unitPrice is not None else product.selling_price
-        discount = Decimal(str(item.discount))
-        line_total = price * item.quantity
-        if discount > line_total:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Giảm giá của {product.name} không được vượt quá thành tiền sản phẩm",
-            )
-        amount = line_total - discount
-        inventory.quantity -= item.quantity
-        db.add(
-            InvoiceDetail(
-                invoice_id=invoice.id,
-                product_id=product.id,
-                quantity=item.quantity,
-                unit_price=price,
-                discount=discount,
-                amount=amount,
-            )
-        )
-        total += amount
-    invoice.total_amount = total
-    invoice.discount = min(max(Decimal("0"), invoice.discount), total)
-    invoice.final_amount = total - invoice.discount
+    replace_items(db, invoice, items, sale=True)
 
 
 INVOICE_READ_PERMISSIONS = (
@@ -888,9 +851,8 @@ def update_invoice(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_permission("invoice_create")),
 ):
-    invoice = db.get(Invoice, invoice_id)
-    if invoice is None:
-        raise _not_found("hóa đơn")
+    invoice = locked_document(db, Invoice, invoice_id)
+    require_active(invoice)
     if "customerId" in data.model_fields_set:
         if data.customerId and db.get(Customer, data.customerId) is None:
             raise _not_found("khách hàng")
@@ -927,66 +889,26 @@ def delete_invoice(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_permission("invoice_create")),
 ):
-    invoice = db.get(Invoice, invoice_id)
-    if invoice is None:
-        raise _not_found("hóa đơn")
-    details = db.query(InvoiceDetail).filter(InvoiceDetail.invoice_id == invoice.id).all()
-    for detail in details:
-        inventory = db.query(Inventory).filter(Inventory.product_id == detail.product_id).first()
-        if inventory:
-            inventory.quantity += detail.quantity
-        db.delete(detail)
-    _record_activity(
-        db, current_user, "Xóa", "delete", "Hóa đơn", invoice.invoice_code,
-        f"Xóa hóa đơn và hoàn lại tồn kho: {invoice.invoice_code}",
-    )
-    _record_activity(
-        db, current_user, "Hoàn", "update", "Tồn kho", invoice.invoice_code,
-        f"Hoàn tồn kho do xóa hóa đơn {invoice.invoice_code}",
-    )
-    db.flush()
-    db.delete(invoice)
+    raise HTTPException(status_code=405, detail="Hãy dùng thao tác hủy hóa đơn kèm lý do để giữ lại chứng từ.")
+
+
+@router.post("/invoices/{invoice_id}/cancel")
+def cancel_invoice(
+    invoice_id: int, data: DocumentCancel, db: Session = Depends(get_db),
+    current_user: User = Depends(require_permission("invoice_create")),
+):
+    invoice = locked_document(db, Invoice, invoice_id)
+    cancel_document(db, invoice, current_user, data.reason, sale=True)
+    _record_activity(db, current_user, "Hủy", "cancel", "Hóa đơn", invoice.invoice_code,
+                     f"Hủy hóa đơn, hoàn lại tồn kho. Lý do: {data.reason}")
+    _record_activity(db, current_user, "Hoàn", "update", "Tồn kho", invoice.invoice_code,
+                     f"Tăng tồn kho do hủy hóa đơn {invoice.invoice_code}")
     db.commit()
-    return {"message": "Đã xóa hóa đơn và hoàn tồn kho", "id": invoice_id}
+    return _invoice_dict(db, invoice)
 
 
 def _replace_purchase_items(db: Session, receipt: PurchaseReceipt, items) -> None:
-    old_details = (
-        db.query(PurchaseReceiptDetail)
-        .filter(PurchaseReceiptDetail.receipt_id == receipt.id)
-        .all()
-    )
-    for detail in old_details:
-        inventory = db.query(Inventory).filter(Inventory.product_id == detail.product_id).first()
-        if inventory is None or inventory.quantity < detail.quantity:
-            raise HTTPException(status_code=409, detail="Không thể hoàn tác tồn kho phiếu nhập")
-        inventory.quantity -= detail.quantity
-        db.delete(detail)
-
-    total = Decimal("0")
-    for item in items:
-        product = db.get(Product, item.productId)
-        if product is None:
-            raise _not_found("sản phẩm")
-        inventory = db.query(Inventory).filter(Inventory.product_id == product.id).first()
-        if inventory is None:
-            inventory = Inventory(product_id=product.id, quantity=0, min_quantity=10)
-            db.add(inventory)
-            db.flush()
-        price = Decimal(str(item.unitPrice)) if item.unitPrice is not None else product.purchase_price
-        amount = price * item.quantity
-        inventory.quantity += item.quantity
-        db.add(
-            PurchaseReceiptDetail(
-                receipt_id=receipt.id,
-                product_id=product.id,
-                quantity=item.quantity,
-                unit_price=price,
-                amount=amount,
-            )
-        )
-        total += amount
-    receipt.total_amount = total
+    replace_items(db, receipt, items, sale=False)
 
 
 # Activity history does not grant access to purchase documents or their costs.
@@ -1020,6 +942,10 @@ def list_purchase_items(
             "id": detail.id,
             "receiptId": receipt.id,
             "receiptCode": receipt.receipt_code,
+            "status": receipt.status,
+            "cancelledAt": receipt.cancelled_at.isoformat() if receipt.cancelled_at else None,
+            "cancelledBy": receipt.cancelled_by,
+            "cancellationReason": receipt.cancellation_reason or "",
             "supplierName": receipt.supplier_name or "",
             "purchaseDate": receipt.created_at.date().isoformat(),
             "createdAt": receipt.created_at.isoformat(),
@@ -1151,9 +1077,8 @@ def update_purchase(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_permission("purchase_track")),
 ):
-    receipt = db.get(PurchaseReceipt, receipt_id)
-    if receipt is None:
-        raise _not_found("phiếu nhập")
+    receipt = locked_document(db, PurchaseReceipt, receipt_id)
+    require_active(receipt)
     if data.supplierName is not None:
         receipt.supplier_name = data.supplierName.strip()
     if data.items is not None:
@@ -1178,29 +1103,19 @@ def delete_purchase(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_permission("purchase_track")),
 ):
-    receipt = db.get(PurchaseReceipt, receipt_id)
-    if receipt is None:
-        raise _not_found("phiếu nhập")
-    details = (
-        db.query(PurchaseReceiptDetail)
-        .filter(PurchaseReceiptDetail.receipt_id == receipt.id)
-        .all()
-    )
-    for detail in details:
-        inventory = db.query(Inventory).filter(Inventory.product_id == detail.product_id).first()
-        if inventory is None or inventory.quantity < detail.quantity:
-            raise HTTPException(status_code=409, detail="Không đủ tồn kho để xóa phiếu nhập")
-        inventory.quantity -= detail.quantity
-        db.delete(detail)
-    _record_activity(
-        db, current_user, "Xóa", "delete", "Phiếu nhập", receipt.receipt_code,
-        f"Xóa phiếu nhập từ {receipt.supplier_name}: {receipt.receipt_code}",
-    )
-    _record_activity(
-        db, current_user, "Hoàn", "update", "Tồn kho", receipt.receipt_code,
-        f"Giảm tồn kho do xóa phiếu nhập {receipt.receipt_code}",
-    )
-    db.flush()
-    db.delete(receipt)
+    raise HTTPException(status_code=405, detail="Hãy dùng thao tác hủy phiếu nhập kèm lý do để giữ lại chứng từ.")
+
+
+@router.post("/purchases/{receipt_id}/cancel")
+def cancel_purchase(
+    receipt_id: int, data: DocumentCancel, db: Session = Depends(get_db),
+    current_user: User = Depends(require_permission("purchase_track")),
+):
+    receipt = locked_document(db, PurchaseReceipt, receipt_id)
+    cancel_document(db, receipt, current_user, data.reason, sale=False)
+    _record_activity(db, current_user, "Hủy", "cancel", "Phiếu nhập", receipt.receipt_code,
+                     f"Hủy phiếu nhập, giảm tồn kho. Lý do: {data.reason}")
+    _record_activity(db, current_user, "Hoàn", "update", "Tồn kho", receipt.receipt_code,
+                     f"Giảm tồn kho do hủy phiếu nhập {receipt.receipt_code}")
     db.commit()
-    return {"message": "Đã xóa phiếu nhập và cập nhật tồn kho", "id": receipt_id}
+    return _purchase_dict(db, receipt)

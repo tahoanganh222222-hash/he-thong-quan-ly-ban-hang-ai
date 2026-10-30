@@ -835,6 +835,10 @@ document.addEventListener(
     const invoicesPerPage = 5;
     let currentInvoiceSearchPage = 1;
 
+    document.addEventListener("sales:document-changed", () => {
+        if (invoiceSearchHasPermission()) reloadInvoiceSearchData();
+    });
+
     async function reloadInvoiceSearchData() {
 
         try {
@@ -2034,6 +2038,10 @@ if (detailModal && detailModal.parentElement !== document.body) {
     async function viewInvoiceSearchDetail(
         invoiceId
     ) {
+        if (window.openSalesDocument && invoiceSearchHasPermission()) {
+            return window.openSalesDocument("invoices", invoiceId);
+        }
+
 
         if (!invoiceSearchHasPermission()) {
 

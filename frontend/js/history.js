@@ -133,7 +133,7 @@
         if (item.actionType === "update" && objectName.includes("danh mục")) return { className: "category", icon: '<circle cx="12" cy="12" r="3"/><path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6 7 7m10 10 1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"/>' };
         if (item.actionType === "update") return { className: "product", icon: '<path d="m4 8 8-4 8 4-8 4z"/><path d="M4 8v8l8 4 8-4V8M12 12v8"/>' };
         if (item.actionType === "add") return { className: "customer", icon: '<circle cx="12" cy="8" r="3"/><path d="M6 20c.6-4 2.6-6 6-6s5.4 2 6 6"/>' };
-        if (item.actionType === "delete") return { className: "delete", icon: '<path d="M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13M10 11v5m4-5v5"/>' };
+        if (["delete", "cancel"].includes(item.actionType)) return { className: "delete", icon: '<path d="M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13M10 11v5m4-5v5"/>' };
         if (item.actionType === "login") return { className: "login", icon: '<path d="M13 5h6v14h-6M10 8l4 4-4 4M14 12H4"/>' };
         if (item.actionType === "logout") return { className: "logout", icon: '<path d="M11 5H5v14h6M14 8l4 4-4 4m4-4H8"/>' };
         if (item.actionType === "export") return { className: "export", icon: '<path d="M12 3v12m-4-4 4 4 4-4M5 19h14"/>' };
@@ -154,6 +154,7 @@
             logout: "Đăng xuất",
             add: "Thêm dữ liệu",
             delete: "Xóa dữ liệu",
+            cancel: "Hủy chứng từ",
             export: "Xuất báo cáo"
         };
 

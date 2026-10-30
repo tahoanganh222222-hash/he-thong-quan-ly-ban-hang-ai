@@ -591,10 +591,11 @@
 
     async function handlePasswordSubmit(event) {
         event.preventDefault();
+        const form = event.currentTarget;
         const currentPassword = getElement("account-current-password").value;
         const newPassword = getElement("account-new-password").value;
         const confirmation = getElement("account-confirm-password").value;
-        const submitButton = event.submitter || event.currentTarget.querySelector('button[type="submit"]');
+        const submitButton = event.submitter || form.querySelector('button[type="submit"]');
 
         if (newPassword.length < 6) {
             showMessage("account-password-message", "Mật khẩu mới phải có ít nhất 6 ký tự.", "error");
@@ -609,9 +610,16 @@
         submitButton.textContent = "Đang đổi...";
         try {
             const result = await window.salesApi.account.changePassword({ currentPassword, newPassword });
-            event.currentTarget.reset();
+            form.reset();
             updatePasswordStrength();
-            showMessage("account-password-message", result.message || "Đổi mật khẩu thành công.", "success");
+            closeAccountModal();
+            window.clearAuthSession();
+            await window.logout();
+            const loginMessage = getElement("login-message");
+            if (loginMessage) {
+                loginMessage.textContent = result.message || "Đổi mật khẩu thành công. Vui lòng đăng nhập lại.";
+                loginMessage.className = "auth-message auth-message-success";
+            }
         } catch (error) {
             showMessage("account-password-message", error.message || "Không thể đổi mật khẩu.", "error");
         } finally {

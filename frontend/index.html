@@ -130,6 +130,7 @@
 <link rel="stylesheet" href="css/detail-neutral.css?v=20261028-3">
 <link rel="stylesheet" href="css/app-feedback.css?v=20261028-1">
 <link rel="stylesheet" href="css/suppliers.css?v=20261028-2">
+<link rel="stylesheet" href="css/documents.css?v=20261031-2">
 <link
     rel="stylesheet"
     href="css/notifications.css?v=20260930-1"
@@ -1257,7 +1258,7 @@
             <h2>Biến số liệu thành <span>quyết định sáng suốt</span></h2>
             <p>Gemini đọc dữ liệu bán hàng thực tế, phát hiện xu hướng và đề xuất hành động phù hợp cho cửa hàng.</p>
             <div class="ai-hero-tags">
-                <span>✦ Gemini 3.6 Flash</span>
+                <span>✦ Gemini AI</span>
                 <span>↗ Phân tích thời gian thực</span>
                 <span>⌁ Dữ liệu SQL Server</span>
             </div>
@@ -1364,7 +1365,7 @@
             <h2>Hỏi dữ liệu bằng <span>ngôn ngữ tự nhiên</span></h2>
             <p>Đặt câu hỏi bằng tiếng Việt và nhận câu trả lời từ chính doanh thu, hóa đơn, sản phẩm và tồn kho của bạn.</p>
             <div class="ai-hero-tags">
-                <span>✦ Gemini 3.6 Flash</span>
+                <span>✦ Gemini AI</span>
                 <span>◌ Hiểu tiếng Việt</span>
                 <span>⌁ Số liệu chính xác</span>
             </div>
@@ -3177,12 +3178,13 @@
 
 <div class="inventory-adjust-modal" id="inventory-adjust-modal" aria-hidden="true">
     <form class="inventory-adjust-dialog" id="inventory-adjust-form">
-        <header><div><span>ĐIỀU CHỈNH TỒN KHO</span><h3 id="inventory-adjust-title">Cập nhật sản phẩm</h3></div><button type="button" id="inventory-adjust-close" aria-label="Đóng">×</button></header>
+        <header><div><span>CÀI ĐẶT CẢNH BÁO TỒN KHO</span><h3 id="inventory-adjust-title">Cập nhật sản phẩm</h3></div><button type="button" id="inventory-adjust-close" aria-label="Đóng">×</button></header>
         <div class="inventory-adjust-product" id="inventory-adjust-product"></div>
         <div class="inventory-adjust-fields">
-            <label>Số lượng hiện có<input type="number" min="0" step="1" id="inventory-adjust-quantity" required></label>
+            <label>Số lượng hiện có (chỉ xem)<output id="inventory-adjust-quantity" aria-live="polite">0</output></label>
             <label>Mức tồn tối thiểu<input type="number" min="0" step="1" id="inventory-adjust-minimum" required></label>
         </div>
+        <p class="inventory-readonly-note">Số lượng tự cập nhật theo phiếu nhập và hóa đơn. Bạn chỉ có thể thay đổi mức tồn tối thiểu tại đây.</p>
         <footer><button type="button" class="inventory-adjust-cancel" id="inventory-adjust-cancel">Hủy</button><button type="submit" class="inventory-adjust-save">✓ Lưu thay đổi</button></footer>
     </form>
 </div>
@@ -3289,6 +3291,7 @@
                 Cập nhật
             </option>
 
+            <option value="cancel">Hủy chứng từ</option>
             <option value="delete">
                 Xóa
             </option>
@@ -4531,7 +4534,7 @@
             <h2>Tìm đúng sản phẩm cho <span>mọi nhu cầu</span></h2>
             <p>Gemini kết hợp nhu cầu, ngân sách và tồn kho thực tế để đưa ra lựa chọn phù hợp nhất cho khách hàng.</p>
             <div class="ai-hero-tags">
-                <span>✦ Gemini 3.6 Flash</span>
+                <span>✦ Gemini AI</span>
                 <span>◈ Tư vấn theo ngân sách</span>
                 <span>✓ Kiểm tra tồn kho</span>
             </div>
@@ -5211,26 +5214,27 @@
     <!-- JS -->
     <script src="./js/app-feedback.js?v=20261028-1"></script>
     <script src="./js/api.js?v=20261028-2"></script>
-<script src="./js/data-api.js?v=20261028-3"></script>
-    <script src="js/dashboard.js?v=20261028-2"></script>
+<script src="./js/data-api.js?v=20261030-4"></script>
+<script src="./js/documents.js?v=20261030-1"></script>
+    <script src="js/dashboard.js?v=20261030-7"></script>
     <script src="./js/products.js?v=20261028-4"></script>
     <script src="./js/categories.js?v=20261028-4"></script>
-    <script src="./js/customers.js?v=20261028-4"></script>
-    <script src="./js/invoices.js?v=20261028-5"></script>
+    <script src="./js/customers.js?v=20261031-2"></script>
+    <script src="./js/invoices.js?v=20261030-7"></script>
 <script src="./js/suppliers.js?v=20261028-2"></script>
-<script src="./js/purchases.js?v=20261028-6"></script>
-    <script src="./js/inventory.js?v=20261028-4"></script>
-    <script src="./js/history.js?v=20260925-4"></script>
-    <script src="./js/statistics.js?v=20261028-4"></script>
-    <script src="./js/reports.js?v=20261028-4"></script>
+<script src="./js/purchases.js?v=20261030-7"></script>
+    <script src="./js/inventory.js?v=20261030-7"></script>
+    <script src="./js/history.js?v=20261031-2"></script>
+    <script src="./js/statistics.js?v=20261030-7"></script>
+    <script src="./js/reports.js?v=20261030-7"></script>
     <script src="./js/users.js?v=20261028-4"></script>
     <script src="./js/permissions.js?v=20261028-6"></script>
     <script src="./js/auth.js?v=20260924-3"></script>
-    <script src="./js/account.js?v=20261003-1"></script>
+    <script src="./js/account.js?v=20261030-1"></script>
     <script src="./js/sidebar.js?v=20260924-1"></script>
-    <script src="./js/notifications.js?v=20260930-1"></script>
+    <script src="./js/notifications.js?v=20261031-2"></script>
     <script src="js/ai-product.js?v=20261028-4"></script>
-    <script src="./js/ai-assistant.js?v=20260922-1"></script>
+    <script src="./js/ai-assistant.js?v=20261031-2"></script>
     <script src="./js/ai-logs.js?v=20260925-3"></script>
     <script src="./js/session-sync.js?v=20261028-1"></script>
 

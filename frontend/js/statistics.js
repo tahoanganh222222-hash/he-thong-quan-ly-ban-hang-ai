@@ -49,6 +49,7 @@ let currentRevenueStatisticsData = [];
         .replaceAll("'", "&#039;");
 
     function invoiceContribution(invoice, filters) {
+        if (invoice.status === "cancelled") return null;
         if (filters.from && invoice.date < filters.from) return null;
         if (filters.to && invoice.date > filters.to) return null;
 

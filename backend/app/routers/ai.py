@@ -1,10 +1,9 @@
 import asyncio
 import json
 from collections import defaultdict
-from datetime import date, datetime, time, timedelta
+from datetime import date, datetime, time, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -66,7 +65,7 @@ def _sales_snapshot(
     from_date: date | None = None,
     to_date: date | None = None,
 ) -> dict:
-    invoice_query = db.query(Invoice)
+    invoice_query = db.query(Invoice).filter(Invoice.status != "cancelled")
     if from_date is not None:
         invoice_query = invoice_query.filter(
             Invoice.created_at >= datetime.combine(from_date, time.min)
@@ -145,10 +144,7 @@ def _revenue_date_range(
     if data.period == "all":
         return None, None
 
-    latest_datetime = db.query(func.max(Invoice.created_at)).scalar()
-    if latest_datetime is None:
-        return None, None
-    to_date = latest_datetime.date()
+    to_date = datetime.now(timezone(timedelta(hours=7))).date()
     from_date = to_date - timedelta(days=int(data.period) - 1)
     return from_date, to_date
 

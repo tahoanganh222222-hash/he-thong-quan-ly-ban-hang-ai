@@ -234,6 +234,68 @@ class SalesPermissionTests(unittest.TestCase):
             db.commit()
         self.assertEqual(self.request("GET", "/api/auth/session", "staff")[0], 401)
 
+    def set_test_password(self, role, password="OldTest123"):
+        with Session(self.engine) as db:
+            user = db.query(User).filter_by(role=role).one()
+            user.password_hash = hash_password(password)
+            db.commit()
+            return user.id
+
+    def test_password_change_revokes_old_sessions_and_requires_new_password(self):
+        self.set_test_password("staff")
+        status, _ = self.request("PUT", "/api/auth/me/password", "staff", {
+            "currentPassword": "OldTest123", "newPassword": "NewTest123",
+        })
+        self.assertEqual(status, 200)
+        self.assertEqual(self.request("GET", "/api/auth/session", "staff")[0], 401)
+        self.assertEqual(self.request("GET", "/api/auth/session", "admin")[0], 200)
+        self.assertEqual(self.request("POST", "/api/auth/login", body={
+            "username": "staff", "password": "OldTest123",
+        })[0], 401)
+        status, login = self.request("POST", "/api/auth/login", body={
+            "username": "staff", "password": "NewTest123",
+        })
+        self.assertEqual(status, 200)
+        old_token = self.tokens["staff"]
+        self.tokens["staff"] = login["access_token"]
+        self.assertEqual(self.request("GET", "/api/auth/session", "staff")[0], 200)
+        self.tokens["staff"] = old_token
+        self.assertEqual(self.request("GET", "/api/auth/session", "staff")[0], 401)
+
+    def test_rejected_password_changes_preserve_password_and_session(self):
+        self.set_test_password("staff")
+        for current, new in [("Wrong123", "NewTest123"), ("OldTest123", "OldTest123"),
+                             ("OldTest123", "a"), ("OldTest123", "á" * 40)]:
+            with self.subTest(current=current, new_length=len(new)):
+                self.assertIn(self.request("PUT", "/api/auth/me/password", "staff", {
+                    "currentPassword": current, "newPassword": new,
+                })[0], (400, 422))
+                self.assertEqual(self.request("GET", "/api/auth/session", "staff")[0], 200)
+        self.assertEqual(self.request("POST", "/api/auth/login", body={
+            "username": "staff", "password": "OldTest123",
+        })[0], 200)
+
+    def test_admin_password_reset_revokes_target_sessions_only(self):
+        target_id = self.set_test_password("staff")
+        self.assertEqual(self.request("PUT", f"/api/auth/users/{target_id}", "admin", {
+            "password": "ResetTest123",
+        })[0], 200)
+        self.assertEqual(self.request("GET", "/api/auth/session", "staff")[0], 401)
+        self.assertEqual(self.request("GET", "/api/auth/session", "admin")[0], 200)
+        self.assertEqual(self.request("POST", "/api/auth/login", body={
+            "username": "staff", "password": "OldTest123",
+        })[0], 401)
+        self.assertEqual(self.request("POST", "/api/auth/login", body={
+            "username": "staff", "password": "ResetTest123",
+        })[0], 200)
+
+    def test_editing_profile_without_password_preserves_session(self):
+        target_id = self.set_test_password("staff")
+        self.assertEqual(self.request("PUT", f"/api/auth/users/{target_id}", "admin", {
+            "fullName": "Updated Staff",
+        })[0], 200)
+        self.assertEqual(self.request("GET", "/api/auth/session", "staff")[0], 200)
+
     def test_session_detects_updated_role_and_keeps_admin_unrestricted(self):
         with Session(self.engine) as db:
             db.query(User).filter_by(role="staff").one().role = "customer"

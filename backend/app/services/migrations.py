@@ -20,6 +20,19 @@ def migrate_unicode_columns(engine: Engine) -> None:
     """Upgrade text columns created by older versions from VARCHAR to NVARCHAR."""
 
     with engine.begin() as connection:
+        for table in ("Invoices", "PurchaseReceipts"):
+            connection.execute(text(f"""
+                IF COL_LENGTH('dbo.{table}', 'status') IS NULL
+                    ALTER TABLE dbo.[{table}] ADD status VARCHAR(20) NOT NULL
+                        CONSTRAINT DF_{table}_status DEFAULT 'completed' WITH VALUES;
+                IF COL_LENGTH('dbo.{table}', 'cancelled_at') IS NULL
+                    ALTER TABLE dbo.[{table}] ADD cancelled_at DATETIME NULL;
+                IF COL_LENGTH('dbo.{table}', 'cancelled_by') IS NULL
+                    ALTER TABLE dbo.[{table}] ADD cancelled_by INT NULL
+                        REFERENCES dbo.Users(id);
+                IF COL_LENGTH('dbo.{table}', 'cancellation_reason') IS NULL
+                    ALTER TABLE dbo.[{table}] ADD cancellation_reason NVARCHAR(500) NULL;
+            """))
         connection.execute(
             text(
                 """

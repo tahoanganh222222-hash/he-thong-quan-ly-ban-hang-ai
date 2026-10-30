@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 import re
 
 
@@ -27,7 +27,7 @@ class ProductCreate(BaseModel):
     sellingPrice: float = Field(ge=0)
     unit: str = Field(min_length=1, max_length=30)
     isActive: bool = True
-    stock: int = Field(default=0, ge=0)
+    stock: int = Field(default=0, ge=0, le=0)
     minimum: int = Field(default=10, ge=0)
     imageData: Optional[str] = Field(default=None, max_length=2_800_000)
 
@@ -64,14 +64,15 @@ class CustomerUpdate(BaseModel):
 
 
 class InventoryCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     productId: int
-    quantity: int = Field(default=0, ge=0)
+    quantity: int = Field(default=0, ge=0, le=0)
     minimum: int = Field(default=0, ge=0)
 
 
 class InventoryUpdate(BaseModel):
-    quantity: Optional[int] = Field(default=None, ge=0)
-    minimum: Optional[int] = Field(default=None, ge=0)
+    model_config = ConfigDict(extra="forbid")
+    minimum: int = Field(ge=0)
 
 
 class DocumentItem(BaseModel):
@@ -94,7 +95,7 @@ class InvoiceUpdate(BaseModel):
     customerId: Optional[int] = None
     discount: Optional[float] = Field(default=None, ge=0)
     paymentMethod: Optional[str] = Field(default=None, max_length=30)
-    items: Optional[list[DocumentItem]] = None
+    items: Optional[list[DocumentItem]] = Field(default=None, min_length=1)
 
 
 class PurchaseCreate(BaseModel):
@@ -108,7 +109,16 @@ class PurchaseCreate(BaseModel):
 
 class PurchaseUpdate(BaseModel):
     supplierName: Optional[str] = Field(default=None, min_length=1, max_length=150)
-    items: Optional[list[DocumentItem]] = None
+    items: Optional[list[DocumentItem]] = Field(default=None, min_length=1)
+
+
+class DocumentCancel(BaseModel):
+    reason: str = Field(min_length=3, max_length=500)
+
+    @field_validator("reason", mode="before")
+    @classmethod
+    def trim_reason(cls, value):
+        return value.strip() if isinstance(value, str) else value
 
 
 class SupplierCreate(BaseModel):

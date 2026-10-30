@@ -37,11 +37,27 @@ DEMO_PRODUCTS = [
     ("SP021", "Nước lau sàn Lix 1L", "Hàng tiêu dùng", 22000, 32000, "Chai", 5, True),
     ("SP022", "Sữa tươi Vinamilk có đường 180ml", "Sữa và đồ uống", 5000, 8000, "Hộp", 5, True),
     ("SP023", "Khăn giấy Pulppy 100 tờ", "Hàng tiêu dùng", 12000, 18000, "Gói", 5, False),
+    ("SP024", "Nước tăng lực Sting việt quất 320ml", "Sữa và đồ uống", 8500, 12000, "Lon", 12, True),
+    ("SP025", "Nước tăng lực Sting dâu 500ml", "Sữa và đồ uống", 10500, 15000, "Chai", 10, True),
+    ("SP026", "Trà ô long Tea Plus hương chanh 450ml", "Sữa và đồ uống", 8500, 12000, "Chai", 10, True),
+    ("SP027", "Sữa lúa mạch Milo nắp vặn 210ml", "Sữa và đồ uống", 10500, 14000, "Hộp", 12, True),
+    ("SP028", "Bánh quy Oreo nhân kem vani 133g", "Thực phẩm", 13000, 18000, "Gói", 10, True),
+    ("SP029", "Bánh quế Oreo sô cô la 54g", "Thực phẩm", 10000, 15000, "Hộp", 8, True),
+    ("SP030", "Xốt ướp thịt nướng Cholimex 200g", "Thực phẩm", 18000, 26000, "Hũ", 5, True),
+    ("SP031", "Snack tôm cay nồng Oishi 65g", "Thực phẩm", 6500, 10000, "Gói", 15, True),
+    ("SP032", "Cà phê G7 3 trong 1 336g", "Thực phẩm", 45000, 60000, "Hộp", 6, True),
+    ("SP033", "Bột giặt Aba sạch tinh tươm 380g", "Hàng tiêu dùng", 16000, 22000, "Gói", 6, True),
+    ("SP034", "Kem đánh răng Closeup tinh thể băng tuyết 180g", "Hàng tiêu dùng", 32000, 45000, "Tuýp", 5, True),
+    ("SP035", "Sữa tắm Lifebuoy chăm sóc da 850g", "Hàng tiêu dùng", 90000, 120000, "Chai", 5, True),
 ]
 
 DEMO_CUSTOMERS = [
     ("KH013", "Khách hàng 013", "Khách thường"),
     ("KH014", "Khách hàng 014", "Khách thân thiết"),
+    ("KH015", "Nguyễn Minh Khang", "Khách thường"),
+    ("KH016", "Trần Ngọc Mai", "Khách thân thiết"),
+    ("KH017", "Lê Hoàng Phúc", "Khách thường"),
+    ("KH018", "Phạm Thanh Thảo", "Khách VIP"),
 ]
 
 CATALOG_IMAGE_ROOT = Path(__file__).resolve().parents[1] / "frontend" / "assets" / "catalog" / "products"
@@ -52,9 +68,22 @@ CATALOG_IMAGES = {
     "SP021": "nuoc-lau-san-lix.jpg",
     "SP022": "sua-tuoi-vinamilk.jpg",
     "SP023": "khan-giay-pulppy.png",
+    "SP024": "sting-viet-quat-320ml.jpg",
+    "SP025": "sting-dau-500ml.jpg",
+    "SP026": "tra-olong-tea-plus-chanh-450ml.jpg",
+    "SP027": "sua-milo-210ml.jpg",
+    "SP028": "banh-oreo-vani-133g.jpg",
+    "SP029": "banh-que-oreo-socola-54g.jpg",
+    "SP030": "xot-uop-thit-cholimex-200g.jpg",
+    "SP031": "snack-oishi-tom-cay-65g.jpg",
+    "SP032": "ca-phe-g7-336g.jpg",
+    "SP033": "bot-giat-aba-380g.jpg",
+    "SP034": "kem-danh-rang-closeup-180g.jpg",
+    "SP035": "sua-tam-lifebuoy-850g.jpg",
 }
 PRODUCT_CODES = {suffix: item[0] for suffix, item in enumerate(DEMO_PRODUCTS, 1)}
-LEGACY_PRODUCT_CODES = {f"DEMO-SP{suffix:03d}": code for suffix, code in PRODUCT_CODES.items()}
+# Only the original six products ever used these legacy labels.
+LEGACY_PRODUCT_CODES = {f"DEMO-SP{suffix:03d}": PRODUCT_CODES[suffix] for suffix in range(1, 7)}
 LEGACY_CUSTOMER_CODES = {"DEMO-KH001": "KH013", "DEMO-KH002": "KH014"}
 LEGACY_RECEIPT_CODES = {f"DEMO-PN{index:03d}": f"PN-BS{index:03d}" for index in range(1, 5)}
 LEGACY_INVOICE_CODES = {f"DEMO-HD{index:03d}": f"HD-BS{index:03d}" for index in range(1, 11)}
@@ -65,6 +94,12 @@ DEMO_PURCHASES = [
     ("PN-BS002", 9, [(1, 20), (2, 10)]),
     ("PN-BS003", 4, [(1, 15), (3, 8)]),
     ("PN-BS004", 1, [(2, 10), (3, 4)]),
+    ("PN-BS005", 28, [(7, 48), (8, 36), (9, 30), (10, 36), (11, 40), (12, 30), (13, 16), (14, 50), (15, 18), (16, 20), (17, 18), (18, 8)]),
+    ("PN-BS006", 18, [(7, 24), (10, 24), (11, 20), (14, 30)]),
+    ("PN-BS007", 10, [(8, 24), (9, 24), (12, 18), (15, 12)]),
+    ("PN-BS008", 5, [(10, 24), (11, 20), (16, 12), (17, 12)]),
+    ("PN-BS009", 2, [(7, 24), (13, 12), (14, 30)]),
+    ("PN-BS010", 0, [(9, 12), (10, 12), (15, 6)]),
 ]
 
 # Code, days before reference date, customer, payment, discount, items.
@@ -79,6 +114,24 @@ DEMO_INVOICES = [
     ("HD-BS008", 1, "KH014", "cash", 0, [(2, 2), (3, 2)]),
     ("HD-BS009", 0, "KH013", "cash", 2000, [(1, 2), (2, 1)]),
     ("HD-BS010", 0, "KH014", "transfer", 0, [(2, 2), (3, 1)]),
+    ("HD-BS011", 27, "KH015", "cash", 0, [(7, 4), (11, 2), (14, 3)]),
+    ("HD-BS012", 25, "KH016", "transfer", 5000, [(8, 3), (10, 4), (15, 1)]),
+    ("HD-BS013", 23, None, "cash", 0, [(9, 2), (12, 2), (13, 1)]),
+    ("HD-BS014", 21, "KH018", "transfer", 10000, [(16, 2), (17, 1), (18, 1)]),
+    ("HD-BS015", 19, "KH017", "cash", 0, [(7, 6), (10, 3), (14, 5)]),
+    ("HD-BS016", 17, "KH016", "transfer", 5000, [(11, 4), (12, 2), (15, 1)]),
+    ("HD-BS017", 15, "KH015", "cash", 0, [(8, 4), (9, 3), (13, 2)]),
+    ("HD-BS018", 13, None, "cash", 0, [(10, 5), (14, 6)]),
+    ("HD-BS019", 11, "KH018", "transfer", 10000, [(11, 3), (15, 2), (17, 2)]),
+    ("HD-BS020", 9, "KH017", "cash", 5000, [(16, 2), (18, 2)]),
+    ("HD-BS021", 7, "KH016", "transfer", 0, [(7, 5), (9, 4), (12, 3)]),
+    ("HD-BS022", 5, "KH015", "cash", 2000, [(8, 2), (10, 6), (14, 4)]),
+    ("HD-BS023", 3, "KH018", "transfer", 5000, [(11, 4), (13, 2), (15, 1)]),
+    ("HD-BS024", 2, None, "cash", 0, [(7, 3), (12, 2), (16, 1)]),
+    ("HD-BS025", 1, "KH017", "cash", 0, [(9, 3), (11, 2), (17, 1)]),
+    ("HD-BS026", 0, "KH015", "cash", 2000, [(7, 3), (11, 2), (14, 4)]),
+    ("HD-BS027", 0, "KH016", "transfer", 10000, [(10, 6), (15, 1), (17, 1)]),
+    ("HD-BS028", 0, "KH018", "transfer", 0, [(8, 2), (9, 2), (12, 2), (18, 2)]),
 ]
 
 

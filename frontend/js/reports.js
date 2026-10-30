@@ -35,7 +35,7 @@
         const detailedInvoices = await Promise.all(
             invoices.map(invoice => salesApi.invoices.get(invoice.id))
         );
-        sourceData = { invoices: detailedInvoices, products, inventory };
+        sourceData = { invoices: detailedInvoices.filter(invoice => invoice.status !== "cancelled"), products, inventory };
     }
 
     function initializeDateRange() {
